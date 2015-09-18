@@ -14,5 +14,5 @@ SOURCES='src/main_ls.cpp
 #         include/grid/type/Line.cpp include/grid/type/Tri.cpp
 #         include/grid/type/Hexa.cpp'
 #c++ -g -I include/ -std=c++0x src/main1.cpp include/grid/Vertex.cpp include/grid/Cell.cpp include/grid/quad/Quad.cpp -o cart3
-c++ -I include/ -std=c++11 $SOURCES -o cart3
-#clang++ -g -std=c++11 -stdlib=libc++ -I include $SOURCES -o cart3
+#c++ -I include/ -std=c++11 $SOURCES -o cart3
+clang++ -g -std=c++11 -stdlib=libc++ -I include $SOURCES -o cart3
