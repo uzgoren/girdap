@@ -1,0 +1,20 @@
+Accuracy questions exist; 
+1) Continuity of grid refinement; possible solution is to avoid island adaptation; if it is the only cell to be adapted avoid; not for boundary cells; (check north - south , east - west independently; also if it is the only cell not to be adapted - refine it as well. 
+2) Criteria; vorticity is not giving good performance;
+3) Coarsening algorithm needs to be there; 
+4) FOU is not giving good performance; 
+5) Time step needs to be arranged.  
+
+
+
+OLD!!!!
+Try keeping facelist attached to Vertex
+Refine addFace
+
+****** Tried weak_ptr; but it is extremely inefficient;*********
+grid keeps track of nearest vertex to a vertex; that's best; 
+***** IMPORTANT ***** 
+Everyting in Vertex and Cell, ngbr etc. should be maintained as
+integers; and shared_ptr should be accessed through get methods
+******** 
+
