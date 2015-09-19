@@ -6,6 +6,25 @@ shared_ptr<Vertex> *Cell::getVertex(int_2 i) {
   return &(*(grid->vbegin()+node[i])); 
 }
 
+double Cell::phiVal(VecX<double> &phi, int_2 bias) {
+  if (next < 0 && prev < 0) {
+    return phi[id]; 
+  } else {
+    if (next >= 0 && prev >= 0) {
+      return phiVal_iface(phi, bias); 
+    } else if (next >= 0) {
+      return phi[next]; 
+    } else if (prev >= 0) {
+      return phi[prev]; 
+    }
+  }
+  return 0;
+}
+
+double Cell::phiVal(shared_ptr<Var> &var, int_2 bias) {
+  return phiVal(var->data, var->listBC, bias); 
+}
+
 double Cell::phiVal(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc, int_2 bias) {
   if (next < 0 && prev < 0) {
     return phi[id]; 
@@ -16,6 +35,7 @@ double Cell::phiVal(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc, 
       return phiVal_bcface(phi, bc, bias); 
     }
   }
+  return 0; 
 }
 
 double Cell::phiVal_iface(VecX<double> &phi, int_2 const &bias) {
@@ -53,6 +73,14 @@ double Cell::phiVal_bcface(VecX<double> &phi, vector<shared_ptr<Boundary> > cons
     exit(1); 
   }
 }
+
+
+
+
+
+
+
+
 
 
 Scheme<double> Cell::phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias) {
@@ -262,3 +290,17 @@ Scheme<double> Cell::normGrad(vector<shared_ptr<Boundary> > const &bc) {
 Scheme<double> Cell::normGrad(shared_ptr<Var> var) {
   return normGrad(var->listBC); 
 }
+
+
+
+
+
+
+// double Cell:grad_iface(VecX<double> &phi) {
+//   if (next >= 0 && prev >= 0) {
+//     auto n = grid->listCell[next]; 
+//     auto p = grid->listCell[prev]; 
+    
+//   }
+
+// }
