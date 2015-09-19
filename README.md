@@ -7,7 +7,7 @@ DISCLAIMER: This project is still in a early phase, expect to see bugs.
 REQUIREMENTs: C++ compiler that accepts C++11 standards 
 
 COMPILE: use "mk" script (tested on Linux and Mac) 
-
+<!--
 #PRIORITIES:
 #1. Anisotropic mesh refinement for Quad/Hexa cells. 
 #2. Solution based adaptation criteria. 
@@ -18,4 +18,4 @@ COMPILE: use "mk" script (tested on Linux and Mac)
  
 #SECONDARY
 #1. Use of laplace operator to generate body-fitted grids. 
-
+-->
