@@ -2,16 +2,16 @@
 
 This project's aim is to develop object-oriented c++ libraries for solving conservation equations on a self-managed grid. 
 
-#DISCLAIMER
+##DISCLAIMER
 This project is still in a early phase, expect to see bugs. 
 
-#REQUIREMENTs
+##REQUIREMENTs
 C++ compiler that accepts C++11 standards 
 
-#COMPILE
+##COMPILE
 use "mk" script (tested on Linux and Mac) 
 
-#ACKNOWLEDGEMENT
+##ACKNOWLEDGEMENT
 This work is part of a research project supported by a Marie Curie International Reintegration Grant within the 7th European Community Framework Programme.
 
 <!--
