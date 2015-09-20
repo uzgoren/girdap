@@ -2,11 +2,18 @@
 
 This project's aim is to develop object-oriented c++ libraries for solving conservation equations on a self-managed grid. 
 
-DISCLAIMER: This project is still in a early phase, expect to see bugs. 
+#DISCLAIMER
+This project is still in a early phase, expect to see bugs. 
 
-REQUIREMENTs: C++ compiler that accepts C++11 standards 
+#REQUIREMENTs
+C++ compiler that accepts C++11 standards 
 
-COMPILE: use "mk" script (tested on Linux and Mac) 
+#COMPILE
+use "mk" script (tested on Linux and Mac) 
+
+#ACKNOWLEDGEMENT
+This work is part of a research project supported by a Marie Curie International Reintegration Grant within the 7th European Community Framework Programme.
+
 <!--
 #PRIORITIES:
 #1. Anisotropic mesh refinement for Quad/Hexa cells. 
@@ -19,3 +26,4 @@ COMPILE: use "mk" script (tested on Linux and Mac)
 #SECONDARY
 #1. Use of laplace operator to generate body-fitted grids. 
 -->
+

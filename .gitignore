@@ -3,4 +3,6 @@ include/grid
 *~
 *.o
 ._*
+\#*\#
+.#*
 tmp/
