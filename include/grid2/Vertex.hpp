@@ -18,17 +18,17 @@ public:
   // When both cell and many has elements it is a mixed node;
   // Mixed nodes should be dealt specifically
   // Keep at most 3 faces (attached to a vertex) for structured
-  vector<shared_ptr<Cell> > face; 
+  //vector<shared_ptr<Cell> > face; 
   //  vector<shared_ptr<Vector> > ngbr; 
   int_2 bndr; 
 
   int_8 id; 
   Grid* grid; 
   
-  Vertex():Vec3() {face.resize(3);}
-  Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {face.resize(3);}
-  Vertex(initializer_list<double> a) : Vec3( a ) { face.resize(3); }
-  Vertex(Vec3 a) : Vec3(a) {face.resize(3); }
+  Vertex():Vec3() {}//face.resize(3);}
+  Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {}//face.resize(3);}
+  Vertex(initializer_list<double> a) : Vec3( a ) { }//face.resize(3); }
+  Vertex(Vec3 a) : Vec3(a) {}//face.resize(3); }
 
   void reset() {cell.clear();}
   void reset(int_2 s) {cell.assign(s, -1);}
