@@ -6,3 +6,4 @@ include/grid
 \#*\#
 .#*
 tmp/
+include/parse
