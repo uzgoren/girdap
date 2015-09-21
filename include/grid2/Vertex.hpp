@@ -22,9 +22,11 @@
 #include <VecX>
 #include <grid2/Scheme.hpp>
 
+// Classes to be define later, but needed
 class Grid; 
 class Cell;
 
+// Vertex
 class Vertex : public Vec3 {
 protected:
     
@@ -33,63 +35,75 @@ public:
   // Cell contains structured array
   // many constains node shared by many cells; unstructured
   vector<int_8 > many;
+  // --- NOT IMPLEMENTED -- //
   // When both cell and many has elements it is a mixed node;
   // Mixed nodes should be dealt specifically
-  // Keep at most 3 faces (attached to a vertex) for structured
-  //vector<shared_ptr<Cell> > face; 
-  //  vector<shared_ptr<Vector> > ngbr; 
+  // --- NOT IMPLEMENTED -- //
+  
+  // Coefficients of a bilinear equation - used for mapping from x to xhat
+  //    i.e. for quad: 
+  //    x = xcoef(0) + xcoef(1)*xhat0 + xcoef(2)*xhat1 + xcoef(3)*xhat0*xhat1
+  vector<double> xcoef, ycoef, zcoef; 
+
+  // Weights are computed using trasformed coordinate xhat; 
+  Vec3 xhat;  
+  //    i.e. for quad:
+  //    p_v = (1-xhat1)*(1-xhat0)*p_0 + xhat0*(1-xhat1)*p_1+..
+  //          xhat0*xhat1*p_2 + (1-xhat0)*xhat1*p_3; 
+  //    note that hanging nodes form triangular/tetrahedral elements
+  //    that needs to be taken care of! 
+
+  // For gradients we need to fit p into a different bilinear equation; 
+  //    but we only need weigths, which are computed from xhat again;  
+  // OR we can simply calculate using gauss formula! Not sure yet; 
+
   int_2 bndr; 
 
   int_8 id; 
   Grid* grid; 
   
-  Vertex():Vec3() {}//face.resize(3);}
-  Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {}//face.resize(3);}
-  Vertex(initializer_list<double> a) : Vec3( a ) { }//face.resize(3); }
-  Vertex(Vec3 a) : Vec3(a) {}//face.resize(3); }
+  Vertex():Vec3() {}
+  Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {}
+  Vertex(initializer_list<double> a) : Vec3( a ) { }
+  Vertex(Vec3 a) : Vec3(a) {}
 
+  // 01 RESET node's cell list
   void reset() {cell.clear();}
+  // 01a RESET only one cell; 
   void reset(int_2 s) {cell.assign(s, -1);}
+  // 01b RESET and replace connectivity; 
   void reset(initializer_list<int_8> l) {cell.assign(l.begin(), l.end());}
 
+  // 02 Change number of cells (structure of a node)
   void cellResize(int_2 size); 
+  // 03a assigns cell at a prescribed loc; Quad 0-1-2-3 (CCW) Hexa 0-1..7-8 (CCW-CCW)
+  //     given that it doesn't have a meaningful value (<0)
   void setCell(int_2 ind, int_8 value);
-  void setCell(initializer_list<int_8> l) {for (auto i = 0; i < l.size(); ++i) {if (cell[i] < 0) cell[i] = *(l.begin()+i); }}
-  void replaceCell(int_2 ind, int_8 value);
-  shared_ptr<Cell > *getCell(int_2 ind, bool debug=0); 
-  shared_ptr<Vertex > *ngbr(int_2 d);
-  // void addFace();
+  // 03b replaces whole structure based on list given; 
+  void setCell(initializer_list<int_8> l) {
+    celResize(l.size()); 
+    for (auto i = 0; i < l.size(); ++i) 
+      {if (cell[i] < 0) cell[i] = *(l.begin()+i); }
+  }
   
+  // 03c replace ind with another cell -- Not a duplicate of setcell 
+  //                                     (it overrides existing cell)
+  void replaceCell(int_2 ind, int_8 value);
+
+  // 04 gets a pointer to the cell object at ind
+  shared_ptr<Cell > *getCell(int_2 ind, bool debug=0); 
+
+  // 05 gets a pointer to an immediate neighboring vertex (IMPORTANT); 
+  //     d stands for direction; and 1 represents x1, 2 for x2 and 3 for x3; 
+  //     negative values of 1, 2, 3 reverses the direction.
+  //     NOTE: ngbr should not be used during grid generation/adaptation
+  //           it is only made available after faces are created!
+  shared_ptr<Vertex > *ngbr(int_2 d);
+
+  // 06 interpolation scheme of a Field variable 
   Scheme<double> phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias=0);  
   Scheme<double> phi(shared_ptr<Var> var, int_2 bias=0);  
     
-  
-  // shared_ptr<Cell > isHanging(int_2 dir) {
-  //    if (cell.size() == 2) return NULL;     
-  //   int_2 ind[4] = {dir, static_cast<int_2>((dir+1)%4)
-  // 		    , static_cast<int_2>(dir+4)
-  // 		    , static_cast<int_2>(((dir+1)%4)+4)};
-  //   if (cell.size() == 4) {
-  //     if (cell[ind[0]]) { // one combination
-  // 	if (cell[ind[0]].get() == cell[ind[1]].get()) 
-  // 	  return cell[ind[0]]; 
-  //     } 
-  //   } else if (cell.size() == 8) {
-  //     if (cell[ind[0]]) { // many combinations 
-  // 	if (cell[ind[0]].get() == cell[ind[1]].get() 
-  // 	    || cell[ind[0]].get() == cell[ind[2]].get())
-  // 	  return cell[ind[0]];
-  //     } 
-  //     if (cell[ind[3]]) {
-  // 	if (cell[ind[3]].get() == cell[ind[1]].get()
-  // 	    || cell[ind[3]].get() == cell[ind[2]].get())
-  // 	  return cell[ind[3]]; 
-  //     }
-  //   }
-  //   return NULL; 
-  // }  
-  //  void updateFaceLink(int i, int j, int k, int_8 c0, int_8 c1);  
-
 };
 
 #endif
