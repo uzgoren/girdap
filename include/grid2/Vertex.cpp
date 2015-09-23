@@ -123,3 +123,105 @@ Scheme<double> Vertex::phi(shared_ptr<Var> var, int_2 bias) {
 }
 
 
+
+
+// -------------------------------------------------------------------------
+// @EU#9-21-2015: distance based interpolation (easiest thing possible)
+// -------------------------------------------------------------------------
+void Vertex::setXHat() {
+  // Form a CV and prepare for transformation; 
+  VecX<double> x(8), y(8), z(8);
+
+  // 1. GET CELL COORDINATES
+  for (auto i=0; i<8; ++i) {
+    if (i < cell.size()) {
+      auto tmp = (*getCell(i))->getCoord();
+      x[i] = tmp.x(); 
+      y[i] = tmp.y(); 
+      z[i] = tmp.z();
+    } else { 
+      x[i] = x[i-4]; 
+      y[i] = y[i-4]; 
+      z[i] = z[i-4]; 
+    }
+  }
+  
+  // 2. USE AI to calculate coefficients; 
+  xcoef = AI*x; 
+  ycoef = AI*y; 
+  zcoef = AI*z;
+
+  // 
+
+  // for (auto i = 0; i < cell.size(); ++i) {
+  //   if (cell[i] != cell[(i+cell.size()-1)%cell.size()]) { // remove duplicates; 
+  //     auto x = grid->listGrid[i]->getCoord(); 
+  
+  // if (cell.size() == 4) {
+  //   MatX<double> AI = {{1 0 0 0}, {-1 1 0 0}, {-1 0 0 1}, {1 -1 1 -1}};
+    
+  // }
+
+  /* RELEVANT MATLAB CODE
+    a = A\cell(:,1);
+    b = A\cell(:,2);
+    c = A\cell(:,3);    
+    
+    gg1 = @(l, c) c(2) + c(5)*l(2) + c(6)*l(3) + c(8)*l(2)*l(3); 
+    gg2 = @(l, c) c(3) + c(5)*l(1) + c(7)*l(3) + c(8)*l(1)*l(3); 
+    gg3 = @(l, c) c(4) + c(6)*l(1) + c(7)*l(2) + c(8)*l(1)*l(2);     
+ 
+    l = [0.5, 0.5, 0.5]; 
+    dl = [1,1,1];
+    if (a(2) == 0 && a(5) == 0 && a(6) == 0 && a(8) == 0)
+        l(1) = 0; 
+        F = @(l) [x(2)-f(l, a); x(3)-f(l, c)];
+        J = @(l) [gg1(l, b), gg2(l, b); ...
+            gg1(l, c), gg2(l, c)];
+        while (sum(abs(dl)) > 1e-6)
+            dl = [0; J(l)\F(l)];
+            l = l+dl.';
+        end
+    elseif (b(2) == 0 && b(5) == 0 && b(6) == 0 && b(8) == 0)
+        l(2) = 0; 
+        F = @(l) [x(1)-f(l, a); x(3)-f(l, c)];
+        J = @(l) [gg1(l, a), gg2(l, a); ...
+            gg1(l, c), gg2(l, c)];
+        while (sum(abs(dl)) > 1e-6)
+            dl = J(l)\F(l);
+            dl = [dl(1); 0; dl(2)]; 
+            l = l+dl.';
+        end        
+    elseif (c(2) == 0 && c(5) == 0 && c(6) == 0 && c(8) == 0)
+        l(3) = 0; 
+        F = @(l) [x(1)-f(l, a); x(2)-f(l, b)];
+        J = @(l) [gg1(l, a), gg2(l, a); ...
+            gg1(l, b), gg2(l, b)];
+        while (sum(abs(dl)) > 1e-6)
+            dl = [J(l)\F(l); 0];
+            if (isnan(sum(dl)) || isinf(sum(dl)))
+                break; 
+            end            
+            l = l+dl.';            
+        end
+    else
+        F = @(l) [x(1)-f(l, a); x(2)-f(l, b); x(3)-f(l, c)];
+        J = @(l) [gg1(l, a), gg2(l, a), gg3(l, a); ...
+            gg1(l, b), gg2(l, b), gg3(l, b); ...
+            gg1(l, c), gg2(l, c), gg3(l, c)];
+        while (sum(abs(F(l))) > 1e-6)
+            dl = J(l)\F(l);
+            if (isnan(sum(dl)) || isinf(sum(dl)))
+                break; 
+            end
+            l = l+dl.';            
+        end
+
+    end
+
+    
+
+   */
+}
+
+

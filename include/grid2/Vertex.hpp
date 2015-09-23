@@ -19,7 +19,7 @@
 #ifndef VERTEX
 #define VERTEX
 
-#include <VecX>
+#include <linSolve/LinSys>
 #include <grid2/Scheme.hpp>
 
 // Classes to be define later, but needed
@@ -40,10 +40,13 @@ public:
   // Mixed nodes should be dealt specifically
   // --- NOT IMPLEMENTED -- //
   
+  // Matrix for bilinear coordinate transformation
+  MatX<double> AI; 
+
   // Coefficients of a bilinear equation - used for mapping from x to xhat
   //    i.e. for quad: 
   //    x = xcoef(0) + xcoef(1)*xhat0 + xcoef(2)*xhat1 + xcoef(3)*xhat0*xhat1
-  vector<double> xcoef, ycoef, zcoef; 
+  VecX<double> xcoef, ycoef, zcoef; 
 
   // Weights are computed using trasformed coordinate xhat; 
   Vec3 xhat;  
@@ -62,10 +65,22 @@ public:
   int_8 id; 
   Grid* grid; 
   
-  Vertex():Vec3() {}
+  Vertex():Vec3() {setAI(); }
   Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {}
   Vertex(initializer_list<double> a) : Vec3( a ) { }
   Vertex(Vec3 a) : Vec3(a) {}
+
+  // 00 Set transformation matrix; 
+  void setAI() { 
+    AI = { { 1, 0, 0, 0, 0, 0, 0, 0}, 
+	   {-1, 1, 0, 0, 0, 0, 0, 0},
+           {-1, 0, 0, 1, 0, 0, 0, 0},
+           {-1, 0, 0, 0, 1, 0, 0, 0},
+           { 1,-1, 1,-1, 0, 0, 0, 0},
+           { 1,-1, 0, 0,-1, 1, 0, 0},
+           { 1, 0, 0,-1,-1, 0, 0, 1},
+           {-1, 1,-1, 1, 1,-1, 1,-1} };
+  }
 
   // 01 RESET node's cell list
   void reset() {cell.clear();}
@@ -81,7 +96,7 @@ public:
   void setCell(int_2 ind, int_8 value);
   // 03b replaces whole structure based on list given; 
   void setCell(initializer_list<int_8> l) {
-    celResize(l.size()); 
+    cellResize(l.size()); 
     for (auto i = 0; i < l.size(); ++i) 
       {if (cell[i] < 0) cell[i] = *(l.begin()+i); }
   }
@@ -103,7 +118,9 @@ public:
   // 06 interpolation scheme of a Field variable 
   Scheme<double> phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias=0);  
   Scheme<double> phi(shared_ptr<Var> var, int_2 bias=0);  
-    
+   
+  void setXHat(); 
+ 
 };
 
 #endif
