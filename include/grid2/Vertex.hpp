@@ -62,7 +62,7 @@ public:
   int_8 id; 
   Grid* grid; 
   
-  Vertex():Vec3() {setAI(); }
+  Vertex():Vec3() {}
   Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {}
   Vertex(initializer_list<double> a) : Vec3( a ) { }
   Vertex(Vec3 a) : Vec3(a) {}
@@ -105,7 +105,10 @@ public:
   Scheme<double> phi(shared_ptr<Var> var, int_2 bias=0);  
    
   void setXHat(); 
- 
+  double triF(Vec3 xhat, VecX<double> &coef);
+  double triDer(Vec3 xhat, VecX<double> &coef, int_2 dir);
+  MatX<double> triJacob(Vec3 xhat);
+  void triNonLinSolve(Vec3 &xhat, Vec3 &x); 
 };
 
 #endif

@@ -122,8 +122,63 @@ Scheme<double> Vertex::phi(shared_ptr<Var> var, int_2 bias) {
   return phi(var->listBC, bias);
 }
 
+double Vertex::triF(Vec3 xhat, VecX<double> &coef) {
+  return coef[0] + coef[1]*xhat.x() + coef[2]*xhat.y() + coef[3]*xhat.z()
+    + coef[4]*xhat.x()*xhat.y() + coef[5]*xhat.x()*xhat.z()
+    + coef[6]*xhat.y()*xhat.z() + coef[7]*xhat.x()*xhat.y()*xhat.z(); 
+}
+
+double Vertex::triDer(Vec3 xhat, VecX<double> &coef, int_2 dir) {
+    if (dir == 0) {
+      return coef[1] + coef[4]*xhat.y() + coef[5]*xhat.z() + coef[7]*xhat.y()*xhat.z(); 
+    } else if (dir == 1) {
+      return coef[2] + coef[4]*xhat.x() + coef[6]*xhat.z() + coef[7]*xhat.x()*xhat.z(); 
+    } else if (dir == 2) {
+      return coef[3] + coef[5]*xhat.x() + coef[6]*xhat.y() + coef[7]*xhat.x()*xhat.y(); 
+    }
+    return 0.0; 
+}
+
+MatX<double> Vertex::triJacob(Vec3 xhat) {
+  MatX<double> out; 
+  if (cell.size() == 4) { 
+    // USE only coefx and coefy
+    out.resize(2);
+    for (auto i = 0; i<2; ++i) { 
+      out[i][0] = triDer(xhat, xcoef, 0); 
+      out[i][1] = triDer(xhat, ycoef, 0);
+    }
+  } else if (cell.size() == 8) {
+    out.resize(4); 
+    for (auto i = 0; i<4; ++i) { 
+      out[i][0] = triDer(xhat, xcoef, 0); 
+      out[i][1] = triDer(xhat, ycoef, 0);
+      out[i][2] = triDer(xhat, zcoef, 0);
+    }    
+  }
+  return out; 
+}
 
 
+void Vertex::triNonLinSolve(Vec3 &xhat, Vec3 &x) {
+  LinSys nr;
+  Vec3 dx;
+  nr.x = &dx; 
+  if (cell.size() == 4) {
+    while (true) {
+      nr.A = triJacob(xhat);
+      nr.b.resize(2); 
+      dx.resize(2); 
+      nr.b[0] = x.x() - triF(xhat, xcoef); 
+      nr.b[1] = x.y() - triF(xhat, ycoef);
+      if (std::abs(nr.b[0]) + std::abs(nr.b[1]) < 1e-6) break; 
+      nr.BiCGSTAB(); 
+      xhat += dx; 
+    }
+  } else {   
+    
+  }
+}
 
 // -------------------------------------------------------------------------
 // @EU#9-21-2015: distance based interpolation (easiest thing possible)
