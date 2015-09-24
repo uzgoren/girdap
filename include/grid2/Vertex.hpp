@@ -40,9 +40,6 @@ public:
   // Mixed nodes should be dealt specifically
   // --- NOT IMPLEMENTED -- //
   
-  // Matrix for bilinear coordinate transformation
-  MatX<double> AI; 
-
   // Coefficients of a bilinear equation - used for mapping from x to xhat
   //    i.e. for quad: 
   //    x = xcoef(0) + xcoef(1)*xhat0 + xcoef(2)*xhat1 + xcoef(3)*xhat0*xhat1
@@ -69,18 +66,6 @@ public:
   Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {}
   Vertex(initializer_list<double> a) : Vec3( a ) { }
   Vertex(Vec3 a) : Vec3(a) {}
-
-  // 00 Set transformation matrix; 
-  void setAI() { 
-    AI = { { 1, 0, 0, 0, 0, 0, 0, 0}, 
-	   {-1, 1, 0, 0, 0, 0, 0, 0},
-           {-1, 0, 0, 1, 0, 0, 0, 0},
-           {-1, 0, 0, 0, 1, 0, 0, 0},
-           { 1,-1, 1,-1, 0, 0, 0, 0},
-           { 1,-1, 0, 0,-1, 1, 0, 0},
-           { 1, 0, 0,-1,-1, 0, 0, 1},
-           {-1, 1,-1, 1, 1,-1, 1,-1} };
-  }
 
   // 01 RESET node's cell list
   void reset() {cell.clear();}

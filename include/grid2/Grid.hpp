@@ -42,6 +42,10 @@ public:
   vector<shared_ptr<Cell > > listCell; 
   vector<shared_ptr<Cell > > listFace; 
   vector<shared_ptr<Var > > listVar;
+
+  // Matrix for bilinear coordinate transformation
+  MatX<double> AI; 
+
   //vector<shared_ptr<Boundary > > listBNDR; 
   shared_ptr<Var > thisVar; 
   double dt, dt0, cfl; 
@@ -55,7 +59,7 @@ public:
   double minD, maxD, meanD; 
   // vector<shared_ptr<BNDR> > 
 
-  Grid() { nCellSize = 0; for (auto i = 0; i<3; ++i) {levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5; } }
+  Grid() { nCellSize = 0; for (auto i = 0; i<3; ++i) {levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5; }; setAI(); }
 
   Grid(initializer_list<initializer_list<double > > pts):Grid() {
     addVertex(pts);
@@ -71,17 +75,19 @@ public:
     // correct connectivity ! missing (hanging nodes) for the next step; 
     // makeFace(); 
   }
+
+  // 00 Set transformation matrix; 
+  void setAI() { 
+    AI = { { 1, 0, 0, 0, 0, 0, 0, 0}, 
+	   {-1, 1, 0, 0, 0, 0, 0, 0},
+           {-1, 0, 0, 1, 0, 0, 0, 0},
+           {-1, 0, 0, 0, 1, 0, 0, 0},
+           { 1,-1, 1,-1, 0, 0, 0, 0},
+           { 1,-1, 0, 0,-1, 1, 0, 0},
+           { 1, 0, 0,-1,-1, 0, 0, 1},
+           {-1, 1,-1, 1, 1,-1, 1,-1} };
+  }
   
-  // void setSpacing(double mx, double mn, double ave, double tar=0) {
-  //   meanD = ave; maxD = mx; minD = mn; 
-  //   if (tar == 0) tar = meanD; 
-  //   else if (tar <= minD) tar = minD; 
-  //   else if (tar >= maxD) tar = maxD; 
-  //   for (auto c : listCell) {
-  // 	c->targetD = tar; 
-  //   }    
-  // }
-    
   // Add vertex to the list; 
   void addVertex(Vec3 v) {
     listVertex.emplace_back( shared_ptr<Vertex>(new Vertex(v)) ); 

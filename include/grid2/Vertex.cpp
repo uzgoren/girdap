@@ -147,9 +147,9 @@ void Vertex::setXHat() {
   }
   
   // 2. USE AI to calculate coefficients; 
-  xcoef = AI*x; 
-  ycoef = AI*y; 
-  zcoef = AI*z;
+  xcoef = grid->AI*x; 
+  ycoef = grid->AI*y; 
+  zcoef = grid->AI*z;
 
   // 
 
