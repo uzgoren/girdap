@@ -90,6 +90,52 @@ shared_ptr<Vertex > *Vertex::ngbr(int_2 d)  {
 }
 
 
+shared_ptr<Cell> Vertex::getFace(int_2 order) {
+  if (cell.size() == 4 && order >= 4) {
+    cout << "Error, getFace: face order can be 0,1,2,3 but you asked for "<< order<<endl; 
+    exit(1); 
+  }
+  int_8 c0, c1; 
+  if (order < 4) {
+    if (order < 2) { // To make it compatible with next prev notation 
+      c0 = order; c1 = (order+1)%4;
+    } else {
+      c0 = (order+1)%4; c1 = order; 
+    }
+  } else if (order < 8) {
+    if (order < 6) {
+      c0 = order; c1 = order + 1; 
+    } else {
+      c0 = order + 1; c1 = order;  
+      if (c0 == 8) c0 = 4;
+    } 
+  } else {
+    c0 = order-8; c1 = c0 + 4; 
+  }
+  if (cell[c0] >= 0 && cell[c1] >=0) {
+    // both exists
+    auto tmp = (*getCell(c0)); 
+    for (auto f : tmp->face) {
+      if (grid->listFace[f]->prev != cell[c0]) continue; 
+      if (grid->listFace[f]->next != cell[c1]) continue; 
+      return grid->listFace[f]; 
+    }
+  } else if (cell[c0] >= 0) {
+    auto tmp = (*getCell(c0)); 
+    for (auto f : tmp->face) {
+      if (grid->listFace[f]->prev != cell[c0]) continue;
+      return grid->listFace[f]; 
+    }
+  } else if (cell[c1] >= 0) { 
+    auto tmp = (*getCell(c1)); 
+    for (auto f : tmp->face) {
+      if (grid->listFace[f]->next != cell[c1]) continue;     
+      return grid->listFace[f]; 
+    }
+  } 
+  return NULL; 
+}
+
 
 
 Scheme<double> Vertex::phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias) { 
@@ -129,17 +175,24 @@ Scheme<double> Vertex::phi(shared_ptr<Var> var, int_2 bias) {
 // -------------------------------------------------------------------------
 // @EU#9-21-2015: distance based interpolation (easiest thing possible)
 // -------------------------------------------------------------------------
-void Vertex::setInterpCoef() {
+bool Vertex::setInterpCoef() {
+  // save some time by ommitting valid coefs during adaptation; 
+  if (!coefUpdate) return false; 
+
   // Form a CV and prepare for transformation; 
   VecX<double> x(8), y(8), z(8);
 
   // 1. GET CELL COORDINATES
   for (auto i=0; i<8; ++i) {
     if (i < cell.size()) {
-      auto tmp = (*getCell(i))->getCoord();
-      x[i] = tmp.x(); 
-      y[i] = tmp.y(); 
-      z[i] = tmp.z();
+      if (cell[i] >= 0) {
+	auto tmp = (*getCell(i))->getCoord();
+	x[i] = tmp.x(); 
+	y[i] = tmp.y(); 
+	z[i] = tmp.z();
+      } else {
+	// need to do something; 
+      }
     } else { 
       x[i] = x[i-4]; 
       y[i] = y[i-4]; 
@@ -152,8 +205,37 @@ void Vertex::setInterpCoef() {
   ycoef = grid->interp.getCoef(y); 
   zcoef = grid->interp.getCoef(z);
 
-  // 
+  // 3. ALSO get xhat at its location; 
 
+  xhat = grid->interp.findXhat(Vec3(this->x(), this->y(), this->z()), 
+			      xcoef, ycoef, zcoef); 
+  coefUpdate = false; 
+  return true; 
+}
+
+vector<double> Vertex::getIntWeight() {
+  if (coefUpdate) {
+    cout << "Error: Coefficients are not yet computed! " << id << endl;
+    exit(1);
+  }
+  vector<double> w(cell.size(), 0);
+  w[0] = (1-xhat.x())*(1-xhat.y())*(1-xhat.z()); 
+  w[1] = xhat.x()*(1-xhat.y())*(1-xhat.z()); 
+  w[2] = xhat.x()*xhat.y()*(1-xhat.z()); 
+  w[3] = (1-xhat.x())*xhat.y()*(1-xhat.z()); 
+  if (cell.size() == 8) {
+    w[4] = (1-xhat.x())*(1-xhat.y())*xhat.z(); 
+    w[5] = xhat.x()*(1-xhat.y())*xhat.z(); 
+    w[6] = xhat.x()*xhat.y()*xhat.z(); 
+    w[7] = (1-xhat.x())*xhat.y()*xhat.z(); 
+  } else {
+    w[0] += (1-xhat.x())*(1-xhat.y())*xhat.z(); 
+    w[1] += xhat.x()*(1-xhat.y())*xhat.z(); 
+    w[2] += xhat.x()*xhat.y()*xhat.z(); 
+    w[3] += (1-xhat.x())*xhat.y()*xhat.z(); 
+  }
+  return w; 
+}
   // for (auto i = 0; i < cell.size(); ++i) {
   //   if (cell[i] != cell[(i+cell.size()-1)%cell.size()]) { // remove duplicates; 
   //     auto x = grid->listGrid[i]->getCoord(); 
@@ -223,6 +305,6 @@ void Vertex::setInterpCoef() {
     
 
    */
-}
+//}
 
 

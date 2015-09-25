@@ -42,6 +42,7 @@ public:
   // Coefficients of a bilinear equation - used for mapping from x to xhat
   //    i.e. for quad: 
   //    x = xcoef(0) + xcoef(1)*xhat0 + xcoef(2)*xhat1 + xcoef(3)*xhat0*xhat1
+  bool coefUpdate; 
   VecX<double> xcoef, ycoef, zcoef; 
 
   // Weights are computed using trasformed coordinate xhat; 
@@ -49,11 +50,9 @@ public:
   //    i.e. for quad:
   //    p_v = (1-xhat1)*(1-xhat0)*p_0 + xhat0*(1-xhat1)*p_1+..
   //          xhat0*xhat1*p_2 + (1-xhat0)*xhat1*p_3; 
-  //    note that hanging nodes form triangular/tetrahedral elements
-  //    that needs to be taken care of! 
 
   // For gradients we need to fit p into a different bilinear equation; 
-  //    but we only need weigths, which are computed from xhat again;  
+  //     but we only need weigths, which are computed from xhat again;  
   // OR we can simply calculate using gauss formula! Not sure yet; 
 
   int_2 bndr; 
@@ -61,17 +60,17 @@ public:
   int_8 id; 
   Grid* grid; 
   
-  Vertex():Vec3() {}
-  Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {}
-  Vertex(initializer_list<double> a) : Vec3( a ) { }
-  Vertex(Vec3 a) : Vec3(a) {}
+  Vertex():Vec3() { coefUpdate = true;}
+  Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {coefUpdate = true;}
+  Vertex(initializer_list<double> a) : Vec3( a ) {coefUpdate = true; }
+  Vertex(Vec3 a) : Vec3(a) {coefUpdate = true;}
 
   // 01 RESET node's cell list
-  void reset() {cell.clear();}
+  void reset() {cell.clear(); coefUpdate = true;}
   // 01a RESET only one cell; 
-  void reset(int_2 s) {cell.assign(s, -1);}
+  void reset(int_2 s) {cell.assign(s, -1);coefUpdate = true;}
   // 01b RESET and replace connectivity; 
-  void reset(initializer_list<int_8> l) {cell.assign(l.begin(), l.end());}
+  void reset(initializer_list<int_8> l) {cell.assign(l.begin(), l.end());coefUpdate = true;}
 
   // 02 Change number of cells (structure of a node)
   void cellResize(int_2 size); 
@@ -98,13 +97,18 @@ public:
   //     NOTE: ngbr should not be used during grid generation/adaptation
   //           it is only made available after faces are created!
   shared_ptr<Vertex > *ngbr(int_2 d);
+  shared_ptr<Cell> getFace(int_2 order);
 
   // 06 interpolation scheme of a Field variable 
   Scheme<double> phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias=0);  
   Scheme<double> phi(shared_ptr<Var> var, int_2 bias=0);  
    
-  void setInterpCoef(); 
+  bool setInterpCoef(); 
+  vector<double> getIntWeight();
+  vector<double> getIntWeight(Vec3 x); 
 
+  double getIntVal(shared_ptr<Var> var); 
+  double getIntVal(shared_ptr<Var> var, Vec3 x); 
 
 };
 

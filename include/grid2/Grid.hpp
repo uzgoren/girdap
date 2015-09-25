@@ -160,7 +160,17 @@ public:
     cout << dt << " " << dx << " " << maxU << endl; 
   }
 
+  void setIntCoef() {
+    int_8 sum = 0; 
+    for (auto v : listVertex) {
+      if (v->setInterpCoef()) sum++; 
+    }
+    cout << "Set coef for " << sum << " vertices out of " << listVertex.size() << endl; 
+  }
+
   void makeFace() {
+    setIntCoef(); 
+
     listFace.clear(); 
     for (auto c : listCell)  
       c->face.clear(); 
@@ -275,7 +285,7 @@ public:
 
   VecX<double> getPhiVertex(shared_ptr<Var> phi) {
     VecX<double> val(listVertex.size()); 
-    for (auto i = 0; i<listVertex.size(); ++i) {
+    //    for (auto i = 0; i<listVertex.size(); ++i) {
       // double sum=0; double icnt = 0;  
       // for (auto j = 0; j < listVertex[i]->cell.size(); ++j) {
       // 	if (listVertex[i]->cell[j] < 0) continue; 
@@ -283,7 +293,11 @@ public:
       // 	sum = sum + phi->data[k]; 
       // 	++icnt; 
       // }
-      val[i] = listVertex[i]->phi(phi).eval(phi); //sum/icnt; 
+      //val[i] = listVertex[i]->phi(phi).eval(phi); //sum/icnt; 
+    for (auto v : listVertex) {
+      auto w = v->getIntWeight(); 
+      for (auto i = 0; i < v->cell.size() ; ++i) 
+	val[v->id] += w[i]*(phi->data[v->cell[i]]); 
     }
     return val; 
   }
