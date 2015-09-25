@@ -19,7 +19,6 @@
 #ifndef VERTEX
 #define VERTEX
 
-#include <linSolve/LinSys>
 #include <grid2/Scheme.hpp>
 
 // Classes to be define later, but needed
@@ -104,11 +103,9 @@ public:
   Scheme<double> phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias=0);  
   Scheme<double> phi(shared_ptr<Var> var, int_2 bias=0);  
    
-  void setXHat(); 
-  double triF(Vec3 xhat, VecX<double> &coef);
-  double triDer(Vec3 xhat, VecX<double> &coef, int_2 dir);
-  MatX<double> triJacob(Vec3 xhat);
-  void triNonLinSolve(Vec3 &xhat, Vec3 &x); 
+  void setInterpCoef(); 
+
+
 };
 
 #endif

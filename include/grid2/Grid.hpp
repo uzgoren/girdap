@@ -27,6 +27,8 @@
 #include <sstream>
 #include <fstream>
 
+
+#include <base/Interp.hpp>
 #include <field/Var>
 #include <grid2/Vertex>
 #include <grid2/Cell>
@@ -43,9 +45,6 @@ public:
   vector<shared_ptr<Cell > > listFace; 
   vector<shared_ptr<Var > > listVar;
 
-  // Matrix for bilinear coordinate transformation
-  MatX<double> AI; 
-
   //vector<shared_ptr<Boundary > > listBNDR; 
   shared_ptr<Var > thisVar; 
   double dt, dt0, cfl; 
@@ -53,13 +52,15 @@ public:
   int_8 nCellSize; 
   int nFace; 
 
+  Interp interp; // interpolation scheme
+
   int_2 levelLowBound[3], levelHighBound[3]; 
   int_2 levelMin[3], levelMax[3]; 
 
   double minD, maxD, meanD; 
   // vector<shared_ptr<BNDR> > 
 
-  Grid() { nCellSize = 0; for (auto i = 0; i<3; ++i) {levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5; }; setAI(); }
+  Grid() { nCellSize = 0; for (auto i = 0; i<3; ++i) {levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5; }; }
 
   Grid(initializer_list<initializer_list<double > > pts):Grid() {
     addVertex(pts);
@@ -76,18 +77,6 @@ public:
     // makeFace(); 
   }
 
-  // 00 Set transformation matrix; 
-  void setAI() { 
-    AI = { { 1, 0, 0, 0, 0, 0, 0, 0}, 
-	   {-1, 1, 0, 0, 0, 0, 0, 0},
-           {-1, 0, 0, 1, 0, 0, 0, 0},
-           {-1, 0, 0, 0, 1, 0, 0, 0},
-           { 1,-1, 1,-1, 0, 0, 0, 0},
-           { 1,-1, 0, 0,-1, 1, 0, 0},
-           { 1, 0, 0,-1,-1, 0, 0, 1},
-           {-1, 1,-1, 1, 1,-1, 1,-1} };
-  }
-  
   // Add vertex to the list; 
   void addVertex(Vec3 v) {
     listVertex.emplace_back( shared_ptr<Vertex>(new Vertex(v)) ); 
