@@ -10,11 +10,11 @@ C++ compiler that accepts C++11 standards
 
 ###COMPILE
 use "mk" script (tested on Linux and Mac) 
-
+<!--
 ###ACKNOWLEDGEMENT
 This work is part of a research project supported by a Marie Curie International Reintegration Grant within the 7th European Community Framework Programme.
 
-<!--
+
 #PRIORITIES:
 #1. Anisotropic mesh refinement for Quad/Hexa cells. 
 #2. Solution based adaptation criteria. 
