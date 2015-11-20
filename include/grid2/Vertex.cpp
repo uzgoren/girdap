@@ -191,7 +191,8 @@ bool Vertex::setInterpCoef() {
 	y[i] = tmp.y(); 
 	z[i] = tmp.z();
       } else {
-	// need to do something; 
+	// Set BC and coefficients and move on
+	
       }
     } else { 
       x[i] = x[i-4]; 
@@ -236,6 +237,13 @@ vector<double> Vertex::getIntWeight() {
   }
   return w; 
 }
+
+
+double Vertex::getPhi_TriLinear(VecX<double> phi, Boundary) {
+  auto w = getIntWeight();
+  double 
+}
+
   // for (auto i = 0; i < cell.size(); ++i) {
   //   if (cell[i] != cell[(i+cell.size()-1)%cell.size()]) { // remove duplicates; 
   //     auto x = grid->listGrid[i]->getCoord(); 

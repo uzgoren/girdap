@@ -42,7 +42,7 @@ int main() {
   auto ycoef = interp.getCoef(y); 
   auto zcoef = interp.getCoef(z); 
   
-  Vec3 pthat(1, 1, 1);
+  Vec3 pthat(0.7, 0.6, 1);
   Vec3 pt; 
   pt[0] = interp.linFunc(pthat, xcoef); 
   pt[1] = interp.linFunc(pthat, ycoef); 
