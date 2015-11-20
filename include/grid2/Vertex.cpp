@@ -174,6 +174,7 @@ Scheme<double> Vertex::phi(shared_ptr<Var> var, int_2 bias) {
 
 // -------------------------------------------------------------------------
 // @EU#9-21-2015: distance based interpolation (easiest thing possible)
+// @EU#11-20-2015: Linear interpolation (not that easy)
 // -------------------------------------------------------------------------
 bool Vertex::setInterpCoef() {
   // save some time by ommitting valid coefs during adaptation; 
@@ -191,8 +192,18 @@ bool Vertex::setInterpCoef() {
 	y[i] = tmp.y(); 
 	z[i] = tmp.z();
       } else {
-	// Set BC and coefficients and move on
-	
+	if (cell.size() == 4) {
+	  // Set BC and coefficients and move on
+	  if (cell[(i+1)%4] >= 0 && cell[(i+3)%4] >= 0) {
+	    // internal corner cell
+	  } else if (cell[(i+1)%4] >=0) {
+	    // flat boundary on (i+1)%4
+	  } else if (cell[(i+3)%4] >=0) {
+	    // flat boundary on (i+3)%4
+	  } else {
+	    // external corner cell
+	  } 
+	}
       }
     } else { 
       x[i] = x[i-4]; 
@@ -241,7 +252,7 @@ vector<double> Vertex::getIntWeight() {
 
 double Vertex::getPhi_TriLinear(VecX<double> phi, Boundary) {
   auto w = getIntWeight();
-  double 
+  double a; 
 }
 
   // for (auto i = 0; i < cell.size(); ++i) {
