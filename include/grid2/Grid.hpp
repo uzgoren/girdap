@@ -927,7 +927,8 @@ public:
       out << "SCALARS " << var->name << " float 1"<<endl; 
       out << "LOOKUP_TABLE default"<<endl; auto icnt = 0; 
       for (auto v: a->listVertex) {
-	auto val = v->phi(var).eval(var); 
+	//auto val = v->phi(var).eval(var); 
+	auto val=v->evalPhi(var); 
 	out << ((abs(val) < 1e-10) ? 0 : val) << endl; 
       }
       //auto d = a->getPhiVertex(v);

@@ -24,8 +24,8 @@
 #include <iomanip>
 
 #include <base/Interp.hpp>
-//#include <field/Var>
-//#include <grid2/Grid>
+#include <field/Var>
+#include <grid2/Grid>
 
 int main() {
   std::string flname; 
@@ -50,8 +50,37 @@ int main() {
   
   auto xhat = interp.findXhat(pt, xcoef, ycoef, zcoef); 
 
+  Grid* grid = new Block2({0, 0, 0}, {1, 1, 0}, 50, 50); 
+
+  // for (auto i = 0; i < grid->listVertex.size(); ++i) {
+  //   auto w = grid->listVertex[i]->getIntWeight(); 
+  //   double sum = 0; 
+  //   cout << i << " : "; 
+  //   for (auto v : w) { cout << v << ", "; sum += v; } 
+  //   cout << "= " <<sum << endl; 
+  // }
+
+  grid->addVar({"T"}); 
+  
+  auto T = grid->getVar("T");
+  T->setBC("west", "val", 0.8);
+  T->setBC("south", "val", 1); 
+  T->setBC("east", "val", -1); 
+  T->setBC("north", "val", -0.5); 
+  
+  double pi = 4.0*atan(1); 
+  for (auto i = 0; i < grid->listCell.size(); ++i) {
+    auto c = grid->listCell[i]; 
+    auto x = c->getCoord(); 
+    T->set(i, sin(x[0]*4*pi)*cos(x[1]*2*pi)); // + cos(x[0]*4*pi)*sin(x[1]*2*pi)); 
+  }
+
   cout << pt << endl; 
   cout << xhat << endl; 
+
+     myfile.open("grid.vtk"); 
+    myfile << grid << endl;
+    myfile.close(); 
 
   return 0; 
 }

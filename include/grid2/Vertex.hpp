@@ -65,6 +65,9 @@ public:
   Vertex(initializer_list<double> a) : Vec3( a ) {coefUpdate = true; }
   Vertex(Vec3 a) : Vec3(a) {coefUpdate = true;}
 
+  // 00 getCoord 
+  Vec3 getCoord() { return Vec3(*this); }
+
   // 01 RESET node's cell list
   void reset() {cell.clear(); coefUpdate = true;}
   // 01a RESET only one cell; 
@@ -102,13 +105,18 @@ public:
   // 06 interpolation scheme of a Field variable 
   Scheme<double> phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias=0);  
   Scheme<double> phi(shared_ptr<Var> var, int_2 bias=0);  
-   
+  
+  double evalPhi(shared_ptr<Var> &var);
+  double evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc); 
+ 
   bool setInterpCoef(); 
   vector<double> getIntWeight();
   vector<double> getIntWeight(Vec3 x); 
 
   double getIntVal(shared_ptr<Var> var); 
   double getIntVal(shared_ptr<Var> var, Vec3 x); 
+
+  
 
 };
 

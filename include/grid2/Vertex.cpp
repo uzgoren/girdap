@@ -183,6 +183,7 @@ bool Vertex::setInterpCoef() {
   // Form a CV and prepare for transformation; 
   VecX<double> x(8), y(8), z(8);
 
+  bool bndr = true; 
   // 1. GET CELL COORDINATES
   for (auto i=0; i<8; ++i) {
     if (i < cell.size()) {
@@ -195,13 +196,30 @@ bool Vertex::setInterpCoef() {
 	if (cell.size() == 4) {
 	  // Set BC and coefficients and move on
 	  if (cell[(i+1)%4] >= 0 && cell[(i+3)%4] >= 0) {
-	    // internal corner cell
+	    cout << "Vertex.cpp: Internal corner cell is not yet supported" << endl; 
+	    exit(1); 
+	    // internal corner cell //  Not yet supported !!
 	  } else if (cell[(i+1)%4] >=0) {
 	    // flat boundary on (i+1)%4
+	    auto n2 = *(*getCell((i+1)%4))->getVertex(i); 
+	    Vec3 tmp = 0.5*(this->getCoord() + n2->getCoord()); 
+	    x[i] = tmp.x(); 
+	    y[i] = tmp.y(); 
+	    z[i] = tmp.z(); 
+	    
 	  } else if (cell[(i+3)%4] >=0) {
 	    // flat boundary on (i+3)%4
+	    auto n2 = *(*getCell((i+3)%4))->getVertex(i); 
+	    Vec3 tmp = 0.5*(this->getCoord() + n2->getCoord()); 
+	    x[i] = tmp.x(); 
+	    y[i] = tmp.y(); 
+	    z[i] = tmp.z(); 
+
 	  } else {
 	    // external corner cell
+	    x[i] = this->x(); 
+	    y[i] = this->y(); 
+	    z[i] = this->z(); 
 	  } 
 	}
       }
@@ -212,7 +230,7 @@ bool Vertex::setInterpCoef() {
     }
   }
   
-  // 2. USE AI to calculate coefficients; 
+  // 2. USE AI to calculate its coefficients; 
   xcoef = grid->interp.getCoef(x); 
   ycoef = grid->interp.getCoef(y); 
   zcoef = grid->interp.getCoef(z);
@@ -249,10 +267,58 @@ vector<double> Vertex::getIntWeight() {
   return w; 
 }
 
+double Vertex::evalPhi(shared_ptr<Var> &var) {
+  return evalPhi(var->data, var->listBC);  
+}
 
-double Vertex::getPhi_TriLinear(VecX<double> phi, Boundary) {
+double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc) {
   auto w = getIntWeight();
-  double a; 
+  double a =0; 
+  for (auto j=0; j<w.size(); ++j) {
+    auto i = (j < cell.size()) ? j : j-4;  
+    if (cell[i] >= 0) {
+      a += w[i]*phi[cell[i]]; 
+    } else {
+      auto bndr = -cell[i]-1; 
+      double bcval=0; 
+      if (bc[bndr]->type == 0) {
+	if (cell.size() == 4) {       
+	  if (cell[(i+1)%4] >= 0 && cell[(i+3)%4] >= 0) {
+	  } else if (cell[(i+1)%4] >=0) {
+	    bcval = bc[bndr]->a_val*phi[cell[(i+1)%4]] + bc[bndr]->b_val; 
+	  } else if (cell[(i+3)%4] >=0) {
+	    bcval = bc[bndr]->a_val*phi[cell[(i+3)%4]] + bc[bndr]->b_val; 
+	  } else {
+	    bcval = bc[bndr]->a_val*phi[cell[(i+2)%4]] + bc[bndr]->b_val; 
+	  } 
+	}
+      } else if (bc[bndr]->type == 1) { 
+	if (cell.size() == 4) {
+	  if (cell[(i+1)%4] >= 0 && cell[(i+3)%4] >= 0) {
+	  } else if (cell[(i+1)%4] >=0) {
+	    auto cg = (*getCell((i+1)%4)); 
+	    auto n2 = *(cg->getVertex(i)); 
+	    auto dn = (0.5*(this->getCoord() + n2->getCoord()) - cg->getCoord()); 
+	    auto del = (bndr%2 == 0) ? -dn.abs() : dn.abs(); 	    	    
+	    bcval = (del*bc[bndr]->a_val+1.0)*phi[cell[(i+1)%4]] + del*bc[bndr]->b_val; 
+	  } else if (cell[(i+3)%4] >=0) {
+	    auto cg = (*getCell((i+3)%4)); 
+	    auto n2 = *(cg->getVertex(i)); 
+	    auto dn = (0.5*(this->getCoord() + n2->getCoord()) - cg->getCoord()); 
+	    auto del = (bndr%2 == 0) ? -dn.abs() : dn.abs(); 	    	    
+	    bcval = (del*bc[bndr]->a_val+1)*phi[cell[(i+3)%4]] + del*bc[bndr]->b_val; 
+	  } else {
+	    auto cg = (*getCell((i+2)%4));
+	    auto dn = this->getCoord() - cg->getCoord(); 
+	    auto del = (bndr%2 == 0) ? -dn.abs() : dn.abs();
+	    bcval = (del*bc[bndr]->a_val+1.0)*phi[cell[(i+2)%4]] + del*bc[bndr]->b_val; 
+	  } 
+	}
+      }
+      a += w[i]*bcval; 
+    }
+  } 
+  return a; 
 }
 
   // for (auto i = 0; i < cell.size(); ++i) {
