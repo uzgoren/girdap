@@ -42,7 +42,7 @@ A typical numerical simulation involve the following steps; <ol>
 <li>Write an output to screen/file</ol>
 <li>Exit</ol>
 
-girdap provides tools for each of the steps above. In addition, you can have as many grids and as many variables together governed by different set of equations; and interacting with each other. Such a flexibility allows developing various algorithms for fluid-structure interactions and multiphase flows. 
+girdap provides tools for each step above. In addition, you can have as many grids and as many variables together governed by different set of equations; and interacting with each other. Such a flexibility allows developing various algorithms for fluid-structure interactions and multiphase flows. 
 
 Furthermore, through a driver code (as main.cpp); one can add a custom source term or decide on how to linearize non-linear equations; or how to manage inner and outer loops; how to handle adaptation and many more. It is also possible to link 1D/2D domain with a 3D domain using interpolators between grids. Cell movements can be controlled as well. 
 
@@ -67,11 +67,13 @@ So a thin long rod interacting with 3D incompressible flow can be declared as fo
 <li>Write an output to screen/file</ol>
 <li>Exit</ol>
 
-####_What is grid adaptation and why is it in girdap?_
+For those who are familiar, this is quite similar to scripting in Matlab. 
+
+####_What is grid adaptation?_
 Grid adaptation is used in problem with multiple length scales; so that computational time is used wisely. Regions with less interaction handled with coarse resolution; and regions influence the field are handled with fine resolution. So automated grid handling is the key for accuracy and speed. 
 
 ####_How is grid adaptation handled?_
-It is based on splitting and merging two cells at a time. This leads to anisotropic grid refinement. Grid refinement is based on error estimation (before it is available). It is widely reported that indicators based on gradients do not produce quality mesh; and hence we use other indicators for refinement and coarsening. 
+It relies on splitting a cell into two and merging two neighboring cells. This leads to anisotropic grid refinement. Grid refinement is based on error estimation (before it is available). It is widely reported that indicators based on gradients do not produce quality mesh; and hence we use other indicators for refinement and coarsening. 
 
 At the moment, grid focuses on quad cells. While underlying structure for hexa, tri and tetra cells are available, automated adaptive grid refinement and coarsening is available for quad cells. These overall form the envelope of girdap’s skeleton. 
 
