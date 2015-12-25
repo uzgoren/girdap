@@ -27,6 +27,9 @@ Similar projects do exist. OpenFOAM is one example; and another one is FEniCS. P
 ####_What does girdap mean?_
 girdap is not an acronym. It means whirlpool in Turkish. 
 
+####_What operators are included?_
+Time derivative, divergence, gradient, Laplacian, and source terms can be defined for a differential equation. 
+
 ####_How can I install/use girdap?_
 You can retrieve the source code (written in c++ following c++11 standards) at github. You can see examples of main_*.cpp files under src directory so that you can compile and use it in the way you like. Use the script provided in the main directory to compile. Note that our focus is mainly on the development of girdap’s skeleton rather than its transportability so you may experience problems while compiling your first application. This is of course going to change with its first release. 
 
