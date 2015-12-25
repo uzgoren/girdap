@@ -13,19 +13,19 @@ use "mk" script (tested on Linux and Mac)
 
 ###FAQ -->
 ####_What is girdap?_
-girdap provides building blocks for numerical simulations of complex transport equations. Tools are built around a grid management platform connected to finite volume method based differential operators. girdap’s primary goals are (1) flexibility and (2) accuracy. 
+_girdap_ provides building blocks for numerical simulations of complex transport equations. Tools are built around a grid management platform connected to finite volume method based differential operators. girdap’s primary goals are (1) _flexibility_ and (2) _accuracy_. 
 
-Flexible tools allow researchers to develop new numerical algorithms and educators to teach students existing algorithms. Tools provided aim to shift programming focus more on physics and numerical method to avoid time consuming programming details. 
+Flexible tools allow <b>researchers</b> to develop new numerical algorithms and <b>educators</b> to teach students existing algorithms. Tools provided aim to shift programming focus more on physics and numerical method to avoid time consuming programming details. 
 
 The accuracy is handled by automated grid refinement and coarsening based on the solution field. 
 
-girdap does not target audiences who would like to get immediate results for an engineering project. It involves a numerical algorithm development phase. Those who would like to skip such a development can refer to a commercial CFD/multiphysics software. 
+_girdap_ does not target audiences who would like to get immediate results for an engineering project. It involves a numerical algorithm development phase. Those who would like to skip such a development can refer to a commercial CFD/multiphysics software. 
 
 ####_Isn’t this done before?_ 
-Similar projects do exist. OpenFOAM is one example; and another one is FEniCS. Please check them out. They are really good projects. girdap just offers another flavor. 
+Similar projects do exist. <a href=http://www.openfoam.org/>OpenFOAM</a> is one example; and another one is <a href=http:fenicsproject.org>FEniCS</a>. Please check them out. They are really good projects. girdap just offers another flavor. 
 
 ####_What does girdap mean?_
-girdap is not an acronym. It means whirlpool in Turkish. 
+_girdap_ is not an acronym. It means whirlpool in Turkish. 
 
 ####_What operators are included?_
 Time derivative, divergence, gradient, Laplacian, and source terms can be defined for a differential equation. 
@@ -45,7 +45,7 @@ A typical numerical simulation involve the following steps; <ol>
 <li>Write an output to screen/file</ol>
 <li>Exit</ol>
 
-girdap provides tools for each step above. In addition, you can have as many grids and as many variables together governed by different set of equations; and interacting with each other. Such a flexibility allows developing various algorithms for fluid-structure interactions and multiphase flows. 
+_girdap_ provides tools for each step above. In addition, you can have as many grids and as many variables together governed by different set of equations; and interacting with each other. Such a flexibility allows developing various algorithms for fluid-structure interactions and multiphase flows. 
 
 Furthermore, through a driver code (as main.cpp); one can add a custom source term or decide on how to linearize non-linear equations; or how to manage inner and outer loops; how to handle adaptation and many more. It is also possible to link 1D/2D domain with a 3D domain using interpolators between grids. Cell movements can be controlled as well. 
 
