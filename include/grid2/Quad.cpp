@@ -153,9 +153,14 @@ void Quad::refine(int dir) {
     return; 
   
   adapt[dir]--; level[dir]++;
+  (*(grid->listCell.rbegin()))->masterx.assign(masterx.begin(), masterx.end()); 
+  (*(grid->listCell.rbegin()))->mastery.assign(mastery.begin(), mastery.end()); 
+  (*(grid->listCell.rbegin()))->masterz.assign(masterz.begin(), masterz.end()); 
+
   if (dir == 0) masterx[level[dir]] = true; 
   if (dir == 1) mastery[level[dir]] = true; 
   if (dir == 2) masterz[level[dir]] = true; 
+
   (*(grid->listCell.rbegin()))->adapt.assign(adapt.begin(), adapt.end()); 
   (*(grid->listCell.rbegin()))->level.assign(level.begin(), level.end()); 
 }
@@ -201,7 +206,11 @@ void Quad::refine(int dir) {
 
 
 bool Quad::coarsen(int dir) {
-  if (adapt[dir] > -1) return false; 
+  if (adapt[dir] > -1) return false;
+  if (dir == 0)
+    if (!masterx[level[dir]]) return false; //cout << " should not see me -x" << endl; 
+  if (dir == 1)
+    if (!mastery[level[dir]]) return false; //cout << " should not see me -y" << endl; 
   // if (dir == 0) { 
   //   if (!masterx[level[0]]) return false;  
   // }
@@ -213,23 +222,40 @@ bool Quad::coarsen(int dir) {
   if (dir == 1) i0 = 2; 
   if (node[i0] < 0 || node[i0+1] < 0) return false; 
   vector<shared_ptr<Vertex> > v(node.size()); 
-  for (auto i = 0; i < node.size(); ++i) v[i] = (*getVertex(i)); 
+  for (auto i = 0; i < node.size(); ++i) v[i] = (*getVertex(i));
+  //--------------------------------------------------------------- 
+  // QUESTION: EU: Why do following block coarsening? Not clear----
+  // Check if the south cell is bigger
   if (v[(i0+3)%4]->cell[(i0+3)%4] >= 0 && (v[(i0+3)%4]->cell[(i0+3)%4] == v[(i0+3)%4]->cell[i0])) return false; 
+  // check if north cell is bigger; 
   if (v[(i0+2)%4]->cell[(i0+1)%4] >= 0 && (v[(i0+2)%4]->cell[(i0+1)%4] == v[(i0+2)%4]->cell[(i0+2)%4])) return false; 
-  
+  //----------------------------------------------------------------
+
+
+  // BOTH c0 and c1 points to east/north cells; 
   auto c0 = v[i0]->getCell((i0+1)%4); 
   auto c1 = v[(i0+1)%4]->getCell(i0); 
+  
+  if (c0 && ((*c0)->id == (*c1)->id)) {                             // if same level or larger
+    if ((*c0)->adapt[dir] >= 0) return false;                       // but not marked to be coarsened
+    if (level[(dir+1)%2] != (*c0)->level[(dir+1)%2]) return false;  // if not same level in other direction
+    if (level[dir] != (*c0)->level[dir]) return false;              // if not same level in the same direction
 
-  if (c0 && ((*c0)->id == (*c1)->id)) {
-      if ((*c0)->adapt[dir] >= 0) return false; 
-      if (level[(dir+1)%2] != (*c0)->level[(dir+1)%2]) return false; 
-      if (level[dir] != (*c0)->level[dir]) return false; 
+    // FROM this point there is only c0 (=c1) and compatible for merger
     vector<shared_ptr<Vertex> > nv(node.size()); 
     for (auto i = 0; i < (*c0)->node.size(); ++i) nv[i] = *(*c0)->getVertex(i); 
+    
+    // If next cell has a bigger cell in south
     if (nv[i0]->cell[(i0+3)%4]>=0 && (nv[i0]->cell[(i0+3)%4] == nv[i0]->cell[i0])) return false; 
+    // if next cell has a bigger cell in north
     if (nv[(i0+1)%4]->cell[(i0+1)%4]>=0 && (nv[(i0+1)%4]->cell[(i0+1)%4] == nv[(i0+1)%4]->cell[(i0+2)%4])) return false; 
+    
+    // if south has smaller face (higher level)
     if ((*c0)->hangingVertexOnFace((i0+3)%4) >= 0) return false; 
+    // if north has smaller faces (higher level)
     if ((*c0)->hangingVertexOnFace((i0+1)%4) >= 0) return false; 
+
+    // 
     if (hangingVertexOnFace((i0+3)%4) >=0 ) return false; 
     if (hangingVertexOnFace((i0+1)%4) >=0 ) return false; 
 
@@ -260,6 +286,9 @@ bool Quad::coarsen(int dir) {
     //     [d] this cell; 
     node[i0] = nv[i0]->id; 
     node[(i0+1)%4] = nv[(i0+1)%4]->id; 
+
+    if (dir == 0) masterx[level[dir]] = false; 
+    if (dir == 1) mastery[level[dir]] = false; 
 
     adapt[dir] = 0; 
     level[dir] -= 1; 

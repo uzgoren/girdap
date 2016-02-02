@@ -31,16 +31,9 @@ int main() {
   auto dt = 0.5; auto writeTime = 0.02; 
   auto t = clock(); 
   Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10);
-  //Block2* grid = new Block2({0, 0, 0}, {0.02, 0.02, 0}, 10, 1);
-  double time= 0; double endTime = 8; //dt*50; 
 
-  grid->addVar({"T"}); 
-    
+  grid->addVar({"T"});     
   auto T = grid->getVar("T");
-  T->setBC("west", "val", 0);
-  T->setBC("south", "val", 0); 
-  T->setBC("east", "val", 0); 
-  T->setBC("north", "val", 0); 
 
   auto u = grid->getVar("u"); 
   auto v = grid->getVar("v"); 
@@ -50,78 +43,54 @@ int main() {
   std::string flname;
 
   flname="heat"+std::to_string(filecnt++)+".vtk"; 
-  myfile.open(flname); 
-  myfile << grid << endl;
-  myfile.close();   
+  grid->writeAMRdata(flname); 
+  // myfile.open(flname); 
+  // myfile << grid << endl;
+  // myfile.close();   
+  int ref = 5; 
 
-  double pi = 4.0*atan(1);
-  for (auto k = 0; k < 60; ++k) {
-  for (auto j0 = 0; j0 < 6; ++j0) {
+  double pi = 4.0*atan(1); 
+  for (auto j0 = 0; j0 < ref; ++j0) {
     for (auto i = 0; i < grid->listCell.size(); ++i) {
-      auto xc = 0.5 + 0.25*cos(pi/2 - k*pi/60); 
-      auto yc = 0.5 + 0.25*sin(pi/2 - k*pi/60); 
-      auto r = (grid->listCell[i]->getCoord() - Vec3(xc, yc)).abs(); 
+      auto r = (grid->listCell[i]->getCoord() - Vec3(0.5, 0.75)).abs(); 
       T->set(i, 1.0/(1.0 + exp(-2.0*80*(0.15-r)))); 
     }
     auto err = grid->getError(T); 
     u->set(err.comp(0));
     v->set(err.comp(1)); 
 
-    flname="heat"+std::to_string(filecnt++)+".vtk"; 
-    myfile.open(flname); 
-    myfile << grid << endl;
-    myfile.close();     
-
-    //    auto gt = grid->valGrad(T); 
     grid->solBasedAdapt2(err);
 
     flname="heat"+std::to_string(filecnt++)+".vtk"; 
-    myfile.open(flname); 
-    myfile << grid << endl;
-    myfile.close();     
+    grid->writeAMRdata(flname); 
+    // myfile.open(flname); 
+    // myfile << grid << endl;
+    // myfile.close();     
 
     grid->adapt(); 
 
     // // write file
     flname="heat"+std::to_string(filecnt++)+".vtk"; 
-    myfile.open(flname); 
-    myfile << grid << endl;
-    myfile.close();     
+    grid->writeAMRdata(flname); 
+    // myfile.open(flname); 
+    // myfile << grid << endl;
+    // myfile.close();     
   } 
 
-  // for (auto j0 = 0; j0 < 5; ++j0) {
-  //   for (auto i = 0; i < grid->listCell.size(); ++i) {
-  //     auto r = (grid->listCell[i]->getCoord() - Vec3(0.75, 0.5)).abs(); 
-  //     T->set(i, 1.0/(1.0 + exp(-2.0*80*(0.15-r)))); 
-  //   }
-  //   auto err = grid->getError(T); 
-  //   u->set(err.comp(0));
-  //   v->set(err.comp(1)); 
+  for (auto j0 = 0; j0 < ref; ++j0) {
+    for (auto i = 0; i < grid->listCell.size(); ++i) {
+      auto c = grid->listCell[i]; 
+      if (c->level[0] > 0) c->adapt[0]=-1; 
+      if (c->level[1] > 0) c->adapt[1]=-1; 
+    }
+    grid->adapt(); 
 
-  //   flname="heat"+std::to_string(filecnt++)+".vtk"; 
-  //   myfile.open(flname); 
-  //   myfile << grid << endl;
-  //   myfile.close();     
-
-  //   //    auto gt = grid->valGrad(T); 
-  //   grid->solBasedAdapt2(err);    
-
-  //   // // write file
-  //   flname="heat"+std::to_string(filecnt++)+".vtk"; 
-  //   myfile.open(flname); 
-  //   myfile << grid << endl;
-  //   myfile.close();     
-
-  //   grid->adapt(); 
-
-  //   flname="heat"+std::to_string(filecnt++)+".vtk"; 
-  //   myfile.open(flname); 
-  //   myfile << grid << endl;
-  //   myfile.close();     
-
-
-  // } 
-  }
+    flname="heat"+std::to_string(filecnt++)+".vtk"; 
+    grid->writeAMRdata(flname); 
+    // myfile.open(flname); 
+    // myfile << grid << endl;
+    // myfile.close();     
+  } 
 
   delete(grid); 
 

@@ -969,6 +969,42 @@ public:
     return out;
   }
  
+  void writeAMRdata(std::string a = "amr.vtk") {
+    auto nCell = listCell.size(); 
+    ofstream out; 
+    out.open(a); 
+    out << "# vtk DataFile Version 2.0" << endl; 
+    out << "Unstructure Grid" << endl; 
+    out << "ASCII"<< endl; 
+    out << endl << "DATASET UNSTRUCTURED_GRID"<< endl; 
+    out << "POINTS " << listVertex.size() << " float" << endl; 
+    for (auto p = vbegin(); p != vend(); ++p) {
+      out << **p <<  endl ; 
+    }
+    out << endl << "CELLS "<< nCell << " " << nCell*5 << endl; 
+    for (auto c: listCell) 
+      if (c->isAlive) out << c; 
+  
+    out << endl << "CELL_TYPES " << nCell <<endl; 
+    for (auto c: listCell) 
+      if (c->isAlive) out << c->getType() << endl; 
+
+    out << endl << "CELL_DATA " << nCell << endl; 
+    out << "SCALARS master_x float 1"<<endl; 
+    out << "LOOKUP_TABLE default"<<endl; 
+    for (auto c: listCell) 
+      if (c->isAlive) out << (c->masterx[c->level[0]]?1:0) << endl; 
+    out << endl; 
+
+    out << "SCALARS master_y float 1"<<endl; 
+    out << "LOOKUP_TABLE default"<<endl; 
+    for (auto c: listCell) 
+      if (c->isAlive) out << (c->mastery[c->level[1]]?1:0) << endl; 
+
+    out <<endl;
+    out.close(); 
+  }
+
   
   void writeFace(std::string a = "face.vtk") { 
     ofstream out; 

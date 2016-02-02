@@ -40,11 +40,12 @@ public:
   vector<int_2> level; 
   vector<int_2> adapt; 
   vector<bool> masterx, mastery, masterz; 
+  bool cmx, cmy, cmz; 
     
   Cell(initializer_list<int_8> l, initializer_list<int_2> a={0,0,0}) { 
     node.assign(l.begin(), l.end()); 
     level.assign(a.begin(), a.end());
-    adapt.assign(3, 0); 
+    adapt.assign(3, 0);     
     next = -1; prev = -1; 
     isAlive = true; 
   }
