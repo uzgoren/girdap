@@ -1,3 +1,7 @@
 @11-20-2015: EU : Internal corner cells are not yet supported (see Vertex.cpp)
                   Boundary cells are defined for only quad in Vertex.cpp
                   -- This can be extended through a new virtual function (in Cells)
+@2-2-2016: EU : * Grid coarsening algorithm with master cell approach is 
+                  working with some exceptions (needs to be investigated)
+                * Level set (vortex stretching) is now producing better results
+
