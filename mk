@@ -1,5 +1,5 @@
 #! /bin/sh
-SOURCES='src/main_ls.cpp 
+SOURCES='src/main_lsp.cpp 
            include/field/Var.cpp
            include/grid2/Cell.cpp
            include/grid2/Quad.cpp
