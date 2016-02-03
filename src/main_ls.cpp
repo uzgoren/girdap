@@ -127,27 +127,27 @@ int main() {
     grid->unlockBC(); 
 
     // remove over-shoot and undershoot
-    // for (auto i = 0; i < grid->listCell.size(); ++i) { 
-    //   T->set(i, min(T->get(i)+1e-4, 1.0));
-    //   T->set(i, max(T->get(i)-1e-4, 0.0)); 
-    // }
+    //    for (auto i = 0; i < grid->listCell.size(); ++i) { 
+    //}
 
     mass=0; double part=0; 
     for (auto i=0; i < grid->listCell.size(); ++i) {
       double vol = grid->listCell[i]->vol().abs();
-      T->set(i, max(min(T->get(i)+1e-5, 1.0), 0.0)); 
+      //      T->set(i, max(min(T->get(i)+1e-5, 1.0), 0.0)); 
+      T->set(i, min(T->get(i)+1e-4, 1.0));
+      T->set(i, max(T->get(i)-1e-4, 0.0)); 
       double Tval = T->get(i); 
       mass += vol*Tval;
       if (Tval > 0) part += vol; 
     }
 
-    double corr = (mass - mass0)/part; mass = 0; 
-    for (auto i=0; i < grid->listCell.size(); ++i) { 
-      double vol = grid->listCell[i]->vol().abs();
-      if (T->get(i) > 0) 
-	T->set(i, max(min(T->get(i)+corr*vol, 1.0), 0.0)); 
-      mass += vol*T->get(i); 
-    }
+    // double corr = (mass - mass0)/part; mass = 0; 
+    // for (auto i=0; i < grid->listCell.size(); ++i) { 
+    //   double vol = grid->listCell[i]->vol().abs();
+    //   if (T->get(i) > 0) 
+    // 	T->set(i, max(min(T->get(i)+corr*vol, 1.0), 0.0)); 
+    //   mass += vol*T->get(i); 
+    // }
 	     
     
     //    auto gt = grid->valGrad(T); 
