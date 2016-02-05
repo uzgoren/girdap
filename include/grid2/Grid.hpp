@@ -45,6 +45,8 @@ public:
   vector<shared_ptr<Cell > > listFace; 
   vector<shared_ptr<Var > > listVar;
 
+  vector<bool> selectCell; 
+
   //vector<shared_ptr<Boundary > > listBNDR; 
   shared_ptr<Var > thisVar; 
   double dt, dt0, cfl; 
@@ -110,7 +112,8 @@ public:
   // // //Add cell to the list
   void addCell(initializer_list<int_8 > l) {    
     if (l.size() == 2) {
-  //     //listCell.emplace_back(shared_ptr<Cell > (new Line(tmp)) );
+      listCell.emplace_back( shared_ptr<Cell > (new Line(l)) ); 
+ //     //listCell.emplace_back(shared_ptr<Cell > (new Line(tmp)) );
     } else if (l.size() == 3) {
   //     //listCell.emplace_back(shared_ptr<Cell > (new Tri(tmp)) ); 
     } else if (l.size() == 4) {
@@ -126,7 +129,12 @@ public:
     c->id = listCell.size()-1;
     c->grid = this; 
     c->assignCelltoNode();
-    for (auto v: listVar) {v->data.push_back(0); v->data.uncompress(); }
+    for (auto v: listVar) {
+      if (v->loc == 0) {
+	v->data.push_back(0); 
+	v->data.uncompress();
+      }
+    }
     c->masterx.resize(levelHighBound[0]+1, false); 
     c->mastery.resize(levelHighBound[1]+1, false); 
     c->masterz.resize(levelHighBound[2]+1, false); 
@@ -911,13 +919,22 @@ public:
     for (auto p = a->vbegin(); p != a->vend(); ++p) {
       out << **p <<  endl ; 
     }
-    out << endl << "CELLS "<< nCell << " " << nCell*5 << endl; 
-    for (auto c = a->cbegin(); c != a->cend(); ++c) {
-      if ((*c)->isAlive) out << *c ; 
-   }
-    out << endl << "CELL_TYPES " << nCell <<endl; 
-    for (auto c = a->cbegin(); c != a->cend(); ++c) {
-      if ((*c)->isAlive) out << (*c)->getType() << endl; 
+    if (nCell > 0) {
+      out << endl << "CELLS "<< nCell << " " << nCell*5 << endl; 
+      for (auto c = a->cbegin(); c != a->cend(); ++c) {
+	if ((*c)->isAlive) out << *c ; 
+      }
+      out << endl << "CELL_TYPES " << nCell <<endl; 
+      for (auto c = a->cbegin(); c != a->cend(); ++c) {
+	if ((*c)->isAlive) out << (*c)->getType() << endl; 
+      }
+    } else {
+      out << endl << "CELLS "<< a->listVertex.size() << " " << a->listVertex.size()*2 << endl; 
+      for (auto i = 0; i < a->listVertex.size(); ++i) 
+        out << "1 "<< i<< endl; 
+    
+      out << endl << "CELL_TYPES " << a->listVertex.size() <<endl; 
+      for (auto i = 0; i < a->listVertex.size(); ++i) out << "1 "<< endl; 
     }
     out << endl << "POINT_DATA " << a->listVertex.size() << endl;
     for (auto i = 3; i < a->listVar.size(); ++i) {
@@ -928,7 +945,11 @@ public:
       out << "LOOKUP_TABLE default"<<endl; auto icnt = 0; 
       for (auto v: a->listVertex) {
 	//auto val = v->phi(var).eval(var); 
-	auto val=v->evalPhi(var); 
+	double val = 0; 
+	if (var->loc == 0) 
+	  val=v->evalPhi(var); 
+	else if (var->loc == 1) 
+	  val=var->get(v->id); 
 	out << ((abs(val) < 1e-10) ? 0 : val) << endl; 
       }
       //auto d = a->getPhiVertex(v);
@@ -937,9 +958,11 @@ public:
       //	out << *s << " "; ++icnt; }
       out << endl; 
     }
-    auto v = a->getVelVertex();
-    out << "VECTORS vel float" << endl; 
-    for (auto i = 0; i<v.size(); ++i) out << float(v[i][0]) << " " << float(v[i][1]) << " " << float(v[i][2]) << endl;
+    if (a->listCell.size() > 0) {
+      auto v = a->getVelVertex();
+      out << "VECTORS vel float" << endl; 
+      for (auto i = 0; i<v.size(); ++i) out << float(v[i][0]) << " " << float(v[i][1]) << " " << float(v[i][2]) << endl;
+    }
 
     // extra -remove
     // out << endl << "CELL_DATA " << nCell << endl;
@@ -1046,6 +1069,137 @@ public:
     //   if (f) out << f->prev << endl; 
   }
 
+  Grid* contour(shared_ptr<Var> &a, double d) {
+    Grid* cGrid = new Grid(); 
+  
+    // Cell by cell construction
+    // For each cell create elements for the new grid
+    // Check before surface is needed; 
+
+    double val[listVertex.size()]; 
+    int_8 connect[listFace.size()]; 
+    vector<bool> color(listCell.size(), false); 
+
+    vector<int_8> connectCell;
+    vector<vector<int_8> > connectCellNodeList(listCell.size(), vector<int_8>(8,-1)); 
+    
+    
+    // 00. construct values at vertex; 
+    for (auto i = 0; i < listVertex.size(); ++i) {
+      val[i] = listVertex[i]->evalPhi(a); 
+    }
+    
+    // 01. Create vertices at faces; assign them to a cell;
+    for (auto f : listFace) {
+      auto v0 = f->node[0]; 
+      auto v1 = f->node[1];
+
+      if ((val[v0] - d)*(val[v1] - d) <= 0) { // check whether contour exists 
+    	auto y = (d - val[v0])/(val[v1] - val[v0]); 
+    	auto dr = *listVertex[v1] - *listVertex[v0]; 
+    	auto x = *listVertex[v0] + y*dr; 
+    	cGrid->addVertex(x); // add a marker on the vertex; 
+	int_8 inew = cGrid->listVertex.size()-1; 
+
+	auto n = f->next; 
+	auto p = f->prev; 
+	
+	// Create a link between 
+	// Divide cells' edges into two halves and name them 
+	// Quad:0-7;  Line:0-1; Tri:0-5; [Hexa:0-41 ??;]
+	int nloc, ploc; 
+	if (n >= 0) {	  
+	  auto cn = listCell[n];
+	  //	  if (color[n]) continue; 
+	  //	  vector<int_8> tmp(8, -1); 
+	  if (f->orient == 0) nloc = (cn->node[0] == v0) ? 0 : 1; 
+	  else if (f->orient == 1) nloc = (cn->node[3] == v1) ? 6 : 7; 
+	  else continue; 
+	  //	  tmp[nloc] = inew; 	 
+	  if (!color[n]) connectCell.push_back(n);
+	  connectCellNodeList[n][nloc] = inew; 
+	  color[n] = true; 
+	}
+	if (p >= 0) {	  
+	  auto cn = listCell[p]; 
+	  //if (color[p]) continue; 
+	  //vector<int_8> tmp(8, -1); 
+	  if (f->orient == 0) ploc = (cn->node[2] == v1) ? 4 : 5; 
+	  else if (f->orient == 1) ploc = (cn->node[1] == v0) ? 2 : 3; 
+	  else continue; 	 
+	  //tmp[ploc] = inew; 
+	  if (!color[p]) connectCell.push_back(p);
+	  connectCellNodeList[p][ploc] = inew; 
+	  color[p] = true; 
+	}	
+      }      
+    }
+
+    // // 02. check cells through nodes; 
+    for (auto ic = 0; ic < connectCell.size(); ++ic) {
+      auto i = connectCell[ic]; 
+      if (!listCell[i]->isAlive) continue;
+      int_8 j0 = 0; 
+      for (int_8 k = 0; k < connectCellNodeList[i].size()-1; ++k) {
+	int_8 j1 = -1; 
+    	if (connectCellNodeList[i][k] < 0) {continue;}
+    	for (int_8 j = 1; j < connectCellNodeList[i].size(); ++j) {
+    	  j1 = (k + j) % 8;
+    	  if (connectCellNodeList[i][j1] >= 0) {
+	    if (val[listCell[i]->node[j0]] > d) 
+	      cGrid->addCell({connectCellNodeList[i][k], connectCellNodeList[i][j1]}); 
+	    else
+	      cGrid->addCell({connectCellNodeList[i][j1], connectCellNodeList[i][k]}); 
+    	    break; 
+    	  } 
+    	} 
+	if (j1 == j0) break; 
+	k = j1;
+      }
+    }
+
+    cGrid->addVar("u",1); 
+    cGrid->addVar("v",1); 
+    cGrid->addVar("w",1); 
+
+    cGrid->addVar("dummy",1); 
+    
+    cGrid->addVar("nx", 1);
+    cGrid->addVar("ny", 1);
+    cGrid->addVar("nz", 1);   
+        
+    return cGrid; 
+  }
+  
+  
+  int_8 searchNodebyCoords(Vec3 a, int_8 i0=0) {
+    if (listVertex.size() <= i0 && i0 >= 0) {
+      cout << "Initial vertex do not exists" << endl; 
+      exit(-1); 
+    }
+    auto v = listVertex[i0]; 
+    shared_ptr<Vertex >* tmp; 
+    while (v) {
+      auto xhat = interp.findXhat(a, v->xcoef, v->ycoef, v->zcoef);  
+      if (v->cell.size() == 4) {
+	// check whether v's interp domain contains;       
+	if (xhat[0] > 1) tmp = (v->ngbr(1)); 
+	else if (xhat[0] < 0) tmp = (v->ngbr(-1)); 
+	else if (xhat[1] > 1) tmp = (v->ngbr(2)); 
+	else if (xhat[1] < 0) tmp = (v->ngbr(-2)); 
+	else break; 
+	if (tmp) v = *tmp; 
+	else return -1; 
+      }
+    }
+    return v->id;     
+  }
+
+  // int_8 searchNodebyVal() {
+    
+  // }
+
+
   vector<shared_ptr<Vertex > >::iterator vbegin() { return listVertex.begin(); }
   vector<shared_ptr<Vertex > >::iterator vend() {return listVertex.end(); }
   
@@ -1078,6 +1232,10 @@ public:
     cout << " Faces: " << nFace << endl; 
     addVar({"u", "v", "w"});
   }
+
+  
+
+
 }; 
 
 

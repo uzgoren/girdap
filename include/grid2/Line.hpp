@@ -26,6 +26,9 @@ public:
   Line(initializer_list<int_8> l):Cell(l) {
     setType(3); 
   }
+
+  void assignCelltoNode(); 
+
   Vec3 vol() { 
     Vec3 a = edge(); 
     return Vec3(-a.data[1], a.data[0], 0); 

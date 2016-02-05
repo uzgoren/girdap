@@ -243,36 +243,40 @@ bool Vertex::setInterpCoef() {
   return true; 
 }
 
-vector<double> Vertex::getIntWeight() {
+vector<double> Vertex::getIntWeight(Vec3* x) {
   if (coefUpdate) {
     cout << "Error: Coefficients are not yet computed! " << id << endl;
     exit(1);
   }
+  Vec3 xhattmp; 
+  if (x) xhattmp = grid->interp.findXhat(*x, xcoef, ycoef, zcoef);  
+  else xhattmp = xhat; 
+ 
   vector<double> w(cell.size(), 0);
-  w[0] = (1-xhat.x())*(1-xhat.y())*(1-xhat.z()); 
-  w[1] = xhat.x()*(1-xhat.y())*(1-xhat.z()); 
-  w[2] = xhat.x()*xhat.y()*(1-xhat.z()); 
-  w[3] = (1-xhat.x())*xhat.y()*(1-xhat.z()); 
+  w[0] = (1-xhattmp.x())*(1-xhattmp.y())*(1-xhattmp.z()); 
+  w[1] = xhattmp.x()*(1-xhattmp.y())*(1-xhattmp.z()); 
+  w[2] = xhattmp.x()*xhattmp.y()*(1-xhattmp.z()); 
+  w[3] = (1-xhattmp.x())*xhattmp.y()*(1-xhattmp.z()); 
   if (cell.size() == 8) {
-    w[4] = (1-xhat.x())*(1-xhat.y())*xhat.z(); 
-    w[5] = xhat.x()*(1-xhat.y())*xhat.z(); 
-    w[6] = xhat.x()*xhat.y()*xhat.z(); 
-    w[7] = (1-xhat.x())*xhat.y()*xhat.z(); 
+    w[4] = (1-xhattmp.x())*(1-xhattmp.y())*xhattmp.z(); 
+    w[5] = xhattmp.x()*(1-xhattmp.y())*xhattmp.z(); 
+    w[6] = xhattmp.x()*xhattmp.y()*xhattmp.z(); 
+    w[7] = (1-xhattmp.x())*xhattmp.y()*xhattmp.z(); 
   } else {
-    w[0] += (1-xhat.x())*(1-xhat.y())*xhat.z(); 
-    w[1] += xhat.x()*(1-xhat.y())*xhat.z(); 
-    w[2] += xhat.x()*xhat.y()*xhat.z(); 
-    w[3] += (1-xhat.x())*xhat.y()*xhat.z(); 
+    w[0] += (1-xhattmp.x())*(1-xhattmp.y())*xhattmp.z(); 
+    w[1] += xhattmp.x()*(1-xhattmp.y())*xhattmp.z(); 
+    w[2] += xhattmp.x()*xhattmp.y()*xhattmp.z(); 
+    w[3] += (1-xhattmp.x())*xhattmp.y()*xhattmp.z(); 
   }
   return w; 
 }
 
-double Vertex::evalPhi(shared_ptr<Var> &var) {
-  return evalPhi(var->data, var->listBC);  
+double Vertex::evalPhi(shared_ptr<Var> &var, Vec3* x) {
+  return evalPhi(var->data, var->listBC, x);  
 }
 
-double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc) {
-  auto w = getIntWeight();
+double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc=vector<shared_ptr<Boundary> >(6, shared_ptr<Boundary>(new Boundary())), Vec3* x) {
+  auto w = getIntWeight(x);
   double a =0; 
   for (auto j=0; j<w.size(); ++j) {
     auto i = (j < cell.size()) ? j : j-4;  

@@ -18,6 +18,16 @@
 */
 #include "Grid.hpp" 
 
+void Line::assignCelltoNode() {
+  // check size first; if this is the first time assign only current nodes; 
+  for (int_2 i = 0; i<2; ++i) {
+    if (auto v = getVertex(i)) {  
+      if ((*v)->cell.size() != 2) (*v)->reset(2); 
+      (*v)->replaceCell(int(i+1)%2, id); 
+    }
+  }
+}
+
 // Vec3 Line::grad(shared_ptr<Var > phi) {
 //   auto c0 = (prev>=0) ? &(**(grid->listCell.begin() + prev)) : this; 
 //   auto c1 = (next>=0) ? &(**(grid->listCell.begin() + next)) : this; 
