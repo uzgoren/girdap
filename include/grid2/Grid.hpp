@@ -911,6 +911,7 @@ public:
     // 	a->nCellSize += a->listCell[i]->node.size() + 1; 
     //   }
     // }
+   int t = a->listCell[0]->node.size()+1;
     out << "# vtk DataFile Version 2.0" << endl; 
     out << "Unstructure Grid" << endl; 
     out << "ASCII"<< endl; 
@@ -920,7 +921,7 @@ public:
       out << **p <<  endl ; 
     }
     if (nCell > 0) {
-      out << endl << "CELLS "<< nCell << " " << nCell*5 << endl; 
+      out << endl << "CELLS "<< nCell << " " << nCell*t << endl; 
       for (auto c = a->cbegin(); c != a->cend(); ++c) {
 	if ((*c)->isAlive) out << *c ; 
       }
@@ -1093,13 +1094,18 @@ public:
     for (auto f : listFace) {
       auto v0 = f->node[0]; 
       auto v1 = f->node[1];
+            
+      auto dp = d;
+      if (abs(val[v0] - dp) < 1e-15) dp = d - 1e-14; 
+      if (abs(val[v1] - dp) < 1e-15) dp = d - 1e-14; 
 
-      if ((val[v0] - d)*(val[v1] - d) <= 0) { // check whether contour exists 
-    	auto y = (d - val[v0])/(val[v1] - val[v0]); 
+      if ((val[v0] - dp)*(val[v1] - dp) < 0) { // || (abs(val[v0]-d) < 1e-15) || (abs(val[v1]-d) < 1e-15)) { // check whether contour exists 
+    	auto y = (dp - val[v0])/(val[v1] - val[v0]); 
     	auto dr = *listVertex[v1] - *listVertex[v0]; 
     	auto x = *listVertex[v0] + y*dr; 
     	cGrid->addVertex(x); // add a marker on the vertex; 
 	int_8 inew = cGrid->listVertex.size()-1; 
+	
 
 	auto n = f->next; 
 	auto p = f->prev; 
@@ -1134,28 +1140,47 @@ public:
 	}	
       }      
     }
+    cout << connectCell.size( ) << endl; 
+    for (auto ic = 0; ic < connectCell.size(); ++ic) {
+      auto i = connectCell[ic]; auto sum = 0; 
+      for (auto jc = 0; jc<connectCellNodeList[i].size(); ++jc) {
+	if (connectCellNodeList[i][jc] < 0) continue; 
+	++sum; 
+      }
+      if (sum == 2) continue; 
+      cout << ic << " " << i << " " << sum << endl; 
+    }
+    cout << endl; 
 
     // // 02. check cells through nodes; 
     for (auto ic = 0; ic < connectCell.size(); ++ic) {
       auto i = connectCell[ic]; 
       if (!listCell[i]->isAlive) continue;
-      int_8 j0 = 0; 
-      for (int_8 k = 0; k < connectCellNodeList[i].size()-1; ++k) {
-	int_8 j1 = -1; 
-    	if (connectCellNodeList[i][k] < 0) {continue;}
-    	for (int_8 j = 1; j < connectCellNodeList[i].size(); ++j) {
-    	  j1 = (k + j) % 8;
-    	  if (connectCellNodeList[i][j1] >= 0) {
-	    if (val[listCell[i]->node[j0]] > d) 
+      int_8 j0 = 0, j1 = 0;
+      //     while (j1 <connectCellNodeList[i].size()-1) {
+	int_8 k; 
+	for (k = j1; k < connectCellNodeList[i].size()-1; ++k) 
+	  if (connectCellNodeList[i][k] >= 0) break;
+	if (k >= connectCellNodeList[i].size()) continue;       
+	
+	for (j1 = k+1; j1 < connectCellNodeList[i].size(); ++j1) {
+	  //	j1 = (k + j) % 8;
+	  //cout << k << " " << j << " " << j1 << " " << j0 << endl; 
+	  if (connectCellNodeList[i][j1] >= 0) {
+	    if (val[listCell[i]->node[j0]] >= d) 
 	      cGrid->addCell({connectCellNodeList[i][k], connectCellNodeList[i][j1]}); 
 	    else
 	      cGrid->addCell({connectCellNodeList[i][j1], connectCellNodeList[i][k]}); 
-    	    break; 
-    	  } 
-    	} 
-	if (j1 == j0) break; 
-	k = j1;
-      }
+	    break; 
+	  } 
+	} 
+	 // if (j1 >= connectCellNodeList[i].size()) {
+	 //   cout << "Couldnot find proper match with " << k << "- skipping" << endl; 
+	 //   continue; 
+	 // }
+	 // }
+      //      k = j1;
+	//cin.ignore().get(); 
     }
 
     cGrid->addVar("u",1); 
@@ -1172,7 +1197,7 @@ public:
   }
   
   
-  int_8 searchNodebyCoords(Vec3 a, int_8 i0=0) {
+  int_8 searchVertexbyCoords(Vec3 a, int_8 i0=0) {
     if (listVertex.size() <= i0 && i0 >= 0) {
       cout << "Initial vertex do not exists" << endl; 
       exit(-1); 
@@ -1195,9 +1220,18 @@ public:
     return v->id;     
   }
 
-  // int_8 searchNodebyVal() {
-    
-  // }
+  int_8 searchCellbyCoords(Vec3 a, int_8 i0=0) {
+    auto j0 = listCell[i0]->node[0]; 
+    auto vi = searchVertexbyCoords(a, j0); 
+    if (vi < 0) return -1; 
+    auto v = listVertex[vi]; 
+    auto xhat = interp.findXhat(a, v->xcoef, v->ycoef, v->zcoef); 
+    if (xhat[0] <= 0.5 && xhat[1] <= 0.5) return v->cell[0];
+    else if (xhat[0] > 0.5 && xhat[1] <= 0.5) return v->cell[1];
+    else if (xhat[0] > 0.5 && xhat[1] > 0.5) return v->cell[2]; 
+    else if (xhat[0] <= 0.5 && xhat[1] > 0.5) return v->cell[3];
+    else return v->cell[0]; 
+  }
 
 
   vector<shared_ptr<Vertex > >::iterator vbegin() { return listVertex.begin(); }

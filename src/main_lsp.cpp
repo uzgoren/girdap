@@ -51,7 +51,8 @@ int main() {
   T->solver = "Gauss"; 
   
   T->set(0); 
-    double pi = 4.0*atan(1); 
+  double pi = 4.0*atan(1);
+  T->setBC("south", "grad", 0.5);
   
   for (auto j = 0; j < 5; ++j) {
     for (auto i = 0; i < grid->listCell.size(); ++i) {
@@ -59,9 +60,14 @@ int main() {
       u->set(i, -2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0]));
       v->set(i, 2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1])); 
 
-      auto r = (grid->listCell[i]->getCoord() - Vec3(0.5, 0.75)).abs(); 
+      auto r = (x - Vec3(0.5, 0.75)).abs(); 
 
       T->set(i, 1.0/(1.0 + exp(-2.0*80*(0.15-r)))); 
+      r = (x - Vec3(0.5, 0.05)).abs(); 
+      T->set(i, max(0.0, min(1.0, T->get(i) + 1.0/(1.0 + exp(-2.0*80*(0.15-r))))));
+      if (x[0] >= 0.8 && x[1] >= 0.4 && x[1] <= 0.6) 
+       	T->set(i, max(0.0, min(1.0, T->get(i)+1.0)));
+      
     }
     //int = grid->contour(T, 0.5); 
     grid->solBasedAdapt2(grid->getError(T));
