@@ -35,8 +35,25 @@ void Grid::addVar(std::string n, int t) {
     cout << "Skipping " << n << " as it exists"<< endl; 
 } 
 
-void Grid::addVar(initializer_list<std::string> nl) {
-  for (auto n: nl) addVar(n); 
+void Grid::addVar(initializer_list<std::string> nl, int t) {
+  for (auto n: nl) addVar(n, t); 
+}
+
+void Grid::addVec(std::string n, int t) {
+  if (n == "u") {
+    addVar({"u", "v", "w"}, t); 
+    getVar("u")->isVec = true; 
+    getVar("v")->isVec = true; 
+    getVar("w")->isVec = true; 
+  } else {
+    addVar(n+"x", t); getVar(n+"x")->isVec = true;  
+    addVar(n+"y", t); getVar(n+"y")->isVec = true;  
+    addVar(n+"z", t); getVar(n+"z")->isVec = true;  
+  }
+}
+
+void Grid::addVec(initializer_list<std::string> nl, int t) {
+  for (auto n: nl) addVec(n, t); 
 }
 
 shared_ptr<Var> Grid::getVar(std::string n) { 

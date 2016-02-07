@@ -33,12 +33,15 @@
 #include <grid2/Vertex>
 #include <grid2/Cell>
 
-class LinSys;  
+class LinSys; 
 
 //class Vertex; 
 //class Var; 
 
 class Grid {
+private:
+  unsigned int filecnt; 
+
 public:
   vector<shared_ptr<Vertex > > listVertex; 
   vector<shared_ptr<Cell > > listCell; 
@@ -62,7 +65,7 @@ public:
   double minD, maxD, meanD; 
   // vector<shared_ptr<BNDR> > 
 
-  Grid() { nCellSize = 0; for (auto i = 0; i<3; ++i) {levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5; }; }
+  Grid() { nCellSize = 0; for (auto i = 0; i<3; ++i) {levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5; }; filecnt=0;}
 
   Grid(initializer_list<initializer_list<double > > pts):Grid() {
     addVertex(pts);
@@ -239,7 +242,9 @@ public:
   }
 
   void addVar(std::string n, int t = 0); 
-  void addVar(initializer_list<std::string> nl);
+  void addVec(std::string n, int t = 0); 
+  void addVar(initializer_list<std::string> nl, int t = 0);
+  void addVec(initializer_list<std::string> nl, int t = 0);
   shared_ptr<Var> getVar(std::string n);   
   void lockBC(shared_ptr<Var> v);
   void unlockBC(); 
@@ -269,24 +274,23 @@ public:
     return val; 
   }
   
-  VecX<Vec3> getVelVertex() {
+  VecX<Vec3> getVecVertex(std::string a) {
     VecX<Vec3> val(listVertex.size()); 
-    auto u = getVar("u"); 
-    auto v = getVar("v"); 
-    auto w = getVar("w"); 
+    shared_ptr<Var > u, v, w; 
+    if (a == "u") {
+      u = getVar("u"); v = getVar("v"); w = getVar("w");
+    } else {
+      u = getVar(a+"x"); v = getVar(a+"y"); w = getVar(a+"z"); 
+    }
+    if (!u || !v || !w) {
+      cout << "Vector not found! " << a << endl; 
+      exit(-1); 
+    }
 
     for (auto i = 0; i<listVertex.size(); ++i) {
-      // Vec3 sum(0,0,0); double icnt = 0;  
-      // for (auto j = 0; j < listVertex[i]->cell.size(); ++j) {
-      // 	if (listVertex[i]->cell[j] < 0) continue;
-      // 	auto k = listVertex[i]->cell[j]; 
-      // 	sum = sum + Vec3(u[k], v[k], w[k]); 
-      // 	++icnt; 
-      // }
       val[i][0] = listVertex[i]->phi(u).eval(u); 
       val[i][1] = listVertex[i]->phi(v).eval(v); 
       val[i][2] = listVertex[i]->phi(w).eval(w); 
-
     }
     return val; 
   }
@@ -902,6 +906,99 @@ public:
   //     }
   //   }    
 
+  void writeVTK(string name, initializer_list<string > v = {"all"}) {
+   
+    bool isAll = (v.size() == 1 && *v.begin() == "all"); 
+    vector<bool> lvar(listVar.size(), false); 
+    for (auto i = 0; i < listVar.size(); ++i) {
+      if (!isAll) {
+	for (auto j = v.begin(); j != v.end(); ++j) 
+	  if (*j == listVar[i]->name || (*j == "vel" && listVar[i]->name == "u") 
+	      || (*j+"x" == listVar[i]->name)) {
+	    lvar[i] = true; 
+	    break;
+	  }
+      } else {
+	lvar[i] = true;
+	if (listVar[i]->isVec) {
+	  if (listVar[i]->name == "v" || listVar[i]->name == "w" 
+	      || listVar[i]->name.substr(listVar[i]->name.length()-1) == "y"
+	      || listVar[i]->name.substr(listVar[i]->name.length()-1) == "z")
+	    lvar[i] = false; 
+	}
+      }	
+    }
+       
+    ofstream out; 
+    out.open(name+std::to_string(filecnt++)+".vtk"); 
+
+    int_8 nCell = listCell.size();
+    int t = listCell[0]->node.size()+1;
+    out << "# vtk DataFile Version 2.0" << endl; 
+    out << "Unstructure Grid" << endl; 
+    out << "ASCII"<< endl; 
+    out << endl << "DATASET UNSTRUCTURED_GRID"<< endl; 
+    out << "POINTS " << listVertex.size() << " float" << endl; 
+    for (auto p = vbegin(); p != vend(); ++p) {
+      out << **p <<  endl ; 
+    }
+    if (nCell > 0) {
+      out << endl << "CELLS "<< nCell << " " << nCell*t << endl; 
+      for (auto c = cbegin(); c != cend(); ++c) {
+	if ((*c)->isAlive) out << *c ; 
+      }
+      out << endl << "CELL_TYPES " << nCell <<endl; 
+      for (auto c = cbegin(); c != cend(); ++c) {
+	if ((*c)->isAlive) out << (*c)->getType() << endl; 
+      }
+    } else {
+      out << endl << "CELLS "<< listVertex.size() << " " << listVertex.size()*2 << endl; 
+      for (auto i = 0; i < listVertex.size(); ++i) 
+        out << "1 "<< i<< endl;     
+      out << endl << "CELL_TYPES " << listVertex.size() <<endl; 
+      for (auto i = 0; i < listVertex.size(); ++i) out << "1 "<< endl; 
+    }
+    out << endl << "POINT_DATA " << listVertex.size() << endl;
+    for (auto i = 0; i < listVar.size(); ++i) {
+      if (!lvar[i]) continue; 
+      auto var = listVar[i]; 
+      if (listVar[i]->isVec) continue; 
+      
+      out << "SCALARS " << var->name << " float 1"<<endl; 
+      out << "LOOKUP_TABLE default"<<endl; auto icnt = 0; 
+      for (auto v: listVertex) {
+	//auto val = v->phi(var).eval(var); 
+	double val = 0; 
+	if (var->loc == 0) 
+	  val=v->evalPhi(var); 
+	else if (var->loc == 1) 
+	  val=var->get(v->id); 
+	out << ((abs(val) < 1e-10) ? 0 : val) << endl; 
+      }
+      out << endl; 
+    }
+    if (listCell.size() > 0) {
+      for (auto i = 0; i < listVar.size(); ++i) {
+	if (!lvar[i]) continue; 
+	auto var = listVar[i]; 
+	if (!var->isVec) {continue;}
+	std::string name = var->name; 
+	if (name != "u") {
+	  if (name.substr(name.length()-1) != "x") {continue;}
+	  else { name.pop_back(); }
+	}
+	
+	auto v = getVecVertex(name);
+	if (name == "u") name = "vel"; 
+	out << "VECTORS "+name+" float" << endl; 
+	for (auto i = 0; i<v.size(); ++i) out << float(v[i][0]) << " " << float(v[i][1]) << " " << float(v[i][2]) << endl;
+      }
+    }
+    out<<endl; 	  
+    out.close(); 
+  }
+
+
   friend ostream &operator<<(ostream &out, Grid* const &a) {
     if (a == NULL) {out << " "; return out; }
     int_8 nCell = a->listCell.size(); //a->nCellSize = 0; 
@@ -938,8 +1035,9 @@ public:
       for (auto i = 0; i < a->listVertex.size(); ++i) out << "1 "<< endl; 
     }
     out << endl << "POINT_DATA " << a->listVertex.size() << endl;
-    for (auto i = 3; i < a->listVar.size(); ++i) {
+    for (auto i = 0; i < a->listVar.size(); ++i) {
       auto var = a->listVar[i]; 
+      if (a->listVar[i]->isVec) continue; 
       // cout << var->name << " " << var->loc << " "<< var->data.size() << " " << a->listCell.size() << endl; 
       // if (var->data.size() != a->listCell.size()) continue; 
       out << "SCALARS " << var->name << " float 1"<<endl; 
@@ -960,11 +1058,21 @@ public:
       out << endl; 
     }
     if (a->listCell.size() > 0) {
-      auto v = a->getVelVertex();
-      out << "VECTORS vel float" << endl; 
-      for (auto i = 0; i<v.size(); ++i) out << float(v[i][0]) << " " << float(v[i][1]) << " " << float(v[i][2]) << endl;
+      for (auto i = 0; i < a->listVar.size(); ++i) {
+	auto var = a->listVar[i]; 
+	if (!var->isVec) {continue;}
+	std::string name = var->name; 
+	if (name != "u") {
+	  if (name.substr(name.length()-1) != "x") {continue;}
+	  else {name.pop_back(); }
+	}
+	
+	auto v = a->getVecVertex(name);
+	if (name == "u") name = "vel"; 
+	out << "VECTORS "+name+" float" << endl; 
+	for (auto i = 0; i<v.size(); ++i) out << float(v[i][0]) << " " << float(v[i][1]) << " " << float(v[i][2]) << endl;
+      }
     }
-
     // extra -remove
     // out << endl << "CELL_DATA " << nCell << endl;
     // for (auto j = 0; j < 3; ++j) {
@@ -1183,15 +1291,13 @@ public:
 	//cin.ignore().get(); 
     }
 
-    cGrid->addVar("u",1); 
-    cGrid->addVar("v",1); 
-    cGrid->addVar("w",1); 
+    cGrid->addVec("u",1); 
 
     cGrid->addVar("dummy",1); 
     
-    cGrid->addVar("nx", 1);
-    cGrid->addVar("ny", 1);
-    cGrid->addVar("nz", 1);   
+    cGrid->addVec("n", 1);
+
+    
         
     return cGrid; 
   }
@@ -1264,7 +1370,7 @@ public:
     //setQuadBoundary(); 
     cout << "Block2: Cells: " << listCell.size(); 
     cout << " Faces: " << nFace << endl; 
-    addVar({"u", "v", "w"});
+    addVec("u"); //, "v", "w"});
   }
 
   

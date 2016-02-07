@@ -46,7 +46,7 @@ int main() {
   auto u = grid->getVar("u");
   auto v = grid->getVar("v");
   auto msx = grid->getVar("msx"); 
-  auto msy = grid->getVar("msy");   
+  auto msy = grid->getVar("msy");     
 
   T->solver = "Gauss"; 
   
@@ -67,15 +67,14 @@ int main() {
       T->set(i, max(0.0, min(1.0, T->get(i) + 1.0/(1.0 + exp(-2.0*80*(0.15-r))))));
       if (x[0] >= 0.8 && x[1] >= 0.4 && x[1] <= 0.6) 
        	T->set(i, max(0.0, min(1.0, T->get(i)+1.0)));
+      if (x[0] >= 0.47 && x[0] <= 0.53 && x[1] >= 0.5 && x[1] <= 0.7) 
+       	T->set(i, max(0.0, min(1.0, T->get(i)-1.0)));
       
     }
     //int = grid->contour(T, 0.5); 
     grid->solBasedAdapt2(grid->getError(T));
     grid->adapt(); 
   }
-  int filecnt = 0; int it = 0, writeInt = 1; 
-   ofstream myfile;   
-   std::string flname="g2"+std::to_string(filecnt)+".vtk"; 
   // Block2* g2 = new Block2({0, 0, 0}, {1, 1, 0}, 3, 3); 
   // g2->addVar({"T"}); 
   // auto oT = g2->getVar("T"); 
@@ -104,16 +103,9 @@ int main() {
   
   auto sint = grid->contour(T, 0.5);
 
+  grid->writeVTK("euler"); 
+  sint->writeVTK("ibm", {}); 
 
-  flname="euler"+std::to_string(filecnt)+".vtk"; 
-  myfile.open(flname); 
-  myfile << grid << endl;
-  myfile.close();   
-
-  flname = "lagr"+std::to_string(filecnt++)+".vtk";
-  myfile.open(flname); 
-  myfile << sint << endl; 
-  myfile.close(); 
   exit(0); 
 
   double mass0=0; double mass=0; 
@@ -128,10 +120,11 @@ int main() {
     msy->set(i, grid->listCell[i]->mastery[ylevel]); 
   }
 
-  flname="heat"+std::to_string(filecnt++)+".vtk"; 
-  myfile.open(flname); 
-  myfile << grid << endl;
-  myfile.close();   
+  grid->writeVTK("heat"); 
+  // flname="heat"+std::to_string(filecnt++)+".vtk"; 
+  // myfile.open(flname); 
+  // myfile << grid << endl;
+  // myfile.close();   
 
   T->setBC("west", "val", 0);
   T->setBC("south", "val", 0); 
@@ -215,10 +208,7 @@ int main() {
     grid->setDt(dt); 
 
     if (writeCnt <= 0 || time >= endTime) {
-      std::string flname="heat"+std::to_string(filecnt++)+".vtk"; 
-      myfile.open(flname); 
-      myfile << grid << endl;
-      myfile.close();   
+      grid->writeVTK("heat"); 
       writeCnt = writeTime; 
     } 
 
