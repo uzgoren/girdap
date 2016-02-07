@@ -104,7 +104,7 @@ int main() {
   auto sint = grid->contour(T, 0.5);
 
   grid->writeVTK("euler"); 
-  sint->writeVTK("ibm", {}); 
+  sint->writeVTK("ibm"); 
 
   exit(0); 
 

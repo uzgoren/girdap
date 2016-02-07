@@ -47,6 +47,7 @@ public:
   vector<shared_ptr<Cell > > listCell; 
   vector<shared_ptr<Cell > > listFace; 
   vector<shared_ptr<Var > > listVar;
+  vector<shared_ptr<Vertex > > otherVertex; 
 
   vector<bool> selectCell; 
 
@@ -288,9 +289,9 @@ public:
     }
 
     for (auto i = 0; i<listVertex.size(); ++i) {
-      val[i][0] = listVertex[i]->phi(u).eval(u); 
-      val[i][1] = listVertex[i]->phi(v).eval(v); 
-      val[i][2] = listVertex[i]->phi(w).eval(w); 
+      val[i][0] = (u->loc==1) ? u->get(i): listVertex[i]->phi(u).eval(u); 
+      val[i][1] = (v->loc==1) ? v->get(i): listVertex[i]->phi(v).eval(v); 
+      val[i][2] = (w->loc==1) ? w->get(i): listVertex[i]->phi(w).eval(w); 
     }
     return val; 
   }
@@ -987,7 +988,6 @@ public:
 	  if (name.substr(name.length()-1) != "x") {continue;}
 	  else { name.pop_back(); }
 	}
-	
 	auto v = getVecVertex(name);
 	if (name == "u") name = "vel"; 
 	out << "VECTORS "+name+" float" << endl; 
@@ -1190,31 +1190,30 @@ public:
     vector<bool> color(listCell.size(), false); 
 
     vector<int_8> connectCell;
-    vector<vector<int_8> > connectCellNodeList(listCell.size(), vector<int_8>(8,-1)); 
+    vector<vector<int_8> > connectCellNodeList(listCell.size(), vector<int_8>(8,-1));     
     
-    
-    // 00. construct values at vertex; 
+    // 00. construct values at vertex; not cell dependent
     for (auto i = 0; i < listVertex.size(); ++i) {
       val[i] = listVertex[i]->evalPhi(a); 
     }
     
-    // 01. Create vertices at faces; assign them to a cell;
+    // 01. Create vertices at faces; assign them to a cell; cell dependent
+    // using val, other grid, let it stay; 
     for (auto f : listFace) {
       auto v0 = f->node[0]; 
-      auto v1 = f->node[1];
-            
+      auto v1 = f->node[1]; 
+	
       auto dp = d;
       if (abs(val[v0] - dp) < 1e-15) dp = d - 1e-14; 
       if (abs(val[v1] - dp) < 1e-15) dp = d - 1e-14; 
-
-      if ((val[v0] - dp)*(val[v1] - dp) < 0) { // || (abs(val[v0]-d) < 1e-15) || (abs(val[v1]-d) < 1e-15)) { // check whether contour exists 
-    	auto y = (dp - val[v0])/(val[v1] - val[v0]); 
-    	auto dr = *listVertex[v1] - *listVertex[v0]; 
-    	auto x = *listVertex[v0] + y*dr; 
-    	cGrid->addVertex(x); // add a marker on the vertex; 
+      
+      if ((val[v0] - dp)*(val[v1] - dp) < 0) { 
+	auto y = (dp - val[v0])/(val[v1] - val[v0]); 
+	auto dr = *listVertex[v1] - *listVertex[v0]; 
+	auto x = *listVertex[v0] + y*dr; 
+	cGrid->addVertex(x);    // add a marker on the vertex; 
 	int_8 inew = cGrid->listVertex.size()-1; 
 	
-
 	auto n = f->next; 
 	auto p = f->prev; 
 	
@@ -1224,31 +1223,24 @@ public:
 	int nloc, ploc; 
 	if (n >= 0) {	  
 	  auto cn = listCell[n];
-	  //	  if (color[n]) continue; 
-	  //	  vector<int_8> tmp(8, -1); 
 	  if (f->orient == 0) nloc = (cn->node[0] == v0) ? 0 : 1; 
 	  else if (f->orient == 1) nloc = (cn->node[3] == v1) ? 6 : 7; 
 	  else continue; 
-	  //	  tmp[nloc] = inew; 	 
 	  if (!color[n]) connectCell.push_back(n);
 	  connectCellNodeList[n][nloc] = inew; 
 	  color[n] = true; 
 	}
 	if (p >= 0) {	  
 	  auto cn = listCell[p]; 
-	  //if (color[p]) continue; 
-	  //vector<int_8> tmp(8, -1); 
 	  if (f->orient == 0) ploc = (cn->node[2] == v1) ? 4 : 5; 
 	  else if (f->orient == 1) ploc = (cn->node[1] == v0) ? 2 : 3; 
 	  else continue; 	 
-	  //tmp[ploc] = inew; 
 	  if (!color[p]) connectCell.push_back(p);
 	  connectCellNodeList[p][ploc] = inew; 
 	  color[p] = true; 
 	}	
       }      
     }
-    cout << connectCell.size( ) << endl; 
     for (auto ic = 0; ic < connectCell.size(); ++ic) {
       auto i = connectCell[ic]; auto sum = 0; 
       for (auto jc = 0; jc<connectCellNodeList[i].size(); ++jc) {
@@ -1256,11 +1248,11 @@ public:
 	++sum; 
       }
       if (sum == 2) continue; 
-      cout << ic << " " << i << " " << sum << endl; 
+      cout << ic << " Warning! " << i << " " << sum << " are not handled " << endl; 
     }
-    cout << endl; 
 
-    // // 02. check cells through nodes; 
+    // // 02. check cells through nodes;
+    //    ic = 0; 
     for (auto ic = 0; ic < connectCell.size(); ++ic) {
       auto i = connectCell[ic]; 
       if (!listCell[i]->isAlive) continue;
@@ -1291,43 +1283,73 @@ public:
 	//cin.ignore().get(); 
     }
 
-    cGrid->addVec("u",1); 
+    // 03. disregard connect information after putting them in
+    //     object array otherVertex; vertex-to-vertex connectivity
+    cGrid->otherVertex.resize(cGrid->listVertex.size()); 
+    otherVertex.resize(listVertex.size()); 
 
-    cGrid->addVar("dummy",1); 
+    addVar("b"); 
+    auto b = getVar("b"); 
+    b->set(0); 
+    cGrid->addVar("dummy",1);
     
+    auto dummy = cGrid->getVar("dummy"); 
+    dummy->set(0); 
+
+    auto i0 = connect[0]; 
+    for (auto i1=0; i1 < cGrid->listVertex.size(); ++i1) {
+      auto v0 = searchVertexbyCoords(*(cGrid->listVertex[i1]), listCell[i0]->node[0]); 
+      if (v0 >= 0) {
+	cGrid->otherVertex[i1] = listVertex[v0];
+	i0 = (listVertex[v0]->cell[0]<0) ? i0:listVertex[v0]->cell[0] ; 
+	// cout << "Grid: Cell = "<< i0 << ", Vertex" << v0 << " -- Other: " << i1 << endl; 
+      } else {
+	cout << "Could not found the next vertex" << i0 << " " << *(cGrid->listVertex[i1]) << endl;
+	exit(1); 
+      }
+      cGrid->otherVertex[i1] = listVertex[v0]; 
+      otherVertex[listVertex[v0]->id] = cGrid->listVertex[i1]; 
+    }    
+    
+    // 04. Now color a new function at the cell centers; 
+
+
+    cGrid->addVec("u", 1); 
     cGrid->addVec("n", 1);
-
-    
-        
+       
     return cGrid; 
   }
   
   
   int_8 searchVertexbyCoords(Vec3 a, int_8 i0=0) {
-    if (listVertex.size() <= i0 && i0 >= 0) {
+    if (i0 >= listVertex.size() && i0 < 0) {
       cout << "Initial vertex do not exists" << endl; 
       exit(-1); 
     }
     auto v = listVertex[i0]; 
     shared_ptr<Vertex >* tmp; 
-    while (v) {
-      auto xhat = interp.findXhat(a, v->xcoef, v->ycoef, v->zcoef);  
+    while (v) {            
+      bool isFound = false; 
+      auto rc = (*v-a).abs();  auto rmin = rc; 
       if (v->cell.size() == 4) {
-	// check whether v's interp domain contains;       
-	if (xhat[0] > 1) tmp = (v->ngbr(1)); 
-	else if (xhat[0] < 0) tmp = (v->ngbr(-1)); 
-	else if (xhat[1] > 1) tmp = (v->ngbr(2)); 
-	else if (xhat[1] < 0) tmp = (v->ngbr(-2)); 
-	else break; 
-	if (tmp) v = *tmp; 
-	else return -1; 
-      }
+	for (auto ci : v->cell) {
+	  if (ci < 0) continue; 
+	  for (auto vi : listCell[ci]->node) {
+	    auto r = (*listVertex[vi] - a).abs();
+	    if (r < rmin) {
+	      isFound = true; v = listVertex[vi]; rmin = r; 
+	    }
+	  }
+	}
+	if (!isFound) break; 
+      }     
     }
-    return v->id;     
+    if (v) return v->id;     
+    else return -1; 
   }
 
-  int_8 searchCellbyCoords(Vec3 a, int_8 i0=0) {
-    auto j0 = listCell[i0]->node[0]; 
+  int_8 searchCellbyCoords(Vec3 a, int_8 i0=0, bool isVertex=false) {
+    auto j0 = isVertex ? i0 : listCell[i0]->node[0]; 
     auto vi = searchVertexbyCoords(a, j0); 
     if (vi < 0) return -1; 
     auto v = listVertex[vi]; 
