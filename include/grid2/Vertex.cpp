@@ -40,9 +40,9 @@ shared_ptr<Cell >  *Vertex::getCell(int_2 ind, bool debug) {
 shared_ptr<Vertex > *Vertex::ngbr(int_2 d)  {
   if (cell.size() == 2) {
     if (d == 1) {
-      if (cell[1] > 0) return (*getCell(1))->getVertex(1); 
+      if (cell[1] >= 0) return (*getCell(1))->getVertex(1); 
     } else if (d == -1) {
-      if (cell[0] > 0) return (*getCell(0))->getVertex(0); 
+      if (cell[0] >= 0) return (*getCell(0))->getVertex(0); 
     } 
     return NULL; 
   }
