@@ -30,8 +30,20 @@
 int main() {
   auto dt = 0.5; auto writeTime = 0.02; 
   auto t = clock(); int iter = 0; 
-  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10);
+  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 40, 40);
   Grid* ibm = new Grid(); 
+
+
+  // vector<int_8> ngbrCells; 
+  // ngbrCells.emplace_back(35); 
+  // grid->ngbrCellbyDist(Vec3(0.2,0.2), ngbrCells); 
+
+  // for (auto i = 0; i < ngbrCells.size(); ++i) {
+  //   cout << i << " " << ngbrCells[i] << endl; 
+  // }
+
+  // grid->writeVTK("small"); 
+  // exit(1); 
 
   //Block2* grid = new Block2({0, 0, 0}, {0.02, 0.02, 0}, 10, 1);
   double time= 0; double endTime = 8; //dt*50; 
