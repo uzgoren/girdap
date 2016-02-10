@@ -28,7 +28,7 @@
 
 
 int main() {
-  auto dt = 0.5; auto writeTime = 0.02; 
+  auto dt = 0.01; auto writeTime = 0.02; 
   auto t = clock(); int iter = 0; 
   Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 40, 40);
   Grid* ibm = new Grid(); 
@@ -114,9 +114,30 @@ int main() {
   // exit(0); 
   
   auto sint = grid->contour(T, 0.5);
+  grid->indicator(sint, T); 
+
+  sint->addVec("u",1); 
+  auto us = sint->getVar("u"); auto vs = sint->getVar("v"); 
+  
+  grid->passVar(sint, u, us); 
+  grid->passVar(sint, v, vs); 
 
   grid->writeVTK("euler"); 
   sint->writeVTK("ibm"); 
+  
+
+  for (auto i = 0; i < sint->listVertex.size(); ++i) {
+    Vec3 x = *sint->listVertex[i] + Vec3(us->get(i)*dt, vs->get(i)*dt, 0); 
+    sint->listVertex[i]->set(x); 
+  }
+
+  grid->indicator(sint, T); 
+  grid->passVar(sint, u, us); 
+  grid->passVar(sint, v, vs); 
+
+  grid->writeVTK("euler"); 
+  sint->writeVTK("ibm"); 
+
 
   exit(0); 
 

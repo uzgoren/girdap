@@ -111,12 +111,6 @@ Grid* contour(shared_ptr<Var> &a, double d) {
   cGrid->otherVertex.resize(cGrid->listVertex.size()); 
   otherVertex.resize(listVertex.size()); 
 
-
-  cGrid->addVar("dummy",1);
-    
-  auto dummy = cGrid->getVar("dummy"); 
-  dummy->set(0); 
-
   auto i0 = connect[0]; 
   for (auto i1=0; i1 < cGrid->listVertex.size(); ++i1) {
     auto v0 = searchVertexbyCoords(*(cGrid->listVertex[i1]), listCell[i0]->node[0]); 
@@ -131,8 +125,29 @@ Grid* contour(shared_ptr<Var> &a, double d) {
     cGrid->otherVertex[i1] = listVertex[v0]; 
     otherVertex[listVertex[v0]->id] = cGrid->listVertex[i1]; 
   }    
+  
+  return cGrid; 
+}
+
+void updateOtherVertex(Grid* cGrid) {
+  for (auto i1 = 0; i1 < cGrid->listVertex.size(); ++i1) {
+    int_8 i0; 
+    if (cGrid->otherVertex[i1]) {
+      i0 = searchVertexbyCoords(*(cGrid->listVertex[i1]), cGrid->otherVertex[i1]->id); 
+      otherVertex[cGrid->otherVertex[i1]->id].reset(); 
+    } else {
+      i0 = searchVertexbyCoords(*(cGrid->listVertex[i1])); 
+    }
+    if (i0 >= 0) {
+      cGrid->otherVertex[i1] = listVertex[i0]; 
+      otherVertex[i0] = cGrid->listVertex[i1]; 
+    }
+  }
+}
 
 
+void indicator(Grid* cGrid, shared_ptr<Var> T) {
+  T->set(0); 
   auto dx = listCell[0]->edge(0).abs();
   auto dy = listCell[0]->edge(1).abs(); 
  
@@ -140,35 +155,16 @@ Grid* contour(shared_ptr<Var> &a, double d) {
   for (auto i = listCell[0]->level[0]; i < levelMax[0]+1; ++i) dx /= 2; 
   for (auto i = listCell[1]->level[1]; i < levelMax[1]+1; ++i) dy /= 2; 
 
-  cout << " ------ " << dx << ", "<< dy << " : " << f << " " << levelMax[0] << endl; 
+  //  cout << " ------ " << dx << ", "<< dy << " : " << f << " " << levelMax[0] << endl; 
 
-  addVar("b"); 
-  auto b = getVar("b"); 
-  b->set(0);  
-  addVar("P"); 
-  auto P = getVar("P"); 
-  b->set(0); 
-  
-
-  cGrid->addVec("u", 1); 
-  cGrid->addVec("n", 1);
-  auto nx = cGrid->getVar("nx"); 
-  auto ny = cGrid->getVar("ny"); 
-  auto nz = cGrid->getVar("nz");   
-  auto up = cGrid->getVar("u"); 
-  auto vp = cGrid->getVar("v"); 
-  auto wp = cGrid->getVar("w"); 
-
-  auto u = getVar("u"); 
-  auto v = getVar("v"); 
-  auto w = getVar("w"); 
-
-  // 04. Now color a new function at the cell centers; 
+  // 00. Now color a new function at the cell centers; 
   double dist[listCell.size()];
   for (auto i = 0; i<listCell.size(); ++i) dist[i] = -1; 
 
   for (auto i1 = 0; i1 < cGrid->listVertex.size(); ++i1) {
-    auto v1 = cGrid->listVertex[i1]; 
+    auto v1 = cGrid->listVertex[i1];
+ 
+    // calculate normal; Should be moved into Vertex; 
     Vec3 norm; 
     if (v1->cell[0] >=0 && v1->cell[1] >= 0) {
       auto e0 = (*v1->getCell(0))->vol(); auto b0 = e0.abs(); 
@@ -182,19 +178,8 @@ Grid* contour(shared_ptr<Var> &a, double d) {
       norm = Vec3(-1, 0, 0); 
     }
     norm /= norm.abs();
-    nx->set(i1, norm[0]); 
-    ny->set(i1, norm[1]); 
-    nz->set(i1, norm[2]);
 
     auto v0 = cGrid->otherVertex[i1]; 
-
-    auto i0s = searchVertexbyCoords(*v1, v0->id);
-    if (i0s >= 0) {
-      auto v0s = listVertex[i0s]; 
-      auto xhat = interp.findXhat(*v1, v0s->xcoef, v0s->ycoef, v0s->zcoef);
-      up->set(i1, v0s->evalPhi(u)); 
-      vp->set(i1, v0s->evalPhi(v)); 
-    }
 
     if (v0 < 0) {
       cout << "WARNING - no associated vertex found! now what? " <<endl; 
@@ -207,23 +192,31 @@ Grid* contour(shared_ptr<Var> &a, double d) {
 
     for (auto j = 0; j < ngbrCells.size(); ++j) {
       auto ci0 = ngbrCells[j]; 
-      P->set(ci0, 1); 
       auto c0 = listCell[ci0];       
       auto r = (c0->getCoord() - *v1).abs(); 
       if (dist[ci0] < 0) dist[ci0] = r; 
       if (dist[ci0] < r) continue; 
       dist[ci0] = r; 
       r = (c0->getCoord() - *v1)*norm;       
-      b->set(ci0, 1.0/(1+exp(-0.5*r/dx*f))); ///(1+exp(-r/dy*f)));
+      T->set(ci0, 1.0/(1+exp(-0.5*r/dx*f))); ///(1+exp(-r/dy*f)));
     }
-
   }
 
   for (auto i = 0; i < listCell.size(); ++i) 
-    paintCell(b, 0, 0.5, 1.0, i); 
-
+    paintCell(T, 0, 0.5, 1.0, i); 
        
-  return cGrid; 
+}
+
+
+void passVar(Grid* cGrid, shared_ptr<Var> from, shared_ptr<Var> to) {
+  for (auto i = 0; i < cGrid->listVertex.size(); ++i) { 
+    auto v1 = cGrid->listVertex[i]; 
+    auto v0s = cGrid->otherVertex[i]; //searchVertexbyCoords(*v1, v0->id);
+    if (v0s) {
+      auto xhat = interp.findXhat(*v1, v0s->xcoef, v0s->ycoef, v0s->zcoef);
+      to->set(i, v0s->evalPhi(from)); 
+    }
+  }
 }
 
 
