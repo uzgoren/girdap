@@ -44,7 +44,7 @@ shared_ptr<Vertex > *Vertex::ngbr(int_2 d)  {
     } else if (d == -1) {
       if (cell[0] >= 0) return (*getCell(0))->getVertex(0); 
     } 
-    return NULL; 
+    return nullptr; 
   }
   if (cell.size() == 4) {
     int i; int j; int i0; int j0;  
@@ -83,9 +83,9 @@ shared_ptr<Vertex > *Vertex::ngbr(int_2 d)  {
     } else if (cell[j] >= 0) { 
       return (*getCell(j))->getVertex(i); //cell[j]->node[i].lock(); 
     }
-    return NULL; 
+    return nullptr; 
   } else {
-    return NULL;
+    return nullptr;
   } 
 }
 

@@ -55,7 +55,7 @@ public:
   //     but we only need weigths, which are computed from xhat again;  
   // OR we can simply calculate using gauss formula! Not sure yet; 
 
-  int_2 bndr; 
+  int_2 isBndr; 
 
   int_8 id; 
   Grid* grid; 
@@ -64,6 +64,8 @@ public:
   Vertex(double const & a, double const & b, double const & c) :  Vec3 (a, b, c) {coefUpdate = true;}
   Vertex(initializer_list<double> a) : Vec3( a ) {coefUpdate = true; }
   Vertex(Vec3 a) : Vec3(a) {coefUpdate = true;}
+
+  // ~Vertex() { cout<< "Delete vertex"<<endl; }
 
   // 00 getCoord 
   Vec3 getCoord() { return Vec3(*this); }

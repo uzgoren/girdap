@@ -47,7 +47,7 @@ public:
   vector<shared_ptr<Cell > > listCell; 
   vector<shared_ptr<Cell > > listFace; 
   vector<shared_ptr<Var > > listVar;
-  vector<shared_ptr<Vertex > > otherVertex; 
+  vector<int_8 > otherVertex; 
 
   vector<bool> selectCell; 
 
@@ -83,11 +83,27 @@ public:
     // makeFace(); 
   }
 
+  // ~Grid() {
+  //   // for (auto i = 0; i < otherVertex.size(); ++i) otherVertex[i].reset(); 
+  //   // for (auto i = 0; i < listFace.size(); ++i) listFace[i].reset(); 
+  //   // for (auto i = 0; i < listCell.size(); ++i) listCell[i].reset(); 
+  //   // for (auto i = 0; i < listVertex.size(); ++i) listVertex[i].reset(); 
+    
+  //   if (listVertex.size() > 0 ) cout << listVertex[0].use_count() << endl; 
+
+  //   otherVertex.clear(); cout << "OtherVertex size = "<< otherVertex.size() << endl; 
+  //   listFace.clear(); cout << "listFace size = "<< listFace.size() << endl; 
+  //   listCell.clear(); cout << "listCell size = "<< listCell.size() << endl; 
+  //   listVertex.clear(); cout << "listVertex size = "<< listVertex.size() << endl; 
+  // }
+
+
   // Add vertex to the list; 
   void addVertex(Vec3 v) {
     listVertex.emplace_back( shared_ptr<Vertex>(new Vertex(v)) ); 
     (*listVertex.rbegin())->id = listVertex.size()-1;
     (*listVertex.rbegin())->grid = this; 
+    otherVertex.emplace_back( -1 ); 
   }     
 
   void addVertex(initializer_list<double > pt) {
@@ -334,7 +350,57 @@ public:
   
 #include "Adapt.hpp"
 
+  void checkGeo() { 
+    auto l0 = 0.0, l1 = 0.0; 
+    for (auto i = cbegin(); i !=cend(); ++i)
+      l0 += (*i)->vol().abs(); 
+    for (auto i = vbegin(); i != vend(); ++i) { 
+      auto j = (*i)->ngbr(1); 
+      if (j != nullptr) {l1 += ((**i)^(**j))*Vec3(1,1,1); }
+    }
+    l1 *= 0.5; 
+    cout << " L0 = " << l0 << " L1 = "<< l1 << " ";  
+  }
 
+  void checkGrid() {
+    for (auto i = cbegin(); i != cend(); ++i) {
+      if (((*i)->id < 0) || ((*i)->id) >= listCell.size()) {
+	cout << "Cell "<< (*i)->id << " is not valid " << endl; 
+	cout << "Cell list size = " << listCell.size() << endl; 
+	exit(1);
+      }
+      for (auto j = 0; j < (*i)->node.size(); ++j) {
+	if (((*i)->node[j]) < 0 || ((*i)->node[j]) > listVertex.size()) {
+	  cout << "Cell "<< (*i)->id << " has problems in its vertex list @" << j ; 
+	  cout << " is " << (*i)->node[j] << endl; 
+	  cout << "Vertex list size = " << listVertex.size() << endl; 
+	  exit(1);
+	}
+      }
+    }
+    if (otherVertex.size() != listVertex.size() && otherVertex.size() > 0) {
+      cout << "Size of otherVertex does not match with listVertex size" << endl; 
+      cout << "Vertex size = " << listVertex.size() << endl; 
+      cout << "OtherVertex size = " << otherVertex.size() << endl;
+      exit(1); 
+    }
+    for (auto i = vbegin(); i != vend(); ++i) {
+      if (((*i)->id) < 0 || ((*i)->id) > listVertex.size()) {
+	cout << "Vertex "<< (*i)->id << " is not valid " << endl; 
+	  cout << "Vertex list size = " << listVertex.size() << endl; 
+	exit(1);
+      }
+      for (auto j = 0; j < (*i)->cell.size(); ++j) {
+	if (int_8((*i)->cell[j]) >= int_8(listCell.size())) {
+	  cout << "Vertex "<<(*i)->id << " has problems in its cell list @" << j ; 
+	  cout << " is " <<(*i)->cell[j] << endl;
+	  cout << "Cell list size = " << listCell.size() << endl; 
+	  exit(1);
+	}
+      }
+    }    
+  }
+	
 
 
   void debug() {
@@ -449,5 +515,6 @@ public:
 // {
 //     return !t.owner_before(u) && !u.owner_before(t);
 // }
+
 
 #endif

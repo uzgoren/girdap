@@ -28,44 +28,22 @@
 
 
 int main() {
-  auto dt = 0.01; auto writeTime = 0.02; 
+  auto dt = 0.01; auto writeTime = 0.005; 
   auto t = clock(); int iter = 0; 
-  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 40, 40);
-  Grid* ibm = new Grid(); 
-
-
-  // vector<int_8> ngbrCells; 
-  // ngbrCells.emplace_back(35); 
-  // grid->ngbrCellbyDist(Vec3(0.2,0.2), ngbrCells); 
-
-  // for (auto i = 0; i < ngbrCells.size(); ++i) {
-  //   cout << i << " " << ngbrCells[i] << endl; 
-  // }
-
-  // grid->writeVTK("small"); 
-  // exit(1); 
-
-  //Block2* grid = new Block2({0, 0, 0}, {0.02, 0.02, 0}, 10, 1);
+  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10);
   double time= 0; double endTime = 8; //dt*50; 
 
-  // Field variables; 
-  double rho=10000, cp=1000, k=1; 
-
+  // Add Variables 
   grid->addVar({"T"}); 
-  grid->addVar({"msx", "msy"}); 
     
   auto T = grid->getVar("T");
   auto u = grid->getVar("u");
   auto v = grid->getVar("v");
-  auto msx = grid->getVar("msx"); 
-  auto msy = grid->getVar("msy");     
 
-  T->solver = "Gauss"; 
-  
+
+  // Set indicator function in T; and adapt grid to a max level; 
   T->set(0); 
-  double pi = 4.0*atan(1);
-  T->setBC("south", "grad", 0.5);
-  
+  double pi = 4.0*atan(1);  
   for (auto j = 0; j < 5; ++j) {
     for (auto i = 0; i < grid->listCell.size(); ++i) {
       auto x = grid->listCell[i]->getCoord(); // - Vec3(0.5, 0.5); 
@@ -73,84 +51,97 @@ int main() {
       v->set(i, 2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1])); 
 
       auto r = (x - Vec3(0.5, 0.75)).abs(); 
-
-      T->set(i, 1.0/(1.0 + exp(-2.0*80*(0.15-r)))); 
-      r = (x - Vec3(0.5, 0.05)).abs(); 
-      T->set(i, max(0.0, min(1.0, T->get(i) + 1.0/(1.0 + exp(-2.0*80*(0.15-r))))));
-      if (x[0] >= 0.8 && x[1] >= 0.4 && x[1] <= 0.6) 
-       	T->set(i, max(0.0, min(1.0, T->get(i)+1.0)));
-      if (x[0] >= 0.47 && x[0] <= 0.53 && x[1] >= 0.5 && x[1] <= 0.7) 
-       	T->set(i, max(0.0, min(1.0, T->get(i)-1.0)));
       
+      T->set(i, 1.0/(1.0 + exp(-2.0*80*(0.15-r)))); 
+      // r = (x - Vec3(0.5, 0.05)).abs(); 
+      // T->set(i, max(0.0, min(1.0, T->get(i) + 1.0/(1.0 + exp(-2.0*80*(0.15-r))))));
+      // if (x[0] >= 0.8 && x[1] >= 0.4 && x[1] <= 0.6) 
+      //  	T->set(i, max(0.0, min(1.0, T->get(i)+1.0)));
+      // if (x[0] >= 0.47 && x[0] <= 0.53 && x[1] >= 0.5 && x[1] <= 0.7) 
+      //  	T->set(i, max(0.0, min(1.0, T->get(i)-1.0)));      
     }
-    //int = grid->contour(T, 0.5); 
     grid->solBasedAdapt2(grid->getError(T));
     grid->adapt(); 
   }
-  // Block2* g2 = new Block2({0, 0, 0}, {1, 1, 0}, 3, 3); 
-  // g2->addVar({"T"}); 
-  // auto oT = g2->getVar("T"); 
-  // oT->set(0); 
-  // oT->set(4, 8); 
-  // g2->listCell[1]->adapt[0] = 1; 
-  // //  g2->listCell[7]->adapt[0] = 1; 
-  // g2->listCell[3]->adapt[1] = 1; 
-  // //g2->listCell[5]->adapt[1] = 1; 
-  // g2->adapt(); 
 
-  // auto g2int = g2->contour(T, 0.5);
-  
-  // cout << g2int <<endl; 
+  Grid* sint = new Grid(); 
+  grid->contour2(sint, T, 0.5);
+  sint->checkGeo(); 
 
-  
-  // myfile.open(flname); 
-  // myfile << g2 << endl;
-  // myfile.close();   
-
-  // flname = "g2int"+std::to_string(filecnt++)+".vtk";
-  // myfile.open(flname); 
-  // myfile << g2int << endl; 
-  // myfile.close(); 
-  // exit(0); 
-  
-  auto sint = grid->contour(T, 0.5);
-  grid->indicator(sint, T); 
-
+  // Assign velocity variables to it 
   sint->addVec("u",1); 
-  auto us = sint->getVar("u"); auto vs = sint->getVar("v"); 
-  
+
+  // Get velocity on [L]
+  auto us = sint->getVar("u"); auto vs = sint->getVar("v");   
   grid->passVar(sint, u, us); 
   grid->passVar(sint, v, vs); 
 
+  // Initial grid  
   grid->writeVTK("euler"); 
   sint->writeVTK("ibm"); 
   
+  // TIME LOOP
+  for (auto ti = 0; ti < endTime/dt+1; ++ti) {
+    cout << endl << "[ " << ti << " ] "; 
 
-  for (auto i = 0; i < sint->listVertex.size(); ++i) {
-    Vec3 x = *sint->listVertex[i] + Vec3(us->get(i)*dt, vs->get(i)*dt, 0); 
-    sint->listVertex[i]->set(x); 
+    // set time dependent velocity field on [E]   
+    for (auto i = 0; i < grid->listCell.size(); ++i) {
+      auto x = grid->listCell[i]->getCoord(); // - Vec3(0.5, 0.5); 
+      u->set(i, -2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0])*cos(pi*ti*dt/endTime));
+      v->set(i, 2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1])*cos(pi*ti*dt/endTime)); 
+    }
+
+    //----------------------------------------------------------------------
+    // RK2 [L] advection
+    //---------------------------------------------------------------------
+    // Get velocity on [L]
+    grid->passVar(sint, u, us); 
+    grid->passVar(sint, v, vs); 
+    
+    vector<Vec3> xold(sint->listVertex.size());    
+    for (auto i = 0; i < sint->listVertex.size(); ++i) {
+      xold[i] = *sint->listVertex[i]; 
+      sint->listVertex[i]->set(xold[i] + Vec3(us->get(i)*dt*0.5, vs->get(i)*dt*0.5, 0));
+      // Locations changed so update the list;
+      grid->updateOtherVertex(sint); 
+    }
+    
+    // Get velocity on [L] at intermediate locations; 
+    grid->passVar(sint, u, us); 
+    grid->passVar(sint, v, vs); 
+    for (auto i = 0; i < sint->listVertex.size(); ++i) {  
+      sint->listVertex[i]->set(xold[i] + Vec3(us->get(i)*dt, vs->get(i)*dt)); 
+    }
+    grid->updateOtherVertex(sint); 
+
+    // location update completed
+    // --- RK2- END------------------------------------------------------
+
+    // ?? correct grid ??  vol and connectivity; 
+    
+
+    //--------------------------------------------------------------------
+    // [E] adaptation
+    //-------------------------------------------------------------------
+    // Contruct T at new location; 
+    grid->indicator(sint, T);   
+    // Adapt
+    grid->solBasedAdapt2(grid->getError(T));
+    grid->adapt();
+    // refresh interface
+    grid->contour2(sint, T, 0.5);
+    sint->checkGeo();  
+    
+    grid->writeVTK("euler"); 
+    sint->writeVTK("ibm"); 
+    //  exit(1); 
   }
-
-  grid->indicator(sint, T); 
-  grid->passVar(sint, u, us); 
-  grid->passVar(sint, v, vs); 
-
-  grid->writeVTK("euler"); 
-  sint->writeVTK("ibm"); 
-
-
+  
   exit(0); 
 
   double mass0=0; double mass=0; 
   for (auto i=0; i < grid->listCell.size(); ++i) {
     mass0 += grid->listCell[i]->vol().abs()*T->get(i); 
-  }
-
-  for (auto i = 0; i < grid->listCell.size(); ++i) {
-    auto xlevel = grid->listCell[i]->level[0]; 
-    auto ylevel = grid->listCell[i]->level[0];
-    msx->set(i, grid->listCell[i]->masterx[xlevel]); 
-    msy->set(i, grid->listCell[i]->mastery[ylevel]); 
   }
 
   grid->writeVTK("heat"); 
@@ -227,13 +218,6 @@ int main() {
     if (iter%1 == 0) {
       grid->solBasedAdapt2(grid->getError(T)); 
       grid->adapt(); 
-    }
-
-    for (auto i = 0; i < grid->listCell.size(); ++i) {
-      auto xlevel = grid->listCell[i]->level[0]; 
-      auto ylevel = grid->listCell[i]->level[0];
-      msx->set(i, grid->listCell[i]->masterx[xlevel]); 
-      msy->set(i, grid->listCell[i]->mastery[ylevel]); 
     }
 
     time += grid->dt; 

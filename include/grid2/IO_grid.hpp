@@ -1,10 +1,13 @@
 #ifndef IOGRID
 #define IOGRID
 
-  void writeVTK(string name, initializer_list<string > v = {"all"}) {
-   
-    bool isAll = (v.size() == 1 && *v.begin() == "all"); 
-    vector<bool> lvar(listVar.size(), false); 
+void writeVTK(string name, initializer_list<string > v = {"all"}) {
+
+  bool isAll = false; 
+  vector<bool> lvar; 
+  if (listVar.size() > 0) {
+    isAll = (v.size() == 1 && *v.begin() == "all"); 
+    lvar.resize(listVar.size(), false); 
     for (auto i = 0; i < listVar.size(); ++i) {
       if (!isAll) {
 	for (auto j = v.begin(); j != v.end(); ++j) 
@@ -23,13 +26,14 @@
 	}
       }	
     }
+  }
        
-    ofstream out; 
-    out.open(name+std::to_string(filecnt++)+".vtk"); 
+  ofstream out; 
+  out.open(name+std::to_string(filecnt++)+".vtk"); 
 
-    int_8 nCell = listCell.size();
-    int t = listCell[0]->node.size()+1;
-    out << "# vtk DataFile Version 2.0" << endl; 
+  int_8 nCell = listCell.size();
+  int t; // = listCell[0]->node.size()+1;
+  out << "# vtk DataFile Version 2.0" << endl; 
     out << "Unstructure Grid" << endl; 
     out << "ASCII"<< endl; 
     out << endl << "DATASET UNSTRUCTURED_GRID"<< endl; 
@@ -38,6 +42,7 @@
       out << **p <<  endl ; 
     }
     if (nCell > 0) {
+      t = listCell[0]->node.size()+1;
       out << endl << "CELLS "<< nCell << " " << nCell*t << endl; 
       for (auto c = cbegin(); c != cend(); ++c) {
 	if ((*c)->isAlive) out << *c ; 

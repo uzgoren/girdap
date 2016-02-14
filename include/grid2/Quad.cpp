@@ -134,7 +134,7 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
 	grid->addCell({ind[i][j], ind[i+1][j], ind[i+1][j+1], ind[i][j+1]});
 	//cout << "No vars: "<< grid->listVar.size() <<endl; 
 	for (auto v: grid->listVar) {
-	  v->set(grid->listCell.size()-1, v->data[id]); 
+	  v->set(grid->listCell.size()-1, v->get(id)); 
 	}
       }
     }
@@ -262,12 +262,12 @@ bool Quad::coarsen(int dir) {
     // Then coarsen; 
     
     // [0] Calculate new value of old variables first (no point after other cells removal); 
-    for (auto var : grid->listVar) { 
-      auto vol0 = vol().abs(); 
-      auto vol1 = (*c0)->vol().abs();
-      var->set(id, (var->data[id]*vol0 + var->data[(*c0)->id]*vol1)/(vol0+vol1)); 
-    }
-    
+    // for (auto var : grid->listVar) { 
+    //   auto vol0 = vol().abs(); 
+    //   auto vol1 = (*c0)->vol().abs();
+    //   var->set(id, (var->get(id)*vol0 + var->get((*c0)->id)*vol1)/(vol0+vol1)); 
+    // }    
+
     // [1] Correct indices;
     //     [a] Hanging nodes; 
     auto hv = (*c0)->hangingVertexOnFace(i0); 
@@ -388,19 +388,21 @@ void Quad::checkIslandLevels(int dir) {
 
 void Quad::checkNgbrLevel(int dir) {
   auto myFinalLevel = adapt[dir] + level[dir]; 
-  vector<int_8> ngbr(4); //, f2, b1, b2; 
-  if (dir == 1) {
+  vector<int_8> ngbr(8); //, f2, b1, b2; 
+  //  if (dir == 1) {
     ngbr = {(*getVertex(1))->cell[2], (*getVertex(2))->cell[1]  
-	    , (*getVertex(3))->cell[0], (*getVertex(0))->cell[3]}; 
-  } else if (dir == 0) {
-    ngbr = {(*getVertex(2))->cell[3], (*getVertex(3))->cell[2]  
-	    , (*getVertex(0))->cell[1], (*getVertex(1))->cell[0] }; 
-  } else {
-    return; 
-  }
+	    , (*getVertex(3))->cell[0], (*getVertex(0))->cell[3] 
+	    , (*getVertex(2))->cell[3], (*getVertex(3))->cell[2] 
+	    , (*getVertex(0))->cell[1], (*getVertex(1))->cell[0]}; 
+  //  } else if (dir == 0) {
+  //   ngbr = {(*getVertex(2))->cell[3], (*getVertex(3))->cell[2]  
+  // 	    , (*getVertex(0))->cell[1], (*getVertex(1))->cell[0] }; 
+  // } else {
+  //   return; 
+  // }
   // adjacent cells should not be simultaneously refined and coarsened
   short ref = 0; 
-  for (auto i = 0; i<4; ++i) {
+  for (auto i = 0; i<ngbr.size(); ++i) {
     if (ngbr[i] >= 0) {
       if (grid->listCell[ngbr[i]]->adapt[dir] * adapt[dir] < 0) {
 	grid->listCell[ngbr[i]]->adapt[dir]  = max(short(0), grid->listCell[ngbr[i]]->adapt[dir]); 
@@ -409,7 +411,7 @@ void Quad::checkNgbrLevel(int dir) {
     }
   }
   short ngbrFinalLevel; 
-  for (auto i = 0; i < 4; ++i) {
+  for (auto i = 0; i < ngbr.size(); ++i) {
     if (ngbr[i] >= 0) {
       ngbrFinalLevel = grid->listCell[ngbr[i]]->adapt[dir] + grid->listCell[ngbr[i]]->level[dir]; 
       if (myFinalLevel - ngbrFinalLevel > 1) {
