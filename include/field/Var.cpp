@@ -24,6 +24,31 @@
 #include <linSolve/LinSys>
 #include <field/Var>
 
+
+double Var::get(int_8 i) {
+  if (i >= 0 && i < data.size()) return data[i]; 
+  else {
+    cout << "Var: "<<name<< " out of bounds " << i << " loc " << loc << endl; 
+    cout << " size is " << data.size() << " while it should have been " ;       
+    if (loc == 0) cout << grid->listCell.size() << endl; 
+    else if (loc == 1) cout << grid->listVertex.size() << endl; 
+    else cout << " unknown "<< endl ; 
+    exit(1); 
+  }
+}
+
+double* Var::operator[](int_8 const &index) {
+  if (index>=0 && index<data.size()) return &data[index]; 
+  else {
+    cout << "Var: "<<name<< " out of bounds " << index << " loc " << loc << endl; 
+    cout << " size is " << data.size() << " while it should have been " ;       
+    if (loc == 0) cout << grid->listCell.size() << endl; 
+    else if (loc == 1) cout << grid->listVertex.size() << endl; 
+    else cout << " unknown "<< endl ; 
+    exit(1); 
+  }
+}
+
 void Var::solve(LinSys a) {
 
   // cout << "Size: " << a.b.size() << endl; //listBC.size() <<endl; // << " " << grid->listBNDR.size() << endl; 

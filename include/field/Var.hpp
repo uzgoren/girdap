@@ -50,28 +50,25 @@ public:
   Var(std::string a, int b) :Var(a) { if (b<0 && b>2) b=0; loc = b; }
 
   VecX<double> get() {return data;}
-  double get(int_8 i) {
-    if (i>=0 && i<data.size()) return data[i]; 
-    else {
-      cout << "Var-get: out of bounds" << endl; 
-      exit(1); 
-    }
-  }
-
-  double* operator[](int_8 const &index) {
-    if (index>=0 && index<data.size()) return &data[index]; 
-    else {
-      cout << "Var: out of bounds " << endl; 
-      exit(1); 
-    }
-  }
-
+  double get(int_8 i); 
+  double* operator[](int_8 const &index); 
   
   void changeName(std::string a) { name = a;}
   void set(double a) { data.data.assign(data.size(), a); }
   void set(VecX<double > a) { data.data.assign(a.data.begin(), a.data.end()); }
-  void set(int_8 i, double a) { if (i < data.data.size()) data.data[i] = a; }
+  void set(int_8 i, double a) { 
+    if (i >=0 && i < data.data.size()) data.data[i] = a; 
+    else {
+      cout << "Var " << name << " failed to set " << i << " to " << a << endl; 
+      exit(1); 
+    }
+  }
   void set(initializer_list<std::string> vname, std::string exp); 
+
+  void resize(int_8 n) {
+    if (n <=  0) data.data.clear(); 
+    else data.data.resize(n); 
+  }
 
   void initBC() {
     listBC.resize(6); 
