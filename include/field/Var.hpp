@@ -38,6 +38,7 @@ public:
   Grid *grid; 
   int_2 loc;  // 0 for cell center; 1 for vertex; 2 for faces [faces are difficult]
   bool isVec; 
+  double dt; 
   vector<shared_ptr<Boundary> > listBC; 
 
 
@@ -46,7 +47,7 @@ public:
   double tol; 
 
   
-  Var(std::string a): name(a), isVec(false) { loc = 0; solver = "BiCGSTAB"; itmax = -1; tol = -1; }
+  Var(std::string a): name(a), isVec(false) { dt = 1.0; loc = 0; solver = "BiCGSTAB"; itmax = -1; tol = -1; }
   Var(std::string a, int b) :Var(a) { if (b<0 && b>2) b=0; loc = b; }
 
   VecX<double> get() {return data;}

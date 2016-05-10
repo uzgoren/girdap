@@ -2,7 +2,6 @@
 #define CONNECTGRID
 
 void contour(Grid* &cGrid, shared_ptr<Var> &a, double d) {
-  if (cGrid == nullptr) cGrid = new Grid(); 
   // Cell by cell construction
   // For each cell create elements for the new grid
   // Check before surface is needed; 
@@ -18,7 +17,7 @@ void contour(Grid* &cGrid, shared_ptr<Var> &a, double d) {
   for (auto i = 0; i < listVertex.size(); ++i) {
     val[i] = listVertex[i]->evalPhi(a); 
   }
-    
+  
   // 01. Create vertices at faces; assign them to a cell; cell dependent
   // using val, other grid, let it stay; 
   for (auto f : listFace) {
@@ -42,7 +41,7 @@ void contour(Grid* &cGrid, shared_ptr<Var> &a, double d) {
       // Create a link between 
       // Divide cells' edges into two halves and name them 
       // Quad:0-7;  Line:0-1; Tri:0-5; [Hexa:0-41 ??;]
-      int nloc, ploc; 
+      int_8 nloc, ploc; 
       if (n >= 0) {	  
 	auto cn = listCell[n];
 	if (f->orient == 0) nloc = (cn->node[0] == v0) ? 0 : 1; 
@@ -108,23 +107,34 @@ void contour(Grid* &cGrid, shared_ptr<Var> &a, double d) {
   // 03. disregard connect information after putting them in
   //     object array otherVertex; vertex-to-vertex connectivity
 
-  // cGrid->otherVertex.resize(cGrid->listVertex.size()); 
+  // cGrid->otherVertex.assign(cGrid->listVertex.size(), -1); 
   // otherVertex.resize(listVertex.size()); 
 
-  auto i0 = connect[0]; 
-  for (auto i1=0; i1 < cGrid->listVertex.size(); ++i1) {
-    auto v0 = searchVertexbyCoords(*(cGrid->listVertex[i1]), listCell[i0]->node[0]); 
-    if (v0 >= 0) {
-      // cGrid->otherVertex[i1] = listVertex[v0]->id;
-      // i0 = (listVertex[v0]->cell[0]<0) ? i0:listVertex[v0]->cell[0] ; 
-      // cout << "Grid: Cell = "<< i0 << ", Vertex" << v0 << " -- Other: " << i1 << endl; 
-    } else {
-      cout << "Could not found the next vertex" << i0 << " " << *(cGrid->listVertex[i1]) << endl;
-      exit(1); 
-    }
-    cGrid->otherVertex[i1] = listVertex[v0]->id; 
-    otherVertex[listVertex[v0]->id] = cGrid->listVertex[i1]->id; 
-  }    
+  // auto i0 = connect[0]; 
+  // for (auto i1=0; i1 < cGrid->listVertex.size(); ++i1) {
+  //   cout << i0 << " " << i1 << " " << cGrid->listVertex.size() <<endl; 
+  //   cout << *(cGrid->listVertex[i1]) << " " << listCell[i0]->id << " " << listCell[i0]->node[0] << endl; 
+  //   auto v0 = searchVertexbyCoords(*(cGrid->listVertex[i1]), listCell[i0]->node[0]); 
+  //   if (v0 >= 0) {
+  //     // cGrid->otherVertex[i1] = listVertex[v0]->id;
+  //     // i0 = (listVertex[v0]->cell[0]<0) ? i0:listVertex[v0]->cell[0] ; 
+  //     // cout << "Grid: Cell = "<< i0 << ", Vertex" << v0 << " -- Other: " << i1 << endl; 
+  //   } else {
+  //     cout << "Could not found the next vertex" << i0 << " " << *(cGrid->listVertex[i1]) << endl;
+  //     exit(1); 
+  //   }
+  //   cGrid->otherVertex[i1] = listVertex[v0]->id; 
+  //   otherVertex[listVertex[v0]->id] = cGrid->listVertex[i1]->id; 
+  // }    
+
+  for (auto v : cGrid->listVar) {
+    if (v->loc == 1) v->data.resize(cGrid->listVertex.size());
+    else if (v->loc == 0) v->data.resize(cGrid->listCell.size()); 
+  }
+
+
+  cGrid->cleanGrid(); 
+  updateOtherVertex(cGrid); 
   
   return; 
 }
@@ -135,7 +145,7 @@ void releaseConnections() {
 }
 
 void updateOtherVertex(Grid* cGrid) {
-  otherVertex.resize(listVertex.size()); 
+  otherVertex.assign(listVertex.size(), -1); 
   cGrid->otherVertex.resize(cGrid->listVertex.size()); 
   
   for (auto i1 = 0; i1 < cGrid->listVertex.size(); ++i1) {
@@ -162,86 +172,66 @@ void indicator(Grid* cGrid, shared_ptr<Var> T) {
   auto dx = listCell[0]->edge(0).abs();
   auto dy = listCell[0]->edge(1).abs(); 
  
-  auto f = 4.0*atan(1.0); 
+  auto pi = 4.0*atan(1.0); 
   for (auto i = listCell[0]->level[0]; i < levelMax[0]+1; ++i) dx /= 2; 
   for (auto i = listCell[1]->level[1]; i < levelMax[1]+1; ++i) dy /= 2; 
 
-  //  cout << " ------ " << dx << ", "<< dy << " : " << f << " " << levelMax[0] << endl; 
+  cout << " ------ " << dx << ", "<< dy << " : " << " " << levelMax[0] << endl; 
 
   // 00. Now color a new function at the cell centers; 
   double dist[listCell.size()];
   for (auto i = 0; i<listCell.size(); ++i) dist[i] = -1; 
 
-  for (int_8 i1 = 0; i1 < cGrid->listVertex.size(); ++i1) {
-    auto v1 = cGrid->listVertex[i1];
-
-    if (v1->cell.size() != 2) continue; 
-    // calculate normal; Should be moved into Vertex; 
-    Vec3 norm; 
-    if (v1->cell[0] >=0 && v1->cell[1] >= 0) {
-      auto e0 = (*v1->getCell(0))->vol(); auto b0 = e0.abs(); 
-      auto e1 = (*v1->getCell(1))->vol(); auto b1 = e1.abs();       
-      norm = (b1*e0 + b0*e1)/(b0+b1); 
-    } else if (v1->cell[1] >= 0) {
-      norm = (*v1->getCell(1))->vol(); 
-    } else if (v1->cell[0] >= 0) {
-      norm = (*v1->getCell(0))->vol(); 
-    } else {
-      cout << "No connected cells! Quitting! "<<endl; 
+  for (auto ci1 = 0; ci1 < cGrid->listCell.size(); ++ci1) {
+    auto c1 = cGrid->listCell[ci1]; 
+    auto x1 = c1->getCoord(); 
+    auto norm = c1->vol(); norm = norm/norm.abs(); 
+    auto i1 = c1->node[0]; 
+    if (i1 < 0 && i1 >= cGrid->listVertex.size()) {
+      cout << " Cell does not have a vertex ??? " << i1 << endl; 
       exit(1); 
     }
-    if (norm.abs() > 1e-15) norm /= norm.abs();
-    else {
-      cout << "c1: " << v1->cell[0] << " c2: " << v1->cell[1] << " n= "<< norm << endl; 
-    }
-
-    auto v0i = cGrid->otherVertex[i1]; 
-    if (v0i <= 0) {
-      cout << "WARNING - no associated vertex found! now what? " <<endl; 
+    auto v1 = cGrid->listVertex[i1];     
+    auto i0 = cGrid->otherVertex[i1]; 
+    if (i0 < 0 && i0 >= listVertex.size()) {
+      cout << "WARNING - no associated vertex found! now what? " << endl; 
       exit(1); 
     }
-    auto v0 = listVertex[v0i]; 
+    auto v0 = listVertex[i0];
 
     int_8 j; 
     for (j = 0; j < v0->cell.size(); ++j) if (v0->cell[j] >= 0) break; 
+    
     vector<int_8> ngbrCells(1, v0->cell[j]); 
-    ngbrCellbyLayer(4, ngbrCells); 
+    ngbrCellbyLayer(5, ngbrCells); 
 
     for (auto j = 0; j < ngbrCells.size(); ++j) {
       auto ci0 = ngbrCells[j]; 
       auto c0 = listCell[ci0];       
-      auto r = (c0->getCoord() - *v1).abs(); 
+      auto r = (c0->getCoord() - x1).abs(); 
       if (dist[ci0] < 0) dist[ci0] = r; 
       if (dist[ci0] < r) continue; 
       dist[ci0] = r; 
-      r = (c0->getCoord() - *v1)*norm;       
-      T->set(ci0, 1.0/(1+exp(-0.25*r/dx*f))); ///(1+exp(-r/dy*f)));
-    }
+      if (r > 0.04) continue; 
+      r = (c0->getCoord() - x1)*norm;
+      T->set(ci0, 1.0/(1+exp(-160*r))); //0.25*r/dx*pi)));      
+    }    
   }
-  //  cout << "BEFORE PAINT " <<endl; 
-  for (auto i = 0; i < listCell.size(); ++i) 
-    paintCell(T, 0, 0.8, 1.0, i); 
 
-  // for (auto i1 = 0; i1 < cGrid->listVertex.size(); ++i1) {
-  //   auto v1 = cGrid->listVertex[i1];
-  //   auto v0 = cGrid->otherVertex[i1];     
-  //   int j; 
-  //   for (j = 0; j < v0->cell.size(); ++j) if (v0->cell[j] >= 0) break; 
-  //   vector<int_8> ngbrCells(1, v0->cell[j]); 
-  //   ngbrCellbyLayer(4, ngbrCells); 
-  //   for (auto j = 0; j < ngbrCells.size(); ++j) {
-  //     auto ci0 = ngbrCells[j]; 
-  //     auto phisum = 0, sum = 0; 
-  //     for (auto i = 0; i < listCell[ci0]->node.size(); ++i) {
-  // 	auto n = *listCell[ci0]->getVertex(i);
-  // 	phisum += n->evalPhi(T); 
-  // 	sum += 1; 
-  //     }
-  //     cout << T->get(ci0) << " " << phisum/sum <<endl; 
-  //     T->set(ci0, phisum/sum); 
-  //   }
-  // }
 
+  int icnt = 0; 
+  for (auto i = 0; i < listCell.size(); ++i) {
+    int_8 sum = 0; 
+    paintCell(T, 0.0, 0.5, 1.0, i, sum);
+    // if (sum > 1) {
+    //   cout << endl << " Paint cells: " << sum << " icnt: " << icnt << endl; 
+    //   if (icnt > 1) {
+    // 	cout << " Found more than one bodies " << listCell[i]->getCoord() << endl; 
+    // 	exit(1); 
+    //   }
+    //   ++icnt; 
+    // }
+  }
        
 }
 
@@ -345,7 +335,7 @@ void ngbrCellbyDist(Vec3 r, vector<int_8> &ngbrCells, int_8 cp=0) {
   }  
 }
 
-void paintCell(shared_ptr<Var> &v, double replace, double bndr, double value, int_8 cid) {
+void paintCell(shared_ptr<Var> &v, double replace, double bndr, double value, int_8 cid, int_8 &sum) {
   //cout << "ind = "<< cp << " r = (" << r << " ), size = " << ngbrCells.size() << endl; 
   if (v->get(cid) < bndr) return; 
   // get neighbors; 
@@ -353,8 +343,9 @@ void paintCell(shared_ptr<Var> &v, double replace, double bndr, double value, in
   ngbrCellbyLayer(1, ngbrCell); 
   for (auto i = 1; i < ngbrCell.size(); ++i) {
     if (v->get(ngbrCell[i]) != replace) continue; 
+    ++sum; 
     v->set(ngbrCell[i], value);
-    paintCell(v, replace, bndr, value, ngbrCell[i]); 
+    paintCell(v, replace, bndr, value, ngbrCell[i], sum); 
   }
 }
 
@@ -371,7 +362,6 @@ void contour2(Grid* &cGrid, shared_ptr<Var> &a, double d) {
   }
   otherVertex.assign(listVertex.size(), -1);  
   contourFromScratch(cGrid, a, d); 
-
 } 
 
 

@@ -30,7 +30,7 @@
 int main() {
   auto dt = 0.01; 
   auto t = clock(); 
-  Block2* grid = new Block2({0, 0, 0}, {1, 0.08, 0}, 20, 1);
+  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 20, 20);
 
   //Block2* grid = new Block2({0, 0, 0}, {0.02, 0.02, 0}, 10, 1);
   grid->setDt(dt); 
@@ -46,35 +46,46 @@ int main() {
   auto v = grid->getVar("v");
   auto p = grid->getVar("p"); 
 
-  for (auto j = 0; j < 3; ++j) {
-    for (auto i = 0; i < grid->listCell.size(); ++i) {
-      auto x=grid->listCell[i]->getCoord(); 
-      p->set(i, 20 + 80*cosh(5*(1-x[0]))/cosh(5)); //(100/0.02+1e6*(0.02 - x[0]))*x[0] + 100); 
-    }
-    auto gt = grid->valGrad(p); 
-    grid->solBasedAdapt(gt); 
-    grid->refine2(); 
-  }
+  // for (auto j = 0; j < 3; ++j) {
+  //   for (auto i = 0; i < grid->listCell.size(); ++i) {
+  //     auto x=grid->listCell[i]->getCoord(); 
+  //     p->set(i, 20 + 80*cosh(5*(1-x[0]))/cosh(5)); //(100/0.02+1e6*(0.02 - x[0]))*x[0] + 100); 
+  //   }
+  //   auto gt = grid->valGrad(p); 
+  //   grid->solBasedAdapt(gt); 
+  //   grid->refine2(); 
+  // }
   
   T->set(150); 
 
-  T->setBC("west", "val", 100);
-  T->setBC("east", "grad", 0); 
-  // T->setBC("south", "grad", -20, 100);   
-  // T->setBC("north", "grad", -20, 100);  
-  T->itmax = 1000; 
+  T->setBC("west", "grad", 100);
+  T->setBC("east", "val", 200); 
+  T->setBC("south", "grad", 0);   
+  T->setBC("north", "grad", 0);  
+  T->itmax = 10000; 
   T->tol = 1e-6;
+  //  T->solver = "CG"; 
 
-  u->set(0.01); 
-  v->set(0.03); 
+  // u->set(0.01); 
+  // v->set(0.03); 
 
   int filecnt = 0; int it = 0, writeInt = 10; 
   ofstream myfile;   
-  // while (time < endTime) {
+  while (time < endTime) {
     cout << setiosflags(ios::fixed) << setprecision(2); 
     cout << "------------- Processing TIME = "<< time << " ------------------"<<endl; 
+    
+    auto gt = grid->getError(T);
 
-    auto vel = grid->getVel();
+    auto Tmin = T->data.min(); 
+    auto Tmax = T->data.max(); 
+    
+ 
+    grid->solBasedAdapt2(gt, 0.005, 0.1); 
+    grid->adapt(); 
+	 
+
+    // auto vel = grid->getVel();
     
     grid->lockBC(T); 
     T->solve(
@@ -83,26 +94,24 @@ int main() {
 	     //- grid->laplace(k/cp/rho) 
 	     //- grid->source(0, 100000/cp/rho)
 	     - grid->laplace(1.0) 
-	     - grid->source(-25, 25*20)
+	     - grid->source(-25, 500) //-25, 25*20)
 	     ); 
     grid->unlockBC();     
 
-    // auto gt = grid->valGrad(T); 
-    // grid->solBasedAdapt(gt); 
-    // grid->refine2(); 
+    time += endTime/5; //grid->dt; 
+    //grid->setDt(dt); 
 
-    time += grid->dt; 
-    grid->setDt(dt); 
+    grid->writeVTK("heat"); 
 
     // if (( it % writeInt) == 0) {
-      std::string flname="heat"+std::to_string(filecnt++)+".vtk"; 
-      myfile.open(flname); 
-      myfile << grid << endl;
-      myfile.close();   
-      // } 
+    //   std::string flname="heat"+std::to_string(filecnt++)+".vtk"; 
+    //   myfile.open(flname); 
+    //   myfile << grid << endl;
+    //   myfile.close();   
+    //   // } 
 
     cout << "---------------------------------------------------"<<endl; 
-    // }
+     }
 
 
   // myfile.open("reg.vtk"); 
@@ -111,7 +120,7 @@ int main() {
  
   //grid->writeFace(); 
  
-  grid->writeFace(); 
+  //grid->writeFace(); 
 
   delete(grid); 
 

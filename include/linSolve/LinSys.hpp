@@ -85,7 +85,8 @@ public:
     int iter = 0; 
     double alpha, rsold, rsnew; 
     VecX<double> p(A.data.size()), q(A.data.size());
- 
+
+    err = 0; 
     *error = (b - A*(*x));
     p = *error; 
     rsold = *error*(*error);

@@ -273,6 +273,7 @@ template <typename T> class VecX {
       return px[index]; 
     }    
   };
+
   // const T& operator[] (uint_8 const &index) const {
   //    T result = 0; 
   //    if (!px.empty()) {

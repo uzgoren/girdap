@@ -22,6 +22,6 @@ set(SOURCES  ./include/field/Var.cpp
              ./include/grid2/Line.cpp
              )
 
-add_executable(girdap src/main_lsp.cpp ${SOURCES})
+add_executable(girdap src/main.cpp ${SOURCES})
 
 install(TARGETS girdap RUNTIME DESTINATION bin)

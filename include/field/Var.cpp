@@ -67,7 +67,7 @@ void Var::solve(LinSys a) {
   // cout << " --> Normalization took "<< t/(double) CLOCKS_PER_SEC << " secs"<< endl; 
   // cout << a.A << endl; 
   //cout << a.b << endl; 
-  a.setLimits(tol, itmax); 
+  a.setLimits(tol/dt, itmax); 
   t = clock(); 
   if (solver.compare("BiCGSTAB") == 0) {
     a.BiCGSTAB(); 
@@ -80,7 +80,7 @@ void Var::solve(LinSys a) {
   cout << " + " << name << " " << setw(10)<< data.min() << setw(1); 
   cout << ":" << setw(10) << data.max() ;
   cout <<setw(3)  <<" | "<< setw(12) << solver; 
-  cout << setw(5) << " it: " << setw(6) << a.it << " tol: " << a.err; 
+  cout << setw(5) << " it: " << setw(6) << a.it << " tol: " << log10(abs(a.err)); 
   cout << " t: "<< t/(double) CLOCKS_PER_SEC << " s"<< endl; 
 }
 

@@ -432,6 +432,7 @@ public:
   void correctVel(double coef);
 
   LinSys ddt(double c); 
+  LinSys ddt(VecX<double> c); 
   void timeScheme(LinSys &axb, initializer_list<double> &n, VecX<double> &prev); 
   
 #include "IO_grid.hpp"

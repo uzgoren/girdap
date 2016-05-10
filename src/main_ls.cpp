@@ -30,7 +30,7 @@
 int main() {
   auto dt = 0.5; auto writeTime = 0.02; 
   auto t = clock(); int iter = 0; 
-  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10);
+  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 20, 20);
   //Block2* grid = new Block2({0, 0, 0}, {0.02, 0.02, 0}, 10, 1);
   double time= 0; double endTime = 8; //dt*50; 
 
@@ -51,7 +51,7 @@ int main() {
   T->set(0); 
     double pi = 4.0*atan(1); 
   
-  for (auto j = 0; j < 5; ++j) {
+  for (auto j = 0; j < 6; ++j) {
     for (auto i = 0; i < grid->listCell.size(); ++i) {
       auto x = grid->listCell[i]->getCoord(); // - Vec3(0.5, 0.5); 
       u->set(i, -2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0]));

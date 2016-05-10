@@ -36,11 +36,11 @@ void Grid::laplace(LinSys &axb, shared_ptr<Cell > f, double const &c) {
     auto flux = c*sch.val[i]*area;
     //cout << " : " << flux << endl; 
     //cin.ignore().get(); 
-    if (n >= 0) axb.A[n][sch.ind[i]] -= flux; 
-    if (p >= 0) axb.A[p][sch.ind[i]] += flux; 
+    if (n >= 0) axb.A[n][sch.ind[i]] -= flux/listCell[n]->vol().abs(); 
+    if (p >= 0) axb.A[p][sch.ind[i]] += flux/listCell[p]->vol().abs(); 
   }
-  if (n >= 0) axb.b[n] += c*sch.c*area; 
-  if (p >= 0) axb.b[p] -= c*sch.c*area; 
+  if (n >= 0) axb.b[n] += c*sch.c*area/listCell[n]->vol().abs(); 
+  if (p >= 0) axb.b[p] -= c*sch.c*area/listCell[p]->vol().abs(); 
   return;  
   // int n = f->next; 
   // int p = f->prev;
@@ -133,11 +133,11 @@ LinSys Grid::source(double c, double a, initializer_list<double> n) {
   LinSys axb(listCell.size());
   auto t = clock(); 
   for (auto i = 0; i < listCell.size(); ++i) {
-    double vol = listCell[i]->vol().abs(); 
+    // double vol = listCell[i]->vol().abs(); 
     if (c != 0) {
-      axb.A[i][i] += c*vol; 
+      axb.A[i][i] += c;//*vol; 
     }
-    axb.b[i] -= a*vol;
+    axb.b[i] -= a;//*vol;
   }
   t = clock() - t; 
   //cout << "Source is prepared in " << t/ (double) CLOCKS_PER_SEC << " secs"<< endl; 
@@ -152,9 +152,9 @@ LinSys Grid::source(double c, VecX<double> a, initializer_list<double> n) {
   LinSys axb(listCell.size());
   //auto t = clock(); 
   for (auto i = 0; i < listCell.size(); ++i) {
-    double vol = listCell[i]->vol().abs(); 
-    axb.A[i][i] += c*vol; 
-    axb.b[i] -= a[i]*vol;
+    //double vol = listCell[i]->vol().abs(); 
+    axb.A[i][i] += c;//*vol; 
+    axb.b[i] -= a[i];//*vol;
   }
   //t = clock() - t; 
   //cout << "Source is prepared in " << t/ (double) CLOCKS_PER_SEC << " secs"<< endl; 
@@ -180,6 +180,8 @@ void Grid::div(LinSys &axb, shared_ptr<Cell > f, Vec3 const &c) {
   if (p>=0 && n>=0) {
     auto phif = f->phi(thisVar).eval(thisVar); 
     auto row = (flux > 0) ? p : n; 
+    auto invvoln = 1.0/listCell[n]->vol().abs(); 
+    auto invvolp = 1.0/listCell[p]->vol().abs(); 
     // auto down = (row == p) ? n : p; 
 
     // auto t = xf - xphi; //t = t/t.abs(); 
@@ -220,11 +222,11 @@ void Grid::div(LinSys &axb, shared_ptr<Cell > f, Vec3 const &c) {
     // }
     // if (p == row) axb.b[n] += 0.01*flux*thisVar->data[n]; 
 
-    axb.A[p][row] += 0.5*flux;
-    axb.A[n][row] -= 0.5*flux; 
+    axb.A[p][row] += 0.5*flux*invvolp;
+    axb.A[n][row] -= 0.5*flux*invvoln; 
 
-    axb.b[p] -= flux*corr; 
-    axb.b[n] += flux*corr; 
+    axb.b[p] -= flux*corr*invvolp; 
+    axb.b[n] += flux*corr*invvoln; 
 
     return; 
   } else {
@@ -233,11 +235,14 @@ void Grid::div(LinSys &axb, shared_ptr<Cell > f, Vec3 const &c) {
     auto row = (p >= 0) ? p : n; 
     auto sign = (p >= 0) ? 1.0 : -1.0; 
     if (flux*sign > 0) { //FOU
-      axb.A[row][row] += flux*sign; 
+      axb.A[row][row] += flux*sign/listCell[row]->vol().abs();  
     } else {
       auto bndr = (p >= 0) ? -n-1 : -p-1; 
+      auto invvol = (p >= 0) ? 1.0/listCell[p]->vol().abs()
+	: 1.0/listCell[n]->vol().abs();  
+
       if (thisVar->listBC[bndr]->type == 0) 
-	axb.b[row] -= flux*sign*thisVar->listBC[bndr]->b_val; 
+	axb.b[row] -= flux*sign*thisVar->listBC[bndr]->b_val*invvol; 
     //   Scheme<double> s = f->phi(thisVar); 
     //   //      f->getBCPhi(thisVar, a, b); //
     //   //getBCPhi(f, thisVar, a, b);
@@ -396,7 +401,7 @@ LinSys Grid::divRK4E(VecX<Vec3> vel, double c) {
 // }
 
 VecX<double> Grid::valDiv(VecX<Vec3> vel) { 
-  VecX<double> a; 
+  VecX<double> a(vel.rank); 
 
   auto U = getVar("u"); 
   auto V = getVar("v"); 
@@ -443,28 +448,28 @@ VecX<Vec3> Grid::valGrad(shared_ptr<Var > phi) {
 
 
 void Grid::correctVel(double coef) {
-  auto U = getVar("u");   auto V = getVar("v");   auto W = getVar("v"); auto P = getVar("p"); 
+  auto U = getVar("u");   auto V = getVar("v");   auto W = getVar("w"); auto P = getVar("p"); 
   VecX<Vec3> sum(listCell.size()); 
-  VecX<double> factor(listCell.size());
+  VecX<Vec3> factor(listCell.size());
   
   for (auto f : listFace) {
     auto n = f->next, p = f->prev; 
-    auto area = f->vol().abs(); 
+    auto norm = f->vol(); 
+    auto area = norm.abs(); norm /= area; 
     Vec3 gpf, usf, uf; 
     double Uf = f->phi(U).eval(U); //(p >=0) ? a*vel[p].x() + b : a*vel[n].x() + b; 
     double Vf = f->phi(V).eval(V); //(p >=0) ? a*vel[p].y() + b : a*vel[n].y() + b; 
     double Wf = f->phi(W).eval(W); //(p >=0) ? a*vel[p].z() + b : a*vel[n].z() + b; 
     usf = Vec3(Uf, Vf, Wf); 
     gpf = f->grad(P).eval(P); 
-    uf = usf - coef*gpf;
-
-    if (n >= 0) { sum[n] += area*uf; factor[n] += area;}
-    if (p >= 0) { sum[p] += area*uf; factor[p] += area;}
+    uf = (usf*norm)*norm - coef*(gpf*norm);
+    if (n >= 0) { sum[n] += area*uf; factor[n] += area*norm;}
+    if (p >= 0) { sum[p] += area*uf; factor[p] += area*norm;}
   }
   for (auto i = 0; i < listCell.size(); ++i) {
-     U->data[i] = sum[i].x()/factor[i]; 
-     V->data[i] = sum[i].y()/factor[i]; 
-     W->data[i] = sum[i].z()/factor[i]; 
+    U->data[i] = sum[i].x()/factor[i].x(); 
+    V->data[i] = sum[i].y()/factor[i].y(); 
+    if (factor[i].z() != 0) W->data[i] = sum[i].z()/factor[i].z(); 
   }
   return; 
 }
@@ -534,18 +539,36 @@ void Grid::correctVel(double coef) {
 //------------------------------------------------------------------//
 LinSys Grid::ddt(double c) {
   LinSys axb(listCell.size());
+  if (thisVar) thisVar->dt = dt; 
   auto t = clock(); 
   for (auto i = 0; i < listCell.size(); ++i) {
-    double vol = listCell[i]->vol().abs(); 
+    //    double vol = listCell[i]->vol().abs(); 
     if (c != 0) {
-      axb.A[i][i] += c*vol/dt; 
+      axb.A[i][i] += c/dt; 
     }
-    axb.b[i] += c*vol/dt*(thisVar->data[i]);
+    axb.b[i] += c/dt*(thisVar->data[i]);
   }
   t = clock() - t; 
   //cout << "DDT (Euler) is prepared in " << t/ (double) CLOCKS_PER_SEC << " secs"<< endl; 
   return axb; 
 }
+
+LinSys Grid::ddt(VecX<double> c) {
+  LinSys axb(listCell.size());
+  if (thisVar) thisVar->dt = dt; 
+  auto t = clock(); 
+  for (auto i = 0; i < listCell.size(); ++i) {
+    //    double vol = listCell[i]->vol().abs(); 
+    if (c[i] != 0) {
+      axb.A[i][i] += c[i]/dt; 
+    }
+    axb.b[i] += c[i]/dt*(thisVar->data[i]);
+  }
+  t = clock() - t; 
+  //cout << "DDT (Euler) is prepared in " << t/ (double) CLOCKS_PER_SEC << " secs"<< endl; 
+  return axb; 
+}
+
 
 void Grid::timeScheme(LinSys &axb, initializer_list<double> &n, VecX<double> &prev) {  
   if (n.size()==0) {

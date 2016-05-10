@@ -39,25 +39,26 @@ void solBasedAdapt(VecX<double> phi, double a=1.0, double b = 0.5) {
   } 
 }
 
-void solBasedAdapt2(VecX<Vec3> phi) {
+void solBasedAdapt2(VecX<Vec3> phi, double lowlim=5e-6, double highlim=8e-5) {
   // refine if err > 0.03; coarsen if err < 1e-6; 
+  //  auto lowlim = 5e-6; auto highlim = 8e-5;
   for (auto i = 0; i < listCell.size(); ++i) {
     auto c = listCell[i]; 
-    auto qx = abs(phi[i].x())*listCell[i]->dx();  
-    auto qy = abs(phi[i].y())*listCell[i]->dy();  
-    auto qz = abs(phi[i].z())*listCell[i]->dz();  
+    auto qx = abs(phi[i].x());//*listCell[i]->vol().abs();  
+    auto qy = abs(phi[i].y());//*listCell[i]->vol().abs();   //*listCell[i]->dy();  
+    auto qz = abs(phi[i].z());//*listCell[i]->vol().abs();   //*listCell[i]->dz();  
       
-    if (qx > 8e-5) 
+    if (qx > highlim)// 8e-5) 
       c->adapt[0] = min(1, levelHighBound[0] - c->level[0]);
-    else if (qx < 5e-6) 
+    else if (qx < lowlim)//5e-6) 
       c->adapt[0] = max(-1, levelLowBound[0] - c->level[0]);
-    if (qy > 8e-5) //      if (0.5*qy > sumy)
+    if (qy > highlim) //8e-5) //      if (0.5*qy > sumy)
       c->adapt[1] = min(1, levelHighBound[1] - c->level[1]);
-    else if (qy < 5e-6)
+    else if (qy < lowlim)//5e-6)
       c->adapt[1] = max(-1, levelLowBound[1] - c->level[1]);
-    if (qz > 8e-5) //if (0.5*qz > sumz)
+    if (qz > highlim) //if (0.5*qz > sumz)
       c->adapt[2] = min(1, levelHighBound[2] - c->level[2]);
-    else if (qz < 5e-6)
+    else if (qz < lowlim) //5e-6)
       c->adapt[2] = max(-1, levelLowBound[2] - c->level[2]);      
   }       
 }
@@ -374,9 +375,23 @@ VecX<Vec3> getError(shared_ptr<Var> const &a) {
       sum[p] += area.abs(); 
     } 	
   }   
-  for (auto j = 0; j < sum.size(); ++j) {     
-    err[j] /= sum[j]; 
+  // //  double mean=0; 
+  for (auto j = 0; j < sum.size(); ++j) {
+    //  err[j] /= sum[j]; 
+    (err[j]).data[0] = abs((err[j]).data[0])/sum[j];
+    (err[j]).data[1] = abs((err[j]).data[1])/sum[j];
+    (err[j]).data[2] = abs((err[j]).data[2])/sum[j];
   }
+  //   // if (err[j][0] > mx) mx = err[j][0]; 
+  //   // if (err[j][1] > mx) mx = err[j][1]; 
+  //   // if (err[j][2] > mx) mx = err[j][2]; 
+  // }
+  // // if (mx > 0) { 
+  // //   for (auto j = 0; j < sum.size(); ++j) {
+  // //     err[j] /= mx; 
+  // //   }    
+  // // }
+  // // cout << mx <<  endl; 
 
   return err; 
 }
@@ -468,6 +483,31 @@ void cleanGrid() {
   o2n_node.clear(); 
 }
 
+
+void geoAdapt(Grid* cGrid) {
+  // auto adaptNeeded; 
+  // for (auto i = 0; i < cGrid->otherVertex.size(); ++i) {
+  //   if (cGrid->otherVertex[i] < 0) continue; 
+  //   auto v1 = cGrid->listVertex[i]; 
+  //   auto v1n = v1->ngbr(1); 
+  //   if (n == nullptr) continue; 
+  //   auto i1 = cGrid->otherVertex[i];
+  //   auto i1n = cGrid->otherVertex[n->id]; 
+  //   if (i1n < 0) continue; 
+    
+
+  //   auto v0 = listVertex[i1]; 
+  //   auto n = v0->ngbr(1); 
+  //   if (n == nullptr) continue; 
+    
+  //   for (auto j = 0; j < v0->cell.size(); ++j) {
+  //     auto i0 = v0->cell[j]; 
+  //     if (i0 < 0) continue; 
+  //     listCell[i0]->adapt[0] += 1; 
+  //     listCell[i0]->adapt[1] += 1;
+  //   }
+  // }
+}
 
 
   

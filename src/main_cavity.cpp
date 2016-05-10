@@ -54,6 +54,7 @@ int main() {
   v->setBC("south", "val", 0); v->setBC("north", "val", 0); 
 
   auto p = grid->getVar("p");
+  p->setBC("south", "val", 0); 
   p->set(0.0); 
 
   auto vor = grid->getVar("vor"); 
