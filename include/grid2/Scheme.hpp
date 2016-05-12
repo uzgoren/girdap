@@ -54,14 +54,14 @@ public:
   // }    
 
   void push_pair(int_8 i, T v) {
-    auto it = std::find(ind.begin(), ind.end(), i); 
-    if (it == ind.end()) {
+    // auto it = std::find(ind.begin(), ind.end(), i); 
+    // if (it == ind.end()) {
       ind.emplace_back(i); 
       val.emplace_back(v); 
-    } else {
-      auto i = it - ind.begin(); 
-      val[i] += v; 
-    }
+    // } else {
+    //   auto i = it - ind.begin(); 
+    //   val[i] += v; 
+    // }
   }
   void push_constant(T d) {
     c += d; 

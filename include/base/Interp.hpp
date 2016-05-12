@@ -35,17 +35,17 @@ public:
       + coef[6]*xhat.y()*xhat.z() + coef[7]*xhat.x()*xhat.y()*xhat.z(); 
   }
 
-  // Partial derivation with respect to xhat
+  // Partial derivative with respect to xhat
   double linDX(Vec3 xhat, VecX<double> &coef) {
     return coef[1] + coef[4]*xhat.y() + coef[5]*xhat.z() + coef[7]*xhat.y()*xhat.z();
   }
   
-  // Partial derivation with respect to yhat
+  // Partial derivative with respect to yhat
   double linDY(Vec3 xhat, VecX<double> &coef) {
       return coef[2] + coef[4]*xhat.x() + coef[6]*xhat.z() + coef[7]*xhat.x()*xhat.z(); 
   }
 
-  // Partial derivation with respect to zhat
+  // Partial derivative with respect to zhat
   double linDZ(Vec3 xhat, VecX<double> &coef) { 
       return coef[3] + coef[5]*xhat.x() + coef[6]*xhat.y() + coef[7]*xhat.x()*xhat.y(); 
   }

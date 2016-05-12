@@ -97,10 +97,6 @@ double Cell::phiVal_bcface(VecX<double> &phi, vector<shared_ptr<Boundary> > cons
 
 
 
-
-
-
-
 Scheme<double> Cell::phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias) {
   Scheme<double> sch; 
   if (next < 0 && prev < 0) {
