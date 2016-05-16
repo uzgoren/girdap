@@ -33,7 +33,8 @@
 #include <grid2/Vertex>
 #include <grid2/Cell>
 
-class LinSys; 
+class LinSys;
+class triLinSys;  
 
 //class Vertex; 
 //class Var; 
@@ -435,6 +436,16 @@ public:
   LinSys ddt(VecX<double> c); 
   void timeScheme(LinSys &axb, initializer_list<double> &n, VecX<double> &prev); 
   
+  void triLaplace(triLinSys &axb, shared_ptr<Cell > f, double const &c);
+  triLinSys laplace2(double c, initializer_list<double> n);
+  triLinSys laplace2(VecX<double>& c, initializer_list<double> n);
+  triLinSys source2(double c, double a, initializer_list<double> n);
+  triLinSys source2(double c, VecX<double>& a, initializer_list<double> n);
+
+  void triDiv(triLinSys &axb, shared_ptr<Cell > f, Vec3 const &c);
+  triLinSys div2(VecX<Vec3>& vel, double c, initializer_list<double> n);
+  triLinSys div2(VecX<Vec3>& vel, VecX<double> c, initializer_list<double> n);
+
 #include "IO_grid.hpp"
 
 #include "Connect_grid.hpp"

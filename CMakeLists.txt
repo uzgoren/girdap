@@ -18,6 +18,7 @@ set(SOURCES  ./include/field/Var.cpp
              ./include/grid2/Quad.cpp  
              ./include/grid2/Grid.cpp  
              ./include/grid2/operator.cpp  
+             ./include/grid2/operator2.cpp  
              ./include/grid2/Vertex.cpp
              ./include/grid2/Line.cpp
              )

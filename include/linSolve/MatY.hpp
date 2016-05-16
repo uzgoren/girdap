@@ -39,55 +39,77 @@ public:
   // sum; 
 };
 
-vector<Triplet>& operator+=(vector<Triplet> &b, initializer_list<double> a) {
-  b.emplace_back(Triplet((int_8)*(a.begin()), (int_8)*(a.begin()+1), 
+class Triplets {
+public:
+  vector<Triplet> data; 
+ 
+  Triplets() {}; 
+  
+  Triplets& operator+=(const initializer_list<double> a) {
+    data.emplace_back(Triplet((int_8)*(a.begin()), (int_8)*(a.begin()+1), 
 			 *(a.begin()+2))); 
-  return b; 
-}
+    return *this;
+  } 
 
-vector<Triplet>& operator+=(vector<Triplet> &b, 
- 			   initializer_list<initializer_list<double> > a) {
-  for (auto it = a.begin(); it < a.end(); ++it) 
-    b += *it; 
-  return b; 
-}
+  Triplets& operator+=(const initializer_list<initializer_list<double> > a) {
+    for (auto it = a.begin(); it < a.end(); ++it) 
+      *this += *it; 
+    return *this; 
+  }
 
-vector<Triplet>& operator+(vector<Triplet> &a, vector<Triplet> &b) {
-  a.reserve(a.size() + b.size()); 
-  std::move(b.begin(), b.end(), std::back_inserter(a));
-  b.clear();
-  return a;
-}
+  Triplets& operator+=(Triplets &b) {
+    this->data.reserve(this->data.size() + b.data.size()); 
+    std::move(b.data.begin(), b.data.end(), std::back_inserter(this->data));
+    b.data.clear();
+    return *this;
+  }
 
-vector<Triplet>& operator*(double a, vector<Triplet> &b) {
-  for (auto c=b.begin(); c < b.end(); ++c)  
-    c->val = a*c->val; 
-  return b;
-}
+  Triplets& operator+(vector<Triplet> &b) {
+    this->data.reserve(this->data.size() + b.size()); 
+    std::move(b.begin(), b.end(), std::back_inserter(this->data));
+    b.clear();
+    return *this;
+  }
+  
+  Triplets& operator+(Triplets &b) {
+    *this = *this + b.data; 
+    return *this; 
+  }
+  
+  Triplets& operator*(double a) {
+    for (auto c=data.begin(); c < data.end(); ++c)  
+      c->val = a*c->val; 
+    return *this;
+  }
+  
+  friend Triplets& operator*(double a, Triplets& b) {
+    return b*a; 
+  }
+  
+//  friend Triplets& operator*(double a, vector<
 
-vector<Triplet>& operator*(vector<Triplet> &b, double a) {
-  b = a*b; 
-  return b; 
-}
+  Triplets& operator/(double a) {
+    return *this*(1/a); 
+  }
 
-vector<Triplet>& operator/(double a, vector<Triplet> &b) {
-  b = (1.0/a)*b; 
-  return b;
-}
+  friend Triplets& operator/(double a, Triplets &b) {
+   return b*(1.0/a); 
+ }
 
-vector<Triplet>& operator/(vector<Triplet> &b, double a) {
-  b = (1.0/a)*b; 
-  return b;
-}
+  Triplets& operator-() {
+    return *this*(-1); 
+  }
 
-vector<Triplet>& operator-(vector<Triplet> &a) {
-  a = (-1.0)*a; 
-  return a; //(-1.0)*a; 
-}
+  Triplets& operator-(Triplets &b) {
+    return *this + (-b); 
+  }
 
-vector<Triplet> operator-(vector<Triplet> &a, vector<Triplet> &b) {
-   return a + (-b); 
-}
+  double& operator()(int_8 i, int_8 j) {
+    data.emplace_back(Triplet(i, j, 0));
+    return (data.rbegin()->val); 
+  }
+};
+
 
 class Sparse {
 public:
@@ -118,8 +140,8 @@ private:
   int itmax; 
 
 public:
-  vector<Triplet> vt; 
-  Sparse A; 
+  Triplets A; 
+  Sparse S; 
   VecX<double> b;
   VecX<double> *x; 
   VecX<double> *error; 
@@ -127,8 +149,8 @@ public:
   double err; 
   int it; 
   
-  triLinSys() { setLimits(); A.rank = 0;}; 
-  triLinSys(int_8 const &N) { A.rank = N; b.resize(N); setLimits(); };
+  triLinSys() {}; // setLimits(); S.rank = 0;}; 
+  triLinSys(int_8 const &N) { S.rank = N; b.resize(N); setLimits(); };
   
 
   void setLimits(double t=1e-6, unsigned int imax = 1000) {
@@ -137,21 +159,21 @@ public:
   }
 
 
-  void setMat(vector<Triplet> &vtr) {
-    if (vtr.empty()) {
-      if (A.rank > 0) {
-	A.aij.assign(A.rank+1, A.rank+1);
-	A.val.assign(A.rank+1, 0); 
+  void setMat(Triplets &vtr) {
+    if (vtr.data.empty()) {
+      if (S.rank > 0) {
+	S.aij.assign(S.rank+1, S.rank+1);
+	S.val.assign(S.rank+1, 0); 
       }
       return; 
     }
     // first sort a (1st col then row); 
-    sort(vtr.begin(), vtr.end(), 
+    sort(vtr.data.begin(), vtr.data.end(), 
 	 [](const Triplet & a, const Triplet & b) -> bool
 	 { 
 	   return (a.row < b.row) || ((a.row == b.row) && (a.col < b.col)); 
 	 });
-    A.rank = max(A.rank, vtr.rbegin()->row + 1); 
+    S.rank = max(S.rank, vtr.data.rbegin()->row + 1); 
     
     //cout << " ------------------ " <<endl;     
     // for (auto c : vtr) { 
@@ -159,37 +181,37 @@ public:
     // }
     // cout << " ------------------ " <<endl; 
 
-    A.aij.reserve(30*A.rank); 
-    A.val.reserve(30*A.rank); 
+    S.aij.reserve(30*S.rank); 
+    S.val.reserve(30*S.rank); 
 
-    A.aij.assign(A.rank+1, A.rank+1);
-    A.val.assign(A.rank+1, 0); 
+    S.aij.assign(S.rank+1, S.rank+1);
+    S.val.assign(S.rank+1, 0); 
 
-    int_8 oldrow = vtr.begin()->row;
+    int_8 oldrow = vtr.data.begin()->row;
 
-    for (auto c : vtr) {
+    for (auto c : vtr.data) {
       // c.row == c.col
       if (c.row == c.col) {
-	A.val[c.row] += c.val;
+	S.val[c.row] += c.val;
 	continue; 
       }
       if (c.row != oldrow) {
-	A.aij[c.row+1] = A.aij[c.row]; 
+	S.aij[c.row+1] = S.aij[c.row]; 
 	oldrow = c.row; 
       }
 
       // check if col exist at the last location
-      if (*(A.aij.rbegin()) == c.col) {
-	*(A.val.rbegin()) += c.val; 
+      if (*(S.aij.rbegin()) == c.col) {
+	*(S.val.rbegin()) += c.val; 
 	continue; 
       }
 
-      A.aij.emplace_back(c.col); 
-      A.val.emplace_back(c.val); 
-      A.aij[c.row+1]++; 
+      S.aij.emplace_back(c.col); 
+      S.val.emplace_back(c.val); 
+      S.aij[c.row+1]++; 
 
     }
-    vtr.clear(); 
+    vtr.data.clear(); 
     //cout << " Size: " << A.aij.size() << " " << A.val.size() <<endl; 
 
 
@@ -199,14 +221,14 @@ public:
   void BiCGSTAB() {
     int iter = 0; 
     double rho, alpha, beta, omega, rho_new; 
-    VecX<double> r(A.rank), r0(A.rank), p(A.rank);
-    VecX<double> t(A.rank), v(A.rank), s(A.rank);
+    VecX<double> r(S.rank), r0(S.rank), p(S.rank);
+    VecX<double> t(S.rank), v(S.rank), s(S.rank);
 
     err = 0; 
     //check if t is initialized as zero; 
     //cout<< t << endl; 
 
-    *error = (b - A*(*x));
+    *error = (b - S*(*x));
     //    cout << error->abs() << endl; 
     if (error->abs() < tol) { err = tol; it = 0; return; }
     r0 = *error; 
@@ -216,11 +238,11 @@ public:
       beta = (rho_new/rho)*(alpha/omega);
       rho = rho_new; 
       p = (*error) + beta*(p - omega*v); 
-      v = A*p; 
+      v = S*p; 
       //cout << " r0v: " << r0*v << " p: " << p << endl; 
       alpha = rho/(r0*v);
       s = *error - alpha*v; 
-      t = A*s; 
+      t = S*s; 
       //cout << " t: " << t << " s: " << s << endl; 
       omega = (t*s)/(t*t); 
       (*x) = (*x) + alpha*p + omega*s; 
@@ -234,6 +256,19 @@ public:
     //err = sqrt(rsnew); 
     //cout << "BiCGstab: " << iter << ": " << log10(err) << " DONE!" << endl;
    }
+
+  triLinSys& operator+(triLinSys &T) {
+    A += T.A; 
+    return *this; 
+  }
+
+  triLinSys& operator-(triLinSys &T) {
+    T.A = -T.A; 
+    A += T.A; 
+    return *this; 
+  }
+
+
 
 };
 

@@ -49,7 +49,7 @@ int main(int argc,char *argv[]) {
   float setup0 = float(t)/CLOCKS_PER_SEC; 
 
   t = clock(); 
-  // old.BiCGSTAB(); 
+  old.BiCGSTAB(); 
   t = clock() - t; 
   float solve0 = float(t)/CLOCKS_PER_SEC; 
 
@@ -62,21 +62,21 @@ int main(int argc,char *argv[]) {
 
   t = clock(); 
   for (auto i =0; i < N; ++i) {
-    sp.vt += {(double)i, (double)i, 4}; //old.A[i][i] = 2; 
-    if (i > 0) sp.vt += {(double)i, (double)i-1, -1}; //old.A[i][i-1] = -1; 
-    if (i < N-1) sp.vt += {(double)i, (double)i+1, -1}; //old.A[i][i+1] = -1; 
-    if (i-N >= 0) sp.vt += {(double)i, (double)i-N, -1}; //old.A[i][i-1] = -1; 
-    if (i+N < N) sp.vt += {(double)i, (double)i+N, -1}; //old.A[i][i+1] = -1; 
+    sp.A += {(double)i, (double)i, 4}; //old.A[i][i] = 2; 
+    if (i > 0) sp.A += {(double)i, (double)i-1, -1}; //old.A[i][i-1] = -1; 
+    if (i < N-1) sp.A += {(double)i, (double)i+1, -1}; //old.A[i][i+1] = -1; 
+    if (i-N >= 0) sp.A += {(double)i, (double)i-N, -1}; //old.A[i][i-1] = -1; 
+    if (i+N < N) sp.A += {(double)i, (double)i+N, -1}; //old.A[i][i+1] = -1; 
 
     sp.b[i] = 3*i+1; 
   }
-  sp.setMat(sp.vt); 
-  sp.b = sp.A*sp.b; 
+  sp.setMat(sp.A); 
+  sp.b = sp.S*sp.b; 
   t = clock()-t; 
   float setup1 = float(t)/CLOCKS_PER_SEC; 
 
   t = clock(); 
-  //sp.BiCGSTAB(); 
+  sp.BiCGSTAB(); 
   t = clock()-t; 
   float solve1 = float(t)/CLOCKS_PER_SEC; 
   cout << " ----------- " << endl ; 
@@ -87,19 +87,20 @@ int main(int argc,char *argv[]) {
   cout << "NEW: setup-> " << setup1 << " sec, solve-> " << solve1 << "sec."<<endl; 
 
   // cout << "Abs" << endl; 
-  // vector<Triplet> vt, bt; 
+  Triplets vt, bt; 
   
-  // triLinSys Ab; 
-  // vt += {{0,0,4}, {0,1,-1}, {1,2,-1}, {2,1,-1}}; 
-  // vt += {{2,2,4}, {3,2,-1}, {3,3,4}, {3,4,-1}}; 
-  // bt += {{4,4,4}, {4,3,-1}, {1,1,4}, {2,3,-1}};
-  // bt += {{1,0,-1}, {2,1,-2}, {1,4,-6}, {2,2,1}};
+  triLinSys Ab; 
+  vt += {{0,0,4}, {0,1,-1}, {1,2,-1}, {2,1,-1}}; 
+  vt += {{2,2,4}, {3,2,-1}, {3,3,4}, {3,4,-1}}; 
+  bt += {{4,4,4}, {4,3,-1}, {1,1,4}, {2,3,-1}};
+  bt += {{1,0,-1}, {2,1,-2}, {1,4,-6}, {2,2,1}};
+  bt(2,2) = 7; 
 
-  //  Ab.setMat(vt+bt); 
+  Ab.setMat(-(2*vt-bt)); 
   
-  // for (auto i = 0; i < Ab.A.aij.size(); ++i) { 
-  //   cout << i << " " << Ab.A.aij[i] << " " << Ab.A.val[i] << endl; 
-  // }
+  for (auto i = 0; i < Ab.S.aij.size(); ++i) { 
+     cout << i << " " << Ab.S.aij[i] << " " << Ab.S.val[i] << endl; 
+  }
   
   // VecX<double> b(5); 
   // cout << "----"<< endl<< Ab.A.rank << " " << b.size() << endl; 
