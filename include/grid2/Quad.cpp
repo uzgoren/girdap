@@ -31,6 +31,7 @@ void Quad::assignCelltoNode() {
 
 void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
   int n1=1; int n2=1;
+  auto xcold = getCoord(); 
   // First find the existing vertex if non then proceed; 
   if (n.size() >= 2) {n1 = *(n.begin()); n2 = *(n.begin()+1);}
   else if (n.size() == 1) {n1 = *(n.begin());}
@@ -81,6 +82,11 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
     }
   }
 
+  // 0 th cell; xhat(0-3) =  0.5*(0.5*(1+1/n1), 0.5*(1+1/n2))
+  //                   + 0.5*(0.5*(1+1/n1), 0.5*(1-1/n2))
+  // 1 th node; xhat = (0.5*(1+1/n1
+  
+
   auto nCell = grid->listCell.size()-1; 
   for (auto j = 0; j < n2+1; ++j) {
     for (auto i = 0; i < n1+1; ++i) { 
@@ -124,27 +130,40 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
       v->cell[1] = v->cell[0]; 
     }
   }    
-    
-
+  
+  
   for (auto j = 0; j < n2; ++j) {
     for (auto i = 0; i < n1; ++i) {
       if (i == 0 && j == 0) {
 	reset({ind[i][j], ind[i+1][j], ind[i+1][j+1], ind[i][j+1]}); 
+
+	  
       } else {
-	grid->addCell({ind[i][j], ind[i+1][j], ind[i+1][j+1], ind[i][j+1]});
-	//cout << "No vars: "<< grid->listVar.size() <<endl; 
-	for (auto v: grid->listVar) {
-	  v->set(grid->listCell.size()-1, v->get(id)); 
-	}
+	grid->addCell({ind[i][j], ind[i+1][j], ind[i+1][j+1], ind[i][j+1]});	
+	auto x = (*grid->listCell.rbegin())->getCoord()-xcold; 
+
+	  for (auto var: grid->listVar) {	  
+	    //	    auto val = var->get(id) + x*grad(var).eval(var); 
+	    //	  v->evalPhi(var, (*grid->listCell.rbegin())); 
+	    var->set(grid->listCell.size()-1, var->get(id)); // + x*grad(var).eval(var)); 
+	  }
+	  //}
       }
     }
+    // for (auto var: grid->listVar) {	  
+    //   var->set(id, var->get(id)+(getCoord()-xcold)*grad(var).eval(var)); 
+    //  }
   }
+
+  //auto v = (*(grid->listVertex.begin()+ind[i][j]));
+
   return;
 }
 
 
 void Quad::refine(int dir) {
   if (adapt[dir] < 1) return;
+  if (level[dir] == grid->levelHighBound[dir]) return; 
   if (dir == 0) 
     convertToSimpleBlock({2, 1}); 
   else if (dir == 1)
@@ -207,6 +226,7 @@ void Quad::refine(int dir) {
 
 bool Quad::coarsen(int dir) {
   if (adapt[dir] > -1) return false;
+  if (level[dir] == grid->levelLowBound[dir]) return false; 
   if (dir == 0)
     if (!masterx[level[dir]]) return false; //cout << " should not see me -x" << endl; 
   if (dir == 1)
@@ -261,12 +281,12 @@ bool Quad::coarsen(int dir) {
 
     // Then coarsen; 
     
-    // [0] Calculate new value of old variables first (no point after other cells removal); 
-    // for (auto var : grid->listVar) { 
-    //   auto vol0 = vol().abs(); 
-    //   auto vol1 = (*c0)->vol().abs();
-    //   var->set(id, (var->get(id)*vol0 + var->get((*c0)->id)*vol1)/(vol0+vol1)); 
-    // }    
+    //[0] Calculate new value of old variables first (no point after other cells removal); 
+     // for (auto var : grid->listVar) { 
+     //   auto vol0 = vol().abs(); 
+     //   auto vol1 = (*c0)->vol().abs();
+     //   var->set(id, (var->get(id)*vol0 + var->get((*c0)->id)*vol1)/(vol0+vol1)); 
+     // }    
 
     // [1] Correct indices;
     //     [a] Hanging nodes; 

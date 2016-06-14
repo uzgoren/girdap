@@ -104,16 +104,29 @@ public:
   shared_ptr<Vertex > *ngbr(int_2 d);
   shared_ptr<Cell> getFace(int_2 order);
 
+  bool isHanging() {
+    if (cell.size() == 4) {
+      for (auto i = 0; i < cell.size(); ++i) {
+	if (cell[i] == cell[(i+1)%4]) return true; 
+      }
+      return false; 
+    }
+  }
+
   // 06 interpolation scheme of a Field variable 
   Scheme<double> phi(vector<shared_ptr<Boundary> > const &bc, int_2 bias=0);  
   Scheme<double> phi(shared_ptr<Var> var, int_2 bias=0);  
-  
+
   double evalPhi(shared_ptr<Var> &var, Vec3 *x=NULL);
   double evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc, Vec3* x=NULL); 
  
   bool setInterpCoef(); 
   //vector<double> getIntWeight();
   vector<double> getIntWeight(Vec3* x = NULL); 
+
+  // Scheme<double> pi(shared_ptr<Var> &var, Vec3 *x=NULL, int method=0); 
+  // Scheme<double> pi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc, ...
+  // 		    Vec3* x=NULL, int method=0); 
 
   //  double getIntVal(shared_ptr<Var> var); 
   // double getIntVal(shared_ptr<Var> var, Vec3 x); 

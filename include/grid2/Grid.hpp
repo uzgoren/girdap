@@ -19,6 +19,9 @@
 #ifndef GRID
 #define GRID
 
+#define SL 0
+#define FOU 1
+
 #include <memory>
 #include <typeinfo>
 #include <cmath>
@@ -59,7 +62,7 @@ public:
   int_8 nCellSize; 
   int nFace; 
 
-  Interp interp; // interpolation scheme
+  Interp int3D; // interpolation scheme
 
   int_2 levelLowBound[3], levelHighBound[3]; 
   int_2 levelMin[3], levelMax[3]; 
@@ -184,12 +187,10 @@ public:
   //   listCell.erase(cit); 
   // }
 
-  void setDt(double c) {
+  void setDt(double cdt) {
     auto U = getVar("u"); auto V = getVar("v"); auto W = getVar("w");     
     auto maxU = abs(min(U->data.min(), min(V->data.min(), W->data.min()))); 
-    cout << maxU << " ";
     maxU = max(maxU, max(U->data.max(), max(V->data.max(), W->data.max())));
-    cout << maxU << endl; 
     double dx = 1e10;  
     for (auto c : listCell) {
       double cdx, cdy, cdz; 
@@ -198,12 +199,12 @@ public:
       if (cdy > 0) dx = min(dx, cdy); 
       if (cdz > 0) dx = min(dx, cdz); 
     }
+    cout << " SetDt: " << dt << " Vel: " << maxU << endl; 
     dt0 = dt;
     if (maxU < 1e-6 || dx < 1e-6)
-      dt = c;
+      dt = cdt;
     else 
-      dt = min(c, cfl*dx/maxU);
-    cout << dt << " " << dx << " " << maxU << endl; 
+      dt = min(cdt, cfl*dx/maxU);
   }
 
   void setIntCoef() {
@@ -211,7 +212,8 @@ public:
     for (auto v : listVertex) {
       if (v->setInterpCoef()) sum++; 
     }
-    //cout << "Set coef for " << sum << " vertices out of " << listVertex.size() << endl; 
+    // cout << "Set coef for " << sum << " vertices out of " << listVertex.size() << endl; 
+    // cin.ignore().get(); 
   }
 
   void makeFace() {
@@ -323,9 +325,9 @@ public:
     }
 
     for (auto i = 0; i<listVertex.size(); ++i) {
-      val[i][0] = (u->loc==1) ? u->get(i): listVertex[i]->phi(u).eval(u); 
-      val[i][1] = (v->loc==1) ? v->get(i): listVertex[i]->phi(v).eval(v); 
-      val[i][2] = (w->loc==1) ? w->get(i): listVertex[i]->phi(w).eval(w); 
+      val[i][0] = (u->loc==1) ? u->get(i): listVertex[i]->evalPhi(u); //.eval(u); 
+      val[i][1] = (v->loc==1) ? v->get(i): listVertex[i]->evalPhi(v); //.eval(v); 
+      val[i][2] = (w->loc==1) ? w->get(i): listVertex[i]->evalPhi(w);//.eval(w); 
     }
     return val; 
   }
@@ -414,6 +416,51 @@ public:
       cout << ") "<<endl; 
     }
   }
+
+  // INTERPOLATION at a point
+  double interp(shared_ptr<Var> &phi, Vec3 x, int_8 i0=0) {
+    if (i0 < 0 || i0 >= listVertex.size()) i0=0; 
+    i0 = searchVertexbyCoords(x, i0); 
+    if (i0 < 0) return 0; //BC
+    auto v = listVertex[i0]; 
+    auto xhat = int3D.findXhat(x, v->xcoef, v->ycoef, v->zcoef); 
+    auto v2 = &v; 
+    if (xhat[0] < 0) v2 = v->ngbr(-1); 
+    else if (xhat[0] > 1) v2 = v->ngbr(1); 
+    else if (xhat[1] < 0) v2 = v->ngbr(-2); 
+    else if (xhat[1] > 1) v2 = v->ngbr(2); 
+    else return v->evalPhi(phi, &x); 
+    
+    if (v2) return (*v2)->evalPhi(phi, &x); 
+    else return 0; 
+  }
+
+  Vec3 interpVec(shared_ptr<Var> &phi, Vec3 x, int_8 i0=0) { 
+    //   cout << " in " << endl; 
+    if (!phi->isVec) {cout << "Nonvector interpolation" << endl; return Vec3(0); }
+    if (i0 < 0 || i0 >= listVertex.size()) i0=0; 
+    i0 = searchVertexbyCoords(x, i0); 
+    if (i0 < 0) return 0; //BC
+    shared_ptr<Var > u, v, w; 
+    if (phi->name == "u") {
+      u = getVar("u"); v = getVar("v"); w = getVar("w");
+    } else {
+      auto a = phi->name; 
+      a.pop_back(); 
+      u = getVar(a+"x"); v = getVar(a+"y"); w = getVar(a+"z"); 
+    } 
+    auto val0 = listVertex[i0]->evalPhi(u, &x); 
+    auto val1 = listVertex[i0]->evalPhi(v, &x); 
+    auto val2 = listVertex[i0]->evalPhi(w, &x); 
+    
+    //    cout << " out "<< endl; 
+    return Vec3(val0, val1, val2); 
+
+  }
+
+  
+  void advanceDiv(shared_ptr<Var> &phi, VecX<Vec3> &vel, 
+		  int &rko, double aveflux[3], int &tri, bool isflux[3]); 
 
   void laplace(LinSys &axb, shared_ptr<Cell > f, double const &c);
   LinSys laplace(double c, initializer_list<double> n={}); 

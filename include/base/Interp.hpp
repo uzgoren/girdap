@@ -53,8 +53,10 @@ public:
   Vec3 findXhat(Vec3 x, VecX<double> &xcoef, VecX<double> &ycoef, VecX<double> &zcoef) {
     Vec3 xhat(0, 0, 0); //INITIAL GUESS;
     Vec3 dx(0, 0, 0);  // needed if not updated!
+    int it = 0; 
 
     while (true) {
+      it++; 
       double dxx = linDX(xhat, xcoef);
       double dxy = linDY(xhat, xcoef); 
       double dxz = linDZ(xhat, xcoef);
@@ -79,13 +81,19 @@ public:
 	dx[2] = (x[2] - linFunc(xhat, zcoef) - dx[0]*dzx - dx[1]*dzy)/dzz; 
       }
       xhat += dx; 
+      
+      if (xhat[0] < 0 || xhat[0] > 1 || xhat[1] < 0 || xhat[1] > 1 || xhat[2] < 0 || xhat[2] > 1) break; 
 
       if (abs(dx[0]) + abs(dx[1]) + abs(dx[2]) < 1e-6) break; 
 
     }
-    xhat[0] = rint(1e6*xhat[0])*1e-6;
-    xhat[1] = rint(1e6*xhat[1])*1e-6;
-    xhat[2] = rint(1e6*xhat[2])*1e-6; 
+    // if (xhat[0] < 0 || xhat[0] > 1 || xhat[1] < 0 || xhat[1] > 1 || xhat[2] < 0 || xhat[2] > 1) {
+    //   cout << "not a good value" <<endl; 
+    //   exit(-1); 
+    // }
+    // xhat[0] = rint(1e6*xhat[0])*1e-6;
+    // xhat[1] = rint(1e6*xhat[1])*1e-6;
+    // xhat[2] = rint(1e6*xhat[2])*1e-6; 
     return xhat; 
   }
 

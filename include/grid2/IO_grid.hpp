@@ -3,6 +3,8 @@
 
 void writeVTK(string name, initializer_list<string > v = {"all"}) {
 
+  // Image 
+
   bool isAll = false; 
   vector<bool> lvar; 
   if (listVar.size() > 0) {
@@ -28,8 +30,9 @@ void writeVTK(string name, initializer_list<string > v = {"all"}) {
     }
   }
        
-  ofstream out; 
+  ofstream out;
   out.open(name+std::to_string(filecnt++)+".vtk"); 
+
 
   int_8 nCell = listCell.size();
   int t; // = listCell[0]->node.size()+1;
@@ -93,6 +96,60 @@ void writeVTK(string name, initializer_list<string > v = {"all"}) {
 	for (auto i = 0; i<v.size(); ++i) out << float(v[i][0]) << " " << float(v[i][1]) << " " << float(v[i][2]) << endl;
       }
     }
+    out<<endl; 	  
+    out.close(); 
+  }
+
+
+void writePast(string name, shared_ptr<Var > var) {
+  auto vel = getVecVertex("u");
+  // Image        
+  ofstream out;
+  out.open(name+std::to_string(filecnt++)+".vtk"); 
+
+  int_8 nCell = listCell.size();
+  int t; // = listCell[0]->node.size()+1;
+  out << "# vtk DataFile Version 2.0" << endl; 
+    out << "Unstructure Grid" << endl; 
+    out << "ASCII"<< endl; 
+    out << endl << "DATASET UNSTRUCTURED_GRID"<< endl; 
+    out << "POINTS " << listVertex.size() << " float" << endl; 
+    for (auto p = vbegin(); p != vend(); ++p) {
+      out << **p-vel[(*p)->id]*0.05 <<  endl ; 
+    }
+    if (nCell > 0) {
+      t = listCell[0]->node.size()+1;
+      out << endl << "CELLS "<< nCell << " " << nCell*t << endl; 
+      for (auto c = cbegin(); c != cend(); ++c) {
+	if ((*c)->isAlive) out << *c ; 
+      }
+      out << endl << "CELL_TYPES " << nCell <<endl; 
+      for (auto c = cbegin(); c != cend(); ++c) {
+	if ((*c)->isAlive) out << (*c)->getType() << endl; 
+      }
+    } else {
+      out << endl << "CELLS "<< listVertex.size() << " " << listVertex.size()*2 << endl; 
+      for (auto i = 0; i < listVertex.size(); ++i) 
+        out << "1 "<< i<< endl;     
+      out << endl << "CELL_TYPES " << listVertex.size() <<endl; 
+      for (auto i = 0; i < listVertex.size(); ++i) out << "1 "<< endl; 
+    }
+    out << endl << "POINT_DATA " << listVertex.size() << endl;
+ 
+    out << "SCALARS " << var->name << " float 1"<<endl; 
+    out << "LOOKUP_TABLE default"<<endl; auto icnt = 0; 
+    for (auto v: listVertex) {
+      //auto val = v->phi(var).eval(var); 
+      double val = 0; 
+      if (var->loc == 0) {
+	auto x = Vec3(*v - vel[v->id]*dt*0.5); 
+	val=interp(var, x, v->id); //v->evalPhi(var, &x); 
+      } else if (var->loc == 1) 
+	val=var->get(v->id); 
+      out << ((abs(val) < 1e-10) ? 0 : val) << endl; 
+    }
+    out << endl; 
+
     out<<endl; 	  
     out.close(); 
   }
@@ -200,6 +257,8 @@ void writeVTK(string name, initializer_list<string > v = {"all"}) {
     return out;
   }
  
+
+
   void writeAMRdata(std::string a = "amr.vtk") {
     auto nCell = listCell.size(); 
     ofstream out; 

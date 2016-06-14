@@ -27,44 +27,168 @@
 #include <grid2/Grid>
 
 
+double heavy(double x, double e) {
+  if (x/e <= -1)
+    return 0; 
+  else if (x/e <= 0)
+    return 0.5 + x/e + 0.5*pow(x/e,2); 
+  else if (x/e <= 1)
+    return 0.5 + x/e - 0.5*pow(x/e,2); 
+  else 
+   return 1; 
+}
+
+double heavy(Vec3 x, Vec3 xp, double e) {
+  return heavy((x - xp).abs(), e); 
+}
+
 int main() {
-  auto dt = 0.5; auto writeTime = 0.02; 
+  int_8 Nx=20, Ny=20; 
+  int_2 lx=2, ly=2; 
+  int intmethod=2; 
+  double intscheme[3]={0.5, 0, 0.5}; 
+  int rk0 = 2; 
+  bool flux[3] = {false, true, false}; 
+  double cfl = 0.5;   
+  string veltype = "deform"; 
+  bool isVelTime = false; 
+  bool isVelSpace = false; 
+  double u0, v0; 
+  string geotype = "circle"; 
+  double xm=0.3, xp=0.5, ym=0.55, yp=0.75, rp=0.15; 
+  double endTime = 8; //dt*50; 
+  double freq = 1; 
+  auto writeTime = 0.005;   
+
+  // read file; 
+  std::ifstream infile("case.txt"); 
+  string name; double val; 
+  while (infile >> name) {    
+    if (name.compare("Nx")==0) {infile >> Nx;  continue;}
+    else if (name.compare("Ny")==0) { infile >> Ny; continue;}
+    else if (name.compare("lx")==0) { infile >> lx; continue;}
+    else if (name.compare("ly")==0) { infile >> ly; continue;}
+    else if (name.compare("interp")==0) { infile >> intmethod; continue;}
+    else if (name.compare("scheme")==0) { infile >> intscheme[0] >> intscheme[1] >> intscheme[2]; continue;}
+    else if (name.compare("rk")==0) { infile >> rk0; continue;}
+    else if (name.compare("flux")==0) { infile >> flux[0] >> flux[1] >> flux[2]; continue;}
+    else if (name.compare("cfl")==0) {infile >> cfl; continue;} 
+    else if (name.compare("freq")==0) {infile >> freq; continue;} 
+    else if (name.compare("endTime")==0) {infile >> endTime; continue;} 
+    else if (name.compare("writeTime")==0) {infile >> writeTime; continue;}
+    else if (name.compare("veltype")==0) {
+      infile >> veltype; 
+      if (veltype.compare("-")==0) {
+	infile >> u0 >> v0; continue; 
+      } else if (veltype.compare("t")==0) {
+	isVelTime =true;
+	infile >> u0 >> v0; 
+	continue; 
+      } else if (veltype.compare("x")==0) {
+	isVelSpace = true; 
+	infile >> u0 >> v0; 
+      } else if (veltype.compare("xt")==0) {
+	isVelTime = true; 
+	isVelSpace = true; 
+	infile >> u0 >> v0; 
+	continue;
+      }     
+    } else if (name.compare("geo")==0) {
+      infile >> geotype; 
+      if (geotype.compare("bar")==0) {	
+	infile >> xp >> xm; 
+	continue; 
+      } else if(geotype.compare("rect")==0) {
+	infile >> xp >> xm; 
+	infile >> yp >> ym; 
+	continue; 
+      } else if (geotype.compare("circle")==0) {
+	infile >> xp >> yp >> rp; 
+	continue; 
+      }
+    }    
+  }
+
+  std::ofstream outcase;
+  outcase.open("run.txt"); 
+  outcase << "N = " << Nx << "x" << Ny << endl; 
+  outcase << "levels = " << lx <<"x"<<ly<< endl; 
+  if (intmethod == 0) outcase << "FOU" << endl; 
+  else if (intmethod == 1) outcase << "Trilinear" << endl;  
+  else outcase << "Grad" << endl; 
+  outcase << "n=" << intscheme[0] << ", n+1/2="<< intscheme[1] << ", n+1="<< intscheme[2] << endl; 
+  outcase << "rk=" << rk0 << endl;
+  outcase << "flux calc: " << (flux[0] ? "phi " : "") << (flux[1] ? "vel " : "") << (flux[2] ? " normal" : "")<< endl; 
+  outcase << "cfl = " << cfl << endl; 
+  outcase << "geo = " << geotype << " xm=" << xm << " ym=" << ym << " xp=" << xp << " yp=" << yp << " rp=" << rp << endl;  
+  outcase << "vel = " << veltype << " u0=" << u0 << " v0=" << v0 << endl;
+  outcase << "endTime = " << endTime << " writeTime=" <<writeTime << " freq=" << freq << endl; 
+  outcase.close(); 
+			
+  
+  auto dt = 0.5; 
   auto t = clock(); int iter = 0; 
-  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 20, 20);
+  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, Nx, Ny);
+  grid->levelHighBound[0] = lx; 
+  grid->levelHighBound[1] = ly; 
+  grid->cfl = cfl; 
+
   //Block2* grid = new Block2({0, 0, 0}, {0.02, 0.02, 0}, 10, 1);
-  double time= 0; double endTime = 8; //dt*50; 
+  double time= 0; 
 
   // Field variables; 
   double rho=10000, cp=1000, k=1; 
 
-  grid->addVar({"T"}); 
-  grid->addVar({"msx", "msy"}); 
+  grid->addVar({"T", "ui", "vi"}); 
     
   auto T = grid->getVar("T");
   auto u = grid->getVar("u");
   auto v = grid->getVar("v");
-  auto msx = grid->getVar("msx"); 
-  auto msy = grid->getVar("msy");   
+  auto ui = grid->getVar("ui"); 
+  auto vi = grid->getVar("vi"); 
 
-  T->solver = "Gauss"; 
-  
+  T->solver = "Gauss";   
   T->set(0); 
-    double pi = 4.0*atan(1); 
+  double pi = 4.0*atan(1); 
   
+  auto dx = 1/20/pow(2,grid->levelHighBound[0]-1); 
+  auto e = 4*dx; 
+  ui->set(u0); 
+  vi->set(v0); 
+  u->set(u0); 
+  v->set(v0); 
   for (auto j = 0; j < 6; ++j) {
     for (auto i = 0; i < grid->listCell.size(); ++i) {
       auto x = grid->listCell[i]->getCoord(); // - Vec3(0.5, 0.5); 
-      u->set(i, -2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0]));
-      v->set(i, 2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1])); 
-
-      auto r = (grid->listCell[i]->getCoord() - Vec3(0.5, 0.75)).abs(); 
-
-      T->set(i, 1.0/(1.0 + exp(-2.0*80*(0.15-r)))); 
+      if (veltype.find("x") != std::string::npos) {
+	if (geotype.compare("bar") != 0) {
+	  ui->set(i, -u0*2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0]));
+	  u->set(i, ui->get(i)); 
+	  vi->set(i, -v0*2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1])); 
+	  v->set(i, vi->get(i)); 
+	} else {
+	  ui->set(i, u0*(1 + sin(pi*x[0]))); 
+	  u->set(i, ui->get(i));
+	  vi->set(i, 0); 
+	  v->set(i, 0); 
+	}
+      }
+	
+      if (geotype.compare("bar") == 0) 
+	T->set(i, heavy(x[0]-xp, e) - heavy(x[0]-xm, e)); 
+      else if (geotype.compare("rect") == 0) 
+	T->set(i, (heavy(x[0]-xp, e) - heavy(x[0]-xm, e))*(heavy(x[1]-yp, e) - heavy(x[1]-ym, e))); 
+      else if (geotype.compare("circle") == 0) {
+	auto r = (grid->listCell[i]->getCoord() - Vec3(xp, yp)).abs(); 
+	//T->set(i, heavy(0.15-r, e)); 
+	T->set(i, 1.0/(1.0 + exp(-2.0*80*(rp-r)))); 
+      }
     }
     //    auto gt = grid->valGrad(T); 
     //grid->solBasedAdapt(gt); 
     grid->solBasedAdapt2(grid->getError(T));
     grid->adapt(); 
+    
   }
 
   double mass0=0; double mass=0; 
@@ -72,43 +196,33 @@ int main() {
     mass0 += grid->listCell[i]->vol().abs()*T->get(i); 
   }
 
-  for (auto i = 0; i < grid->listCell.size(); ++i) {
-    auto xlevel = grid->listCell[i]->level[0]; 
-    auto ylevel = grid->listCell[i]->level[0];
-    msx->set(i, grid->listCell[i]->masterx[xlevel]); 
-    msy->set(i, grid->listCell[i]->mastery[ylevel]); 
-  }
+  grid->writeVTK("vortex");
+
 
   int filecnt = 0; int it = 0, writeInt = 1; 
-  ofstream myfile;   
-  std::string flname="heat"+std::to_string(filecnt++)+".vtk"; 
-  myfile.open(flname); 
-  myfile << grid << endl;
-  myfile.close();   
 
-  T->setBC("west", "val", 0);
-  T->setBC("south", "val", 0); 
-  T->setBC("east", "val", 0); 
-  T->setBC("north", "val", 0); 
-  // T->setBC("south", "grad", -20, 100);   
-  // T->setBC("north", "grad", -20, 100);  
+  T->setBC("west", "grad", 0);
+  T->setBC("south", "grad", 0); 
+  T->setBC("east", "grad", 0); 
+  T->setBC("north", "grad", 0); 
+
   T->itmax = 1000; 
   T->tol = 1e-6;  
-
-  // u->set(1); 
-  // v->set(1); 
-
 
   auto writeCnt = writeTime; 
   while (time < endTime) {
     iter++; 
     for (auto i = 0; i < grid->listCell.size(); ++i) {
       auto x = grid->listCell[i]->getCoord(); // - Vec3(0.5, 0.5); 
-      u->set(i, -2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0])*cos(pi*time/endTime));
-      v->set(i, 2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1])*cos(pi*time/endTime)); 
+      if (veltype.find("t") != std::string::npos) {
+	u->set(i, ui->get(i)*cos(freq*pi*time/endTime));
+	v->set(i, vi->get(i)*cos(freq*pi*time/endTime));
+      }
     }
-    grid->setDt(2.0*dt); 
 
+    grid->setDt(2.0); 
+    if (writeCnt < grid->dt) grid->dt = writeCnt; 
+    //    grid->writePast("v_past", T); 
  
     cout << setiosflags(ios::fixed) << setprecision(6); 
     cout << "------------- Processing TIME = "<< time << " ------------------"<<endl; 
@@ -116,65 +230,40 @@ int main() {
 
     auto vel = grid->getVel();
     
-    grid->lockBC(T); 
-    T->solve (grid->ddt(1.0) 
-     	      +grid->divRK2E(vel, 1.0)
-	      //- grid->laplace(k/cp/rho) 
-	      //- grid->source(0, 100000/cp/rho)
-	      //- grid->laplace(1.0) 
-	      //- grid->source(-25, 25*20)
-	       ); 
-    grid->unlockBC(); 
 
-    // remove over-shoot and undershoot
-    //    for (auto i = 0; i < grid->listCell.size(); ++i) { 
-    //}
-
+    grid->advanceDiv(T, vel, rk0, intscheme, intmethod, flux); 
+    cout << "Min T: " << T->data.min() << ", Max T: "<< T->data.max() << endl; 
+    //if (time == 0) cin.ignore().get(); 
+    
     mass=0; double part=0; 
     for (auto i=0; i < grid->listCell.size(); ++i) {
       double vol = grid->listCell[i]->vol().abs();
-      //      T->set(i, max(min(T->get(i)+1e-5, 1.0), 0.0)); 
-      T->set(i, min(T->get(i)+1e-4, 1.0));
-      T->set(i, max(T->get(i)-1e-4, 0.0)); 
-      double Tval = T->get(i); 
-      mass += vol*Tval;
+      auto Tval = T->get(i); 
+      if (Tval > 0.999) T->set(i, 1.0); 
+      if (Tval < 0.001) T->set(i, 0.0); 
+      mass += vol*T->get(i);
       if (Tval > 0) part += vol; 
     }
 
-    // double corr = (mass - mass0)/part; mass = 0; 
-    // for (auto i=0; i < grid->listCell.size(); ++i) { 
-    //   double vol = grid->listCell[i]->vol().abs();
-    //   if (T->get(i) > 0) 
-    // 	T->set(i, max(min(T->get(i)+corr*vol, 1.0), 0.0)); 
-    //   mass += vol*T->get(i); 
-    // }
-	     
-    
     //    auto gt = grid->valGrad(T); 
     if (iter%1 == 0) {
       grid->solBasedAdapt2(grid->getError(T)); 
       grid->adapt(); 
     }
 
-    for (auto i = 0; i < grid->listCell.size(); ++i) {
-      auto xlevel = grid->listCell[i]->level[0]; 
-      auto ylevel = grid->listCell[i]->level[0];
-      msx->set(i, grid->listCell[i]->masterx[xlevel]); 
-      msy->set(i, grid->listCell[i]->mastery[ylevel]); 
-    }
-
     time += grid->dt; 
     writeCnt -= grid->dt; 
-    grid->setDt(dt); 
 
     if (writeCnt <= 0 || time >= endTime) {
-      std::string flname="heat"+std::to_string(filecnt++)+".vtk"; 
-      myfile.open(flname); 
-      myfile << grid << endl;
-      myfile.close();   
+      grid->writeVTK("vortex");
+      // std::string flname="heat"+std::to_string(filecnt++)+".vtk"; 
+      // myfile.open(flname); 
+      // myfile << grid << endl;
+      // myfile.close();   
       writeCnt = writeTime; 
-    } 
-
+      //cin.ignore().get(); 
+     } 
+    
     cout << "---------------------------------------------------"<<endl; 
   }
 

@@ -186,22 +186,24 @@ void adapt() {
     
   bool isCellRemoved = false; 
   // [3] Coarsen cells (index directions - 3 to be defined)
-  for (auto pass =0; pass < 3; ++pass) { 
-    for (auto j = 0; j < 2; ++j) {	
-      auto lmin = levelMin[j]; auto lmax = levelMax[j];
-      for (auto l = lmax; l > lmin-1; --l) {
-	for (auto i = 0; i < listCell.size(); ++i) {
-	  auto c = listCell[i]; 
-	  if (!c->isAlive) continue; 
-	  if (c->adapt[j] >= 0) continue;
-	  if (c->level[j] != l) continue; 
-	  if (c->coarsen(j) && !isCellRemoved) { 
-	    isCellRemoved = true;
+  if (true) {
+    for (auto pass =0; pass < 3; ++pass) { 
+      for (auto j = 0; j < 2; ++j) {	
+	auto lmin = levelMin[j]; auto lmax = levelMax[j];
+	for (auto l = lmax; l > lmin-1; --l) {
+	  for (auto i = 0; i < listCell.size(); ++i) {
+	    auto c = listCell[i]; 
+	    if (!c->isAlive) continue; 
+	    if (c->adapt[j] >= 0) continue;
+	    if (c->level[j] != l) continue; 
+	    if (c->coarsen(j) && !isCellRemoved) { 
+	      isCellRemoved = true;
+	    }
 	  }
 	}
       }
-    }
-  }    
+    }    
+  }
 
   // [4] correct cell lists;     
   if (isCellRemoved) cleanGrid(); 
@@ -481,6 +483,37 @@ void cleanGrid() {
 
   o2n_cell.clear(); 
   o2n_node.clear(); 
+}
+
+void valAdapt(shared_ptr<Var> phi, double low, double high) {
+  auto mid = 0.5*(low + high); 
+  // for (auto j = 0; j < 3; ++j) {
+  //   auto dl = (mid - low)/(levelHighBound[j] - levelLowBound[j]);
+  //   for (auto i = 0; i < listCell.size(); ++i) {
+  //     int_2 targetLevel = levelHighBound[j] - ((int)(abs(phi->get(i) - mid)/dl)); 
+  //     if (listCell[i]->level[j] < targetLevel) {
+  // 	listCell[i]->adapt[j] = min(1, levelHighBound[j] - listCell[i]->level[j]);
+  //     } else if (listCell[i]->level[j] > targetLevel) {
+  // 	listCell[i]->adapt[j] = max(-1, levelLowBound[j] - listCell[i]->level[j]);  
+  //     }
+  //     if (j==0) 
+  // 	cout << levelHighBound[j] << " " << targetLevel << " " << listCell[i]->level[j] << " " << listCell[i]->adapt[j] << endl; 
+
+  //   }
+  //     if (abs(phi->get(i) - mid) < (k+1)*dl) {
+
+  //     }
+    
+   for (auto i = 0; i < listCell.size(); ++i) {
+    
+     if (phi->get(i) > low && phi->get(i) < high) {
+       for (auto j=0; j <3; ++j) 
+	 listCell[i]->adapt[j] = min(1, levelHighBound[j] - listCell[i]->level[j]);
+          } else {
+       for (auto j=0; j <3; ++j) 
+		listCell[i]->adapt[j] = max(-1, levelLowBound[j] - listCell[i]->level[j]);  
+     }
+  }
 }
 
 

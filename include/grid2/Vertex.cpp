@@ -231,13 +231,13 @@ bool Vertex::setInterpCoef() {
   }
   
   // 2. USE AI to calculate its coefficients; 
-  xcoef = grid->interp.getCoef(x); 
-  ycoef = grid->interp.getCoef(y); 
-  zcoef = grid->interp.getCoef(z);
+  xcoef = grid->int3D.getCoef(x); 
+  ycoef = grid->int3D.getCoef(y); 
+  zcoef = grid->int3D.getCoef(z);
 
   // 3. ALSO get xhat at its location; 
 
-  xhat = grid->interp.findXhat(Vec3(this->x(), this->y(), this->z()), 
+  xhat = grid->int3D.findXhat(Vec3(this->x(), this->y(), this->z()), 
 			      xcoef, ycoef, zcoef); 
   coefUpdate = false; 
   return true; 
@@ -249,8 +249,10 @@ vector<double> Vertex::getIntWeight(Vec3* x) {
     exit(1);
   }
   Vec3 xhattmp; 
-  if (x) xhattmp = grid->interp.findXhat(*x, xcoef, ycoef, zcoef);  
+  //cout << " XHAT " << endl; 
+  if (x) xhattmp = grid->int3D.findXhat(*x, xcoef, ycoef, zcoef);  
   else xhattmp = xhat; 
+  //cout << " --- " << x << endl; 
  
   vector<double> w(cell.size(), 0);
   w[0] = (1-xhattmp.x())*(1-xhattmp.y())*(1-xhattmp.z()); 
@@ -274,6 +276,7 @@ vector<double> Vertex::getIntWeight(Vec3* x) {
 double Vertex::evalPhi(shared_ptr<Var> &var, Vec3* x) {
   return evalPhi(var->data, var->listBC, x);  
 }
+
 
 double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc=vector<shared_ptr<Boundary> >(6, shared_ptr<Boundary>(new Boundary())), Vec3* x) {
   auto w = getIntWeight(x);

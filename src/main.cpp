@@ -16,6 +16,11 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************
 */
+
+//*************************************************************
+// Codelet: Performance analysis of Linear system construction  
+//*************************************************************
+
 #include <linSolve/MatY.hpp>
 #include <linSolve/LinSys.hpp>
 #include <time.h>       /* clock_t, clock, CLOCKS_PER_SEC */

@@ -18,6 +18,194 @@
 */
 #include "Grid.hpp"
 #include <time.h>
+
+void Grid::advanceDiv(shared_ptr<Var> &phi, VecX<Vec3> &vel, 
+		      int &rko, double aveflux[3], int &tri, bool isflux[3]) {
+  // rko: runge kutta scheme either one or zero; 
+  // method : 0 -> FOU
+  // method : 1 -> non-conservative
+  // method : 2 -> u and norm at face, phi at n+1 (grad)
+  // method : 3 -> norm at face, phi and u at n+1 (grad)
+  // method : 4 -> u, norm and phi at n+1 (grad)
+  // method : 5 -> u and norm at face, phi at n+1 (bilinear)
+  // method : 6 -> norm at face, phi and u at n+1 (bilinear)
+  // method : 7 -> u, norm and phi at n+1 (bilinear)
+  // aveflux: 0 -> n+1 at n+1/2
+  // aveflux: 1 -> n+1 is averaged at n and n+1
+  // aveflux: 2 -> n+1 is averaged at n, n+1/2 and n+1; 
+  //  double aveflux[3] = {0.5, 0, 0.5}; // or aveflux = {0.5, 0, 0.5}
+  //  int tri = 2; // tri = 0 for FOU; tri = 1; trilinear; otherwise grad based
+  bool isu = isflux[1]; 
+  bool isn = isflux[2]; 
+  bool isp = isflux[0]; 
+  //int rko = 2; 
+  double rkf = 1.0/rko; 
+  for (auto rk = 0; rk < rko; ++rk) {
+
+    VecX<double> tmp(phi->data); 
+    for (auto f: listFace) {
+      int n = f->next; 
+      int p = f->prev;  
+
+      auto invvoln = (n < 0) ? 1.0 : 1.0/listCell[n]->vol().abs(); 
+      auto invvolp = (p < 0) ? 1.0 : 1.0/listCell[p]->vol().abs();            
+      
+      auto iseed = f->node[0]; 
+      Vec3 xf[3], uf[3], norm[3];
+      double phif[3]; 
+      Vec3 gradp, gradu, gradv, dx, ufn; 
+      double flux; 
+
+      if (n >= 0 && p >= 0) {
+	uf[0] = 0.5*(vel[n] + vel[p]); 
+	phif[0] = 0.5*(phi->get(n)+phi->get(p)); 
+      }	else if (n >= 0) {
+	uf[0] = vel[n]; 
+	phif[0] = phi->get(n); 
+      } else if (p >= 0) {
+	uf[0] = vel[p]; 
+	phif[0] = phi->get(p); 
+      }
+
+      norm[0] = f->vol(); norm[1] = norm[0]; norm[2] = norm[0]; 
+
+      auto row = (uf[0]*norm[0] > 0) ? p : n; 
+
+      if (row < 0) { 
+	flux = uf[0]*phif[0]*norm[0]; 
+	auto other = (n < 0) ? p : n; 
+	if (n < 0) 
+	  tmp[p] -= flux*dt*invvolp*rkf; 	
+	else 
+	  tmp[n] += flux*dt*invvoln*rkf; 
+
+      } else { // row >= 0
+	xf[0] = f->getCoord(); 
+	auto u = getVar("u"); auto v= getVar("v");
+	xf[1] = xf[0] - 0.5*dt*uf[0]; 
+	//	auto row = searchCellbyCoords(xf[1], iseed, true); 
+	if (tri == 0) {
+	  uf[1] = uf[0]; uf[2] = uf[0]; 
+	  phif[0] = phi->get(row); 
+	  phif[1] = phif[0]; phif[2] = phif[0]; 
+	  norm[1] = norm[0]; norm[2] = norm[0];
+	} else if (tri == 1) {
+	  if (isu) {
+	    uf[1] = Vec3(interp(u, xf[1], iseed), interp(v, xf[1], iseed), 0); 
+	  } else {
+	    uf[1] = uf[0]; 
+	  }
+	  if (isp) {
+	    phif[1] = interp(phi, xf[1], iseed); 
+	  } else {
+	    phif[1] = phif[0]; 
+	  }
+	  xf[2] = xf[1] - 0.5*dt*uf[1];
+	  if (isu) {
+	    uf[2] = Vec3(interp(u, xf[2], iseed), interp(v, xf[2], iseed), 0); 
+	  } else {
+	    uf[2] = uf[0]; 
+	  }
+	  if (isp) {
+	    phif[2] = interp(phi, xf[2], iseed); 
+	  } else {
+	    phif[2] = phif[0]; 
+	  }
+	  if (isn) {
+	    auto xv1 = *f->getVertex(0); Vec3 x0x(*xv1); 
+	    auto xv2 = *f->getVertex(1); Vec3 x1x(*xv2);
+	    auto uv1 = Vec3(xv1->evalPhi(u), xv1->evalPhi(v), 0); 
+	    auto uv2 = Vec3(xv2->evalPhi(u), xv2->evalPhi(v), 0); 
+	    xv1->set(x0x - 0.5*uv1*dt); 
+	    xv2->set(x1x - 0.5*uv2*dt); 
+	    norm[1] = f->vol(); 
+	    xv1->set(x0x - uv1*dt); 
+	    xv2->set(x1x - uv2*dt); 
+	    norm[2] = f->vol(); 
+	    xv1->set(x0x); 
+	    xv2->set(x1x);
+	  } else {
+	    norm[1] = norm[0]; 
+	    norm[2] = norm[0]; 
+	  }
+
+	} else {  
+	  Scheme<Vec3> a = listCell[row]->grad(phi); // only if BC are the same
+	  gradu = listCell[row]->grad(u).eval(u); 
+	  gradv = listCell[row]->grad(v).eval(v); 
+	  gradp = listCell[row]->grad(phi).eval(phi); 
+	  dx = xf[1] - xf[0]; 
+	  uf[1] = uf[0] + Vec3(dx*gradu, dx*gradv, 0);
+	  phif[1] = phif[0] + dx*gradp; 	  
+	  xf[2] = xf[1] - 0.5*dt*uf[1]; 
+	  dx = xf[2] - xf[0]; 
+	  uf[2] = uf[0] + Vec3(dx*gradu, dx*gradv, 0); 
+	  phif[2] = phif[1] + dx*gradp; 
+	  if (isn) {
+	    auto xv1 = *f->getVertex(0); Vec3 x0x(*xv1); 
+	    auto xv2 = *f->getVertex(1); Vec3 x1x(*xv2);
+	    auto uv1 = Vec3(xv1->evalPhi(u), xv1->evalPhi(v), 0); 
+	    auto uv2 = Vec3(xv2->evalPhi(u), xv2->evalPhi(v), 0); 
+	    xv1->set(x0x - 0.5*uv1*dt); 
+	    xv2->set(x1x - 0.5*uv2*dt);
+	    norm[1] = f->vol(); 
+	    xv1->set(x0x - uv1*dt); 
+	    xv2->set(x1x - uv2*dt); 
+	    norm[2] = f->vol(); 
+	    xv1->set(x0x); 
+	    xv2->set(x1x); 
+	  } else {
+	    norm[1] = norm[0]; 
+	    norm[2] = norm[0]; 
+	  }
+	} 
+	// if (n==491 || p ==491) {
+	//   cout << "x0=" << xf[0] << " x1=" << xf[1] << " x2=" << xf[2] <<endl; 
+	//   cout << "u0=" << uf[0] << " u1=" << uf[1] << " u2=" << uf[2] <<endl; 
+	//   cout << "p0=" << phif[0] << " p1=" << phif[1] << " p2=" << phif[2] << endl; 
+	//   cout << "n0=" << norm[0] << " n1=" << norm[1] << " n2=" << norm[2] <<endl; 
+	//   cout << isu << " " << isn << " " <<isp << endl; 
+	// }
+	flux = 0; 
+       
+	for (auto i = 0; i < 3; ++i) {
+	  if (isu && isn && isp) {
+	    flux += uf[i]*norm[i]*phif[i]*aveflux[i];
+	  } else if (isu && isp) {
+	    flux += uf[i]*norm[0]*phif[i]*aveflux[i];
+	  } else if (isn && isp) { 
+	    flux += uf[0]*norm[i]*phif[i]*aveflux[i];
+	  } else if (isn && isu) {
+	    flux += uf[i]*norm[i]*phif[0]*aveflux[i];
+	  } else if (isp) {
+	    flux += uf[0]*norm[0]*phif[i]*aveflux[i];
+	  } else if (isu) {
+	    flux += uf[i]*norm[0]*phif[0]*aveflux[i];
+	  } else if (isn) {
+	    flux += uf[0]*norm[i]*phif[0]*aveflux[i];
+	  } else {
+	    flux += uf[0]*norm[0]*phif[0]*aveflux[i];
+	  }
+	}
+	// if (n==491 || p ==491) {
+	//   cout << "flux= " << flux << endl; 
+	//   cin.ignore().get(); 
+	// }
+	if (n >= 0) tmp[n] += flux*dt*invvoln*rkf; 
+	if (p >= 0) tmp[p] -= flux*dt*invvolp*rkf; 
+      }
+      //cout << "phif -> " << phif << endl; 
+      // auto ctol = 0.01; 
+      // if (lim) {
+      // 	if (phif > 1-ctol) phif = 1.0; 
+      // 	if (phif < ctol) phif = 0.0; 
+      // }
+
+    }
+    phi->data.assign(tmp); 
+  }
+}
+
 //------------------------------------------------------------------//
 // ---------------- LAPLACE -- CELL CENTER -------------------------//
 //------------------------------------------------------------------//
