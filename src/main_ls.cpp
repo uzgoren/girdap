@@ -42,7 +42,12 @@ double heavy(Vec3 x, Vec3 xp, double e) {
   return heavy((x - xp).abs(), e); 
 }
 
-int main() {
+int main(int argc,char *argv[]) {
+
+  string casedir = "./"; 
+  if (argc == 2) casedir = argv[1]; 
+  if (casedir.back() != '/') casedir = casedir + "/"; 
+
   int_8 Nx=20, Ny=20; 
   int_2 lx=2, ly=2; 
   int intmethod=2; 
@@ -58,12 +63,14 @@ int main() {
   double xm=0.3, xp=0.5, ym=0.55, yp=0.75, rp=0.15; 
   double endTime = 8; //dt*50; 
   double freq = 1; 
+  string cname = "ls";
   auto writeTime = 0.005;   
 
   // read file; 
-  std::ifstream infile("case.txt"); 
+  std::ifstream infile(casedir+"case.txt"); 
   string name; double val; 
-  while (infile >> name) {    
+  while (infile >> name) { 
+    cout << name << endl; 
     if (name.compare("Nx")==0) {infile >> Nx;  continue;}
     else if (name.compare("Ny")==0) { infile >> Ny; continue;}
     else if (name.compare("lx")==0) { infile >> lx; continue;}
@@ -76,6 +83,7 @@ int main() {
     else if (name.compare("freq")==0) {infile >> freq; continue;} 
     else if (name.compare("endTime")==0) {infile >> endTime; continue;} 
     else if (name.compare("writeTime")==0) {infile >> writeTime; continue;}
+    else if (name.compare("case")==0) {infile >> cname; continue;}
     else if (name.compare("veltype")==0) {
       infile >> veltype; 
       if (veltype.compare("-")==0) {
@@ -110,7 +118,8 @@ int main() {
   }
 
   std::ofstream outcase;
-  outcase.open("run.txt"); 
+  outcase.open(casedir+"run.txt"); 
+  outcase << "Name = " << cname << endl; 
   outcase << "N = " << Nx << "x" << Ny << endl; 
   outcase << "levels = " << lx <<"x"<<ly<< endl; 
   if (intmethod == 0) outcase << "FOU" << endl; 
@@ -127,7 +136,7 @@ int main() {
 			
   
   auto dt = 0.5; 
-  auto t = clock(); int iter = 0; 
+  auto cput = clock(); int iter = 0; 
   Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, Nx, Ny);
   grid->levelHighBound[0] = lx; 
   grid->levelHighBound[1] = ly; 
@@ -196,7 +205,7 @@ int main() {
     mass0 += grid->listCell[i]->vol().abs()*T->get(i); 
   }
 
-  grid->writeVTK("vortex");
+  grid->writeVTK(casedir+cname);
 
 
   int filecnt = 0; int it = 0, writeInt = 1; 
@@ -255,7 +264,7 @@ int main() {
     writeCnt -= grid->dt; 
 
     if (writeCnt <= 0 || time >= endTime) {
-      grid->writeVTK("vortex");
+      grid->writeVTK(casedir+cname);
       // std::string flname="heat"+std::to_string(filecnt++)+".vtk"; 
       // myfile.open(flname); 
       // myfile << grid << endl;
@@ -266,6 +275,11 @@ int main() {
     
     cout << "---------------------------------------------------"<<endl; 
   }
+  cput = clock()-cput; 
+
+  outcase.open(casedir+"time.txt"); 
+  outcase << ((double)(cput)) / (double)CLOCKS_PER_SEC << endl; 
+  outcase.close(); 
 
   delete(grid); 
 
