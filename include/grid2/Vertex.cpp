@@ -178,7 +178,7 @@ Scheme<double> Vertex::phi(shared_ptr<Var> var, int_2 bias) {
 // -------------------------------------------------------------------------
 bool Vertex::setInterpCoef() {
   // save some time by ommitting valid coefs during adaptation; 
-  if (!coefUpdate) return false; 
+  //if (!coefUpdate) return false; 
 
   // Form a CV and prepare for transformation; 
   VecX<double> x(8), y(8), z(8);
