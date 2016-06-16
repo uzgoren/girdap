@@ -44,28 +44,44 @@ void Grid::advanceDiv(shared_ptr<Var> &phi, VecX<Vec3> &vel,
 
     VecX<double> tmp(phi->data); 
     for (auto f: listFace) {
-      int n = f->next; 
-      int p = f->prev;  
+      auto n = f->next; 
+      auto p = f->prev;  
 
-      auto invvoln = (n < 0) ? 1.0 : 1.0/listCell[n]->vol().abs(); 
-      auto invvolp = (p < 0) ? 1.0 : 1.0/listCell[p]->vol().abs();            
-      
-      auto iseed = f->node[0]; 
       Vec3 xf[3], uf[3], norm[3];
       double phif[3]; 
       Vec3 gradp, gradu, gradv, dx, ufn; 
       double flux; 
 
-      if (n >= 0 && p >= 0) {
-	uf[0] = 0.5*(vel[n] + vel[p]); 
-	phif[0] = 0.5*(phi->get(n)+phi->get(p)); 
-      }	else if (n >= 0) {
-	uf[0] = vel[n]; 
-	phif[0] = phi->get(n); 
-      } else if (p >= 0) {
-	uf[0] = vel[p]; 
-	phif[0] = phi->get(p); 
-      }
+      auto invvoln = (n < 0) ? 1.0 : 1.0/listCell[n]->vol().abs(); 
+      auto invvolp = (p < 0) ? 1.0 : 1.0/listCell[p]->vol().abs();            
+      
+      auto n0 = f->node[0]; 
+      auto n1 = f->node[1]; 
+
+      auto u = getVar("u"); auto v= getVar("v");
+
+      auto phin0 = listVertex[n0]->evalPhi(phi); 
+      auto phin1 = listVertex[n1]->evalPhi(phi); 
+      auto un0 = listVertex[n0]->evalPhi(u); 
+      auto vn0 = listVertex[n0]->evalPhi(v); 
+      auto un1 = listVertex[n1]->evalPhi(u); 
+      auto vn1 = listVertex[n1]->evalPhi(v); 
+
+      uf[0] = 0.5*Vec3(un0 + un1, vn0 + vn1, 0.0); 
+      phif[0] = 0.5*(phin0 + phin1); 
+
+      auto iseed = f->node[0]; 
+
+      // if (n >= 0 && p >= 0) {
+      // 	uf[0] = 0.5*(vel[n] + vel[p]); 
+      // 	phif[0] = 0.5*(phi->get(n)+phi->get(p)); 
+      // }	else if (n >= 0) {
+      // 	uf[0] = vel[n]; 
+      // 	phif[0] = phi->get(n); 
+      // } else if (p >= 0) {
+      // 	uf[0] = vel[p]; 
+      // 	phif[0] = phi->get(p); 
+      // }
 
       norm[0] = f->vol(); norm[1] = norm[0]; norm[2] = norm[0]; 
 
