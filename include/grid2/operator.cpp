@@ -67,6 +67,10 @@ void Grid::advanceDiv(shared_ptr<Var> &phi, VecX<Vec3> &vel,
       auto un1 = listVertex[n1]->evalPhi(u); 
       auto vn1 = listVertex[n1]->evalPhi(v); 
 
+      //deta = (*listVertex[n1]-*listVertex[n2]); 
+      //      gradphi = (phin1 - phin0)*(deta/deta.abs()) + (listCell[n]-listCell[p])/
+      
+
       uf[0] = 0.5*Vec3(un0 + un1, vn0 + vn1, 0.0); 
       phif[0] = 0.5*(phin0 + phin1); 
 
@@ -112,6 +116,11 @@ void Grid::advanceDiv(shared_ptr<Var> &phi, VecX<Vec3> &vel,
 	    uf[1] = uf[0]; 
 	  }
 	  if (isp) {
+	    // xn0 = *listVertex[n0] - 0.5*dt*Vec3(un0, vn0, 0); 
+	    // xn1 = *listVertex[n1] - 0.5*dt*Vec3(un1, vn1, 0); 
+	    // phin0 = listVertex[n0]->evalPhi(phi, xn0); 
+	    // phin1 = listVertex[n1]->evalPhi(phi, xn1); 
+	    //phif[1] = 0.5*(phin0 + phin1); //
 	    phif[1] = interp(phi, xf[1], iseed); 
 	  } else {
 	    phif[1] = phif[0]; 
@@ -123,6 +132,10 @@ void Grid::advanceDiv(shared_ptr<Var> &phi, VecX<Vec3> &vel,
 	    uf[2] = uf[0]; 
 	  }
 	  if (isp) {
+	    // xn0 = 
+	    // phin0 = listVertex[n0]->evalPhi(phi, ); 
+	    // phin1 = listVertex[n1]->evalPhi(phi, xf[1]); 
+	    // phif[1] = 0.5*(phin0 + phin1); //interp(phi, xf[1], iseed); 
 	    phif[2] = interp(phi, xf[2], iseed); 
 	  } else {
 	    phif[2] = phif[0]; 

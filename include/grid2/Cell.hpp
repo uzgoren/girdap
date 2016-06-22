@@ -106,6 +106,7 @@ public:
   double virtual dx() { return 0; }
   double virtual dy() { return 0; }
   double virtual dz() { return 0; }
+  bool virtual isPointIn(Vec3 a) { return false; }
 
   Vec3 getCoord() { 
     Vec3 sum(0,0,0); double icnt = 0; 

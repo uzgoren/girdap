@@ -75,7 +75,7 @@ public:
   // 01a RESET only one cell; 
   void reset(int_2 s) {cell.assign(s, -1);coefUpdate = true;}
   // 01b RESET and replace connectivity; 
-  void reset(initializer_list<int_8> l) {cell.assign(l.begin(), l.end());coefUpdate = true;}
+  void reset(initializer_list<int_8> l) {cell.assign(l.begin(), l.end()); coefUpdate = true;}
 
   // 02 Change number of cells (structure of a node)
   void cellResize(int_2 size); 
@@ -123,6 +123,10 @@ public:
   bool setInterpCoef(); 
   //vector<double> getIntWeight();
   vector<double> getIntWeight(Vec3* x = NULL); 
+
+  bool isIn(Vec3 x); 
+  Vec3 getXhat(Vec3 x); 
+
 
   // Scheme<double> pi(shared_ptr<Var> &var, Vec3 *x=NULL, int method=0); 
   // Scheme<double> pi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc, ...

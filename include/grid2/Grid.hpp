@@ -29,7 +29,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
+#include <algorithm>
 
 #include <base/Interp.hpp>
 #include <field/Var>
@@ -150,6 +150,8 @@ public:
     }
     nCellSize += l.size() + 1;
     auto c = *(listCell.rbegin()); 
+    // for ( auto vi : node ) {
+    //   listVertex[vi]->set
     c->id = listCell.size()-1;
     c->grid = this; 
     c->assignCelltoNode();
@@ -210,7 +212,7 @@ public:
   void setIntCoef() {
     int_8 sum = 0; 
     for (auto v : listVertex) {
-      if (v->setInterpCoef()) sum++; 
+      if (v->coefUpdate) { v->setInterpCoef(); sum++;}
     }
     // cout << "Set coef for " << sum << " vertices out of " << listVertex.size() << endl; 
     // cin.ignore().get(); 
@@ -404,8 +406,6 @@ public:
     }    
   }
 	
-
-
   void debug() {
     for (auto v = vbegin(); v!=vend(); ++v) {
       cout << (*v)->id << " ("; 
@@ -419,20 +419,11 @@ public:
 
   // INTERPOLATION at a point
   double interp(shared_ptr<Var> &phi, Vec3 x, int_8 i0=0) {
+    //    cout << " Interp: " << x << endl; 
     if (i0 < 0 || i0 >= listVertex.size()) i0=0; 
-    i0 = searchVertexbyCoords(x, i0); 
-    if (i0 < 0) return 0; //BC
-    auto v = listVertex[i0]; 
-    auto xhat = int3D.findXhat(x, v->xcoef, v->ycoef, v->zcoef); 
-    auto v2 = &v; 
-    if (xhat[0] < 0) v2 = v->ngbr(-1); 
-    else if (xhat[0] > 1) v2 = v->ngbr(1); 
-    else if (xhat[1] < 0) v2 = v->ngbr(-2); 
-    else if (xhat[1] > 1) v2 = v->ngbr(2); 
-    else return v->evalPhi(phi, &x); 
-    
-    if (v2) return (*v2)->evalPhi(phi, &x); 
-    else return 0; 
+    i0 = searchVertexbyCoords(x, i0); // minimum distance; 
+    if (i0 < 0) { cout << " coefs not found! after search point! " << endl; exit(1);  return 0;} 
+    return listVertex[i0]->evalPhi(phi, &x);    
   }
 
   Vec3 interpVec(shared_ptr<Var> &phi, Vec3 x, int_8 i0=0) { 

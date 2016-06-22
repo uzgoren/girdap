@@ -393,8 +393,7 @@ VecX<Vec3> getError(shared_ptr<Var> const &a) {
   // //     err[j] /= mx; 
   // //   }    
   // // }
-  // // cout << mx <<  endl; 
-
+  // // cout << mx <<  endl;   
   return err; 
 }
 
@@ -432,6 +431,7 @@ void cleanGrid() {
   }
   vector<int_8> o2n_node(listVertex.size(), -1); int_8 inode = 0; 
   for (auto it = vbegin(); it != vend(); ) {
+    (*it)->coefUpdate = true; 
     auto isConnected = false; 
     for (auto jt = 0; jt < (*it)->cell.size(); ++jt) {
       if ((*it)->cell[jt] >= 0) {isConnected = true; break;}

@@ -243,17 +243,48 @@ bool Vertex::setInterpCoef() {
   return true; 
 }
 
+// int Vertex::isXhat(Vec3 &xh) {
+//   return grid->int3D.isIn(xh); 
+// }
+
+// Vec3 Vertex:: getXhat(Vec3 &x) {
+//   return grid->int3D.findXhat(x, xcoef, ycoef, zcoef); 
+// }
+
+bool Vertex::isIn(Vec3 a) {
+  Vec3 pt[4]; 
+  pt[0] = Vec3(grid->int3D.linFunc(Vec3(0, 0, 0), xcoef), grid->int3D.linFunc(Vec3(0, 0, 0), ycoef), 0); 
+  pt[1] = Vec3(grid->int3D.linFunc(Vec3(1, 0, 0), xcoef), grid->int3D.linFunc(Vec3(1, 0, 0), ycoef), 0); 
+  pt[2] = Vec3(grid->int3D.linFunc(Vec3(1, 1, 0), xcoef), grid->int3D.linFunc(Vec3(1, 1, 0), ycoef), 0);   
+  pt[3] = Vec3(grid->int3D.linFunc(Vec3(0, 1, 0), xcoef), grid->int3D.linFunc(Vec3(0, 1, 0), ycoef), 0); 
+  double sum = 0; 
+  for (auto i = 0; i < 4; ++i) {
+    sum += ((a - pt[i])^(pt[(i+1)%4] - a)).abs();
+  }
+  double vol = ((pt[2] - pt[0])^(pt[3] - pt[1])).abs(); 
+  if (std::abs(sum - vol) < 1e-3) return true; 
+  else return false;
+  //return grid->int3D.isIn(getXhat(a)); 
+}
+
+Vec3 Vertex::getXhat(Vec3 a) {
+  if (xcoef.data.size() == 0) setInterpCoef(); 
+  return grid->int3D.findXhat(a, xcoef, ycoef, zcoef); 
+}
+
 vector<double> Vertex::getIntWeight(Vec3* x) {
-  if (coefUpdate) {
-    cout << "Error: Coefficients are not yet computed! " << id << endl;
-    exit(1);
+  if (xcoef.data.size() == 0) {
+     cout << "Error: Coefficients are not yet computed! " << id << endl;
+     cout << xcoef << endl;
+     cout << ycoef << endl;
+     cout << zcoef << endl;
+     exit(1);
   }
   Vec3 xhattmp; 
   //cout << " XHAT " << endl; 
   if (x) xhattmp = grid->int3D.findXhat(*x, xcoef, ycoef, zcoef);  
   else xhattmp = xhat; 
-  //cout << " --- " << x << endl; 
- 
+
   vector<double> w(cell.size(), 0);
   w[0] = (1-xhattmp.x())*(1-xhattmp.y())*(1-xhattmp.z()); 
   w[1] = xhattmp.x()*(1-xhattmp.y())*(1-xhattmp.z()); 
@@ -316,7 +347,8 @@ double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &b
 	    bcval = (del*bc[bndr]->a_val+1)*phi[cell[(i+3)%4]] + del*bc[bndr]->b_val; 
 	  } else {
 	    auto cg = (*getCell((i+2)%4));
-	    auto dn = this->getCoord() - cg->getCoord(); 
+	    auto n2 = *(cg->getVertex(i)); 
+	    auto dn = (0.5*(this->getCoord() + n2->getCoord()) - cg->getCoord()); //this->getCoord() - cg->getCoord(); 
 	    auto del = (bndr%2 == 0) ? -dn.abs() : dn.abs();
 	    bcval = (del*bc[bndr]->a_val+1.0)*phi[cell[(i+2)%4]] + del*bc[bndr]->b_val; 
 	  } 

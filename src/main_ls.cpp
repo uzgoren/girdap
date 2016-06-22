@@ -230,7 +230,7 @@ int main(int argc,char *argv[]) {
     }
 
     grid->setDt(2.0); 
-    if (writeCnt < grid->dt) grid->dt = writeCnt; 
+    if (writeCnt > 0 && writeCnt < grid->dt) grid->dt = writeCnt; 
     //    grid->writePast("v_past", T); 
  
     cout << setiosflags(ios::fixed) << setprecision(6); 
@@ -248,16 +248,19 @@ int main(int argc,char *argv[]) {
     for (auto i=0; i < grid->listCell.size(); ++i) {
       double vol = grid->listCell[i]->vol().abs();
       auto Tval = T->get(i); 
-      if (Tval > 0.999) T->set(i, 1.0); 
-      if (Tval < 0.001) T->set(i, 0.0); 
+      if (Tval > 0.99) T->set(i, 1.0); 
+      if (Tval < 0.01) T->set(i, 0.0); 
       mass += vol*T->get(i);
       if (Tval > 0) part += vol; 
     }
 
     //    auto gt = grid->valGrad(T); 
-    if (iter%1 == 0) {
+    if (iter == 0 || iter % 1 == 0) {
+
       grid->solBasedAdapt2(grid->getError(T)); 
+
       grid->adapt(); 
+
     }
 
     time += grid->dt; 

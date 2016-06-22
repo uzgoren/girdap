@@ -23,64 +23,144 @@
 #include <time.h>
 #include <iomanip>
 
-#include <base/Interp.hpp>
-#include <field/Var>
 #include <grid2/Grid>
 
-int main() {
-  std::string flname; 
-  int filecnt = 0; 
-  ofstream myfile; 
-
-  Interp interp; 
-
-  VecX<double> x = {-1, -1, 13, -4, -1, -1, 13, -4};
-  VecX<double> y = {-1, -1, 11,  8, -1, -1, 11,  8};
-  VecX<double> z = { 0,  0,  0,  0,  0,  0,  0.5,  1.3};
-
-  auto xcoef = interp.getCoef(x); 
-  auto ycoef = interp.getCoef(y); 
-  auto zcoef = interp.getCoef(z); 
+int main(int argc, char* argv[]) {
+  double x=0.6, y=0.0, z=0.0; 
+  Grid* grid = new Block2({0, 0, 0}, {1, 1, 0}, 2, 2);
   
-  Vec3 pthat(0.7, 0.6, 1);
-  Vec3 pt; 
-  pt[0] = interp.linFunc(pthat, xcoef); 
-  pt[1] = interp.linFunc(pthat, ycoef); 
-  pt[2] = interp.linFunc(pthat, zcoef); 
-  
-  auto xhat = interp.findXhat(pt, xcoef, ycoef, zcoef); 
+  if (argc >= 2) x = atof(argv[1]); 
+  if (argc >= 3) y = atof(argv[2]); 
 
-  Grid* grid = new Block2({0, 0, 0}, {1, 1, 0}, 50, 50); 
+  auto pt = Vec3(x, y, z); 
 
-  // for (auto i = 0; i < grid->listVertex.size(); ++i) {
-  //   auto w = grid->listVertex[i]->getIntWeight(); 
-  //   double sum = 0; 
-  //   cout << i << " : "; 
-  //   for (auto v : w) { cout << v << ", "; sum += v; } 
-  //   cout << "= " <<sum << endl; 
-  // }
+  grid->listCell[0]->adapt[0] = 1; 
+  grid->listCell[0]->adapt[1] = 1; 
+  grid->listCell[1]->adapt[0] = 1; 
+  grid->listCell[2]->adapt[1] = 1; 
+  grid->adapt(); 
+  grid->levelHighBound[0]=6; 
+  grid->levelHighBound[1]=6; 
+
+  for (auto c : grid->listCell) {
+    if (c->isPointIn(pt)) 
+      cout << "cell " << c->id << " contains pt= " << pt << endl; 
+  }
+  // exit(1); 
+
+  auto i0 = grid->searchVertexbyCoords(pt); 
+  cout << "Vertex " << i0 << " : " << *grid->listVertex[i0] << endl; 
+  for (auto ci : grid->listVertex[i0]->cell) {
+    if (ci < 0) continue; 
+    cout << "Cells: " << ci << endl; 
+  }
+
+  //exit(1); 
+
 
   grid->addVar({"T"}); 
   
   auto T = grid->getVar("T");
-  T->setBC("west", "val", 0.8);
-  T->setBC("south", "val", 1); 
-  T->setBC("east", "val", -1); 
-  T->setBC("north", "val", -0.5); 
+  T->setBC("west", "grad", 1);
+  T->setBC("south", "grad", 2); 
+  T->setBC("east", "grad", 1); 
+  T->setBC("north", "grad", 2); 
   
   double pi = 4.0*atan(1); 
   for (auto i = 0; i < grid->listCell.size(); ++i) {
     auto c = grid->listCell[i]; 
     auto x = c->getCoord(); 
-    T->set(i, sin(x[0]*4*pi)*cos(x[1]*2*pi)); // + cos(x[0]*4*pi)*sin(x[1]*2*pi)); 
+    T->set(i, x[0] + 2*x[1]); 
+    //T->set(i, sin(x[0]*2*pi)*sin(x[1]*2*pi)); // + cos(x[0]*4*pi)*sin(x[1]*2*pi)); 
   }
+  
+  for (auto k = 0; k < 2; ++k) {
+    for (auto i = 0; i < grid->listCell.size(); i++) {
+      grid->listCell[i]->adapt[0] = 1; 
+      grid->listCell[i]->adapt[1] = 1; 
+    }
+    grid->adapt(); 
+  }  
 
-  cout << pt << endl; 
-  cout << xhat << endl; 
 
-     myfile.open("grid.vtk"); 
-    myfile << grid << endl;
-    myfile.close(); 
+  Grid* other = new Block2({0.05, 0.05, 0}, {0.95, 0.95, 0}, 51, 78); 
+  other->addVar({"T"}); 
+  auto Tn = other->getVar("T"); 
 
+  for (auto c:other->listCell) {    
+    auto x = c->getCoord();
+    Tn->set(c->id, grid->interp(T, x)); 
+  }  
+
+  grid->writeVTK("int2_"); 
+  other->writeVTK("oth_"); 
+
+  //exit(1); 
+
+   for (auto k = 0; k < 2; ++k) {
+    for (auto i = 0; i < grid->listCell.size(); i++) {
+      grid->listCell[i]->adapt[0] = -1; 
+      //      grid->listCell[i]->adapt[1] = -1; 
+    }
+    grid->adapt(); 
+  }   
+
+  // for (auto i = 0; i < grid->listCell.size(); ++i) {
+  //   auto c = grid->listCell[i]; 
+  //   auto x = c->getCoord(); 
+  //   //T->set(i, x[0] + 2*x[1]); 
+  //   T->set(i, sin(x[0]*2*pi)*sin(x[1]*2*pi)); // + cos(x[0]*4*pi)*sin(x[1]*2*pi)); 
+  // }
+
+  for (auto c:other->listCell) {
+    auto x = c->getCoord();
+    auto i0 = grid->searchVertexbyCoords(x); //grid->searchInterpPoint(x, grid->searchVertexbyCoords(x)); 
+    if (i0 < 0) {
+      // cout << "search of << " << x << " failed " << endl;
+      // cout << "result of init search " << grid->searchVertexbyCoords(x) << endl; 
+    } else {
+      Tn->set(c->id, grid->listVertex[i0]->evalPhi(T, &x)); 
+    }
+  }  
+
+  grid->writeVTK("int2_"); 
+  other->writeVTK("oth_");
+
+  ofstream out;
+  out.open("interp.vtk"); 
+ 
+
+  int_8 nCell = grid->listVertex.size();
+  int t; // = listCell[0]->node.size()+1;
+  out << "# vtk DataFile Version 2.0" << endl; 
+  out << "Unstructure Grid" << endl; 
+  out << "ASCII"<< endl; 
+  out << endl << "DATASET UNSTRUCTURED_GRID"<< endl; 
+  out << "POINTS " << 4*nCell << " float" << endl;
+  for (auto v : grid->listVertex) {
+    out << grid->int3D.linFunc(Vec3(0,0,0), v->xcoef) << " "; 
+    out << grid->int3D.linFunc(Vec3(0,0,0), v->ycoef) << " "; 
+    out << grid->int3D.linFunc(Vec3(0,0,0), v->zcoef) << endl; 
+    out << grid->int3D.linFunc(Vec3(1,0,0), v->xcoef) << " "; 
+    out << grid->int3D.linFunc(Vec3(1,0,0), v->ycoef) << " "; 
+    out << grid->int3D.linFunc(Vec3(1,0,0), v->zcoef) << endl; 
+    out << grid->int3D.linFunc(Vec3(1,1,0), v->xcoef) << " "; 
+    out << grid->int3D.linFunc(Vec3(1,1,0), v->ycoef) << " "; 
+    out << grid->int3D.linFunc(Vec3(1,1,0), v->zcoef) << endl; 
+    out << grid->int3D.linFunc(Vec3(0,1,0), v->xcoef) << " "; 
+    out << grid->int3D.linFunc(Vec3(0,1,0), v->ycoef) << " "; 
+    out << grid->int3D.linFunc(Vec3(0,1,0), v->zcoef) << endl;     
+  }
+  auto icnt = 0; 
+  out << endl << "CELLS "<< nCell << " " << nCell*5 << endl; 
+  for (auto v : grid->listVertex) { 
+    out << "4 " << icnt << " " << icnt+1 << " " << icnt+2 << " " << icnt+3 << endl; 
+    icnt += 4; 
+  }
+  out << endl << "CELL_TYPES " << nCell <<endl; 
+  for (auto v : grid->listVertex) {
+    out << "9 "<< endl; 
+  }
+  out.close(); 
   return 0; 
 }

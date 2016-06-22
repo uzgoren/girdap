@@ -50,10 +50,19 @@ public:
       return coef[3] + coef[5]*xhat.x() + coef[6]*xhat.y() + coef[7]*xhat.x()*xhat.y(); 
   }
 
+  bool isIn(Vec3 xhat) {
+    for (auto i=0; i < 3; ++i) {
+      if (xhat[i] < -0.5) return false; 
+      if (xhat[i] > 1.5) return false; 
+    }
+    return true; 
+  }
+
   Vec3 findXhat(Vec3 x, VecX<double> &xcoef, VecX<double> &ycoef, VecX<double> &zcoef) {
     Vec3 xhat(0, 0, 0); //INITIAL GUESS;
     Vec3 dx(0, 0, 0);  // needed if not updated!
-    int it = 0; 
+    double err = 1, err1; 
+    int it = 0, bnd=0; 
 
     while (true) {
       it++; 
@@ -82,18 +91,22 @@ public:
       }
       xhat += dx; 
       
-      if (xhat[0] < 0 || xhat[0] > 1 || xhat[1] < 0 || xhat[1] > 1 || xhat[2] < 0 || xhat[2] > 1) break; 
-
-      if (abs(dx[0]) + abs(dx[1]) + abs(dx[2]) < 1e-6) break; 
+      // if (!isIn(xhat)) ++bnd; 
+      // if (bnd > 3) break; 
+      err1 = abs(dx[0]) + abs(dx[1]) + abs(dx[2]); //sqrt(pow(dx[0],2) + pow(dx[1],2) + pow(dx[2],2)); 
+      if (err1 > err) ++bnd; 
+      err = err1; 
+      if (err < 1e-6) break; 
+      if (bnd > 2) break; 
 
     }
     // if (xhat[0] < 0 || xhat[0] > 1 || xhat[1] < 0 || xhat[1] > 1 || xhat[2] < 0 || xhat[2] > 1) {
     //   cout << "not a good value" <<endl; 
     //   exit(-1); 
     // }
-    // xhat[0] = rint(1e6*xhat[0])*1e-6;
-    // xhat[1] = rint(1e6*xhat[1])*1e-6;
-    // xhat[2] = rint(1e6*xhat[2])*1e-6; 
+    xhat[0] = rint(1e6*xhat[0])*1e-6;
+    xhat[1] = rint(1e6*xhat[1])*1e-6;
+    xhat[2] = rint(1e6*xhat[2])*1e-6; 
     return xhat; 
   }
 
