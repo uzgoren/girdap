@@ -70,7 +70,7 @@ int main(int argc,char *argv[]) {
   std::ifstream infile(casedir+"case.txt"); 
   string name; double val; 
   while (infile >> name) { 
-    cout << name << endl; 
+    //cout << name << endl; 
     if (name.compare("Nx")==0) {infile >> Nx;  continue;}
     else if (name.compare("Ny")==0) { infile >> Ny; continue;}
     else if (name.compare("lx")==0) { infile >> lx; continue;}
@@ -160,13 +160,15 @@ int main(int argc,char *argv[]) {
   T->set(0); 
   double pi = 4.0*atan(1); 
   
-  auto dx = 1/20/pow(2,grid->levelHighBound[0]-1); 
-  auto e = 4*dx; 
   ui->set(u0); 
   vi->set(v0); 
   u->set(u0); 
   v->set(v0); 
-  for (auto j = 0; j < 6; ++j) {
+  for (auto j = 0; j < grid->levelHighBound[0] + 1; ++j) {
+
+    auto dx = 1/Nx/pow(2,grid->levelMax[0]-1); 
+    auto e = 4*dx; 
+
     for (auto i = 0; i < grid->listCell.size(); ++i) {
       auto x = grid->listCell[i]->getCoord(); // - Vec3(0.5, 0.5); 
       if (veltype.find("x") != std::string::npos) {
@@ -185,21 +187,22 @@ int main(int argc,char *argv[]) {
 	
       if (geotype.compare("bar") == 0) 
 	T->set(i, heavy(x[0]-xp, e) - heavy(x[0]-xm, e)); 
-      else if (geotype.compare("rect") == 0) 
+      else if (geotype.compare("rect") == 0) {
 	T->set(i, (heavy(x[0]-xp, e) - heavy(x[0]-xm, e))*(heavy(x[1]-yp, e) - heavy(x[1]-ym, e))); 
-      else if (geotype.compare("circle") == 0) {
+	
+      } else if (geotype.compare("circle") == 0) {
 	auto r = (grid->listCell[i]->getCoord() - Vec3(xp, yp)).abs(); 
 	//T->set(i, heavy(0.15-r, e)); 
 	T->set(i, 1.0/(1.0 + exp(-2.0*80*(rp-r)))); 
       }
     }
+    if (j == grid->levelHighBound[0]) break; 
     //    auto gt = grid->valGrad(T); 
     //grid->solBasedAdapt(gt); 
     grid->solBasedAdapt2(grid->getError(T));
     grid->adapt(); 
-    
   }
-
+  
   double mass0=0; double mass=0; 
   for (auto i=0; i < grid->listCell.size(); ++i) {
     mass0 += grid->listCell[i]->vol().abs()*T->get(i); 
@@ -243,19 +246,20 @@ int main(int argc,char *argv[]) {
     grid->advanceDiv(T, vel, rk0, intscheme, intmethod, flux); 
     cout << "Min T: " << T->data.min() << ", Max T: "<< T->data.max() << endl; 
     //if (time == 0) cin.ignore().get(); 
-    
+    //grid->writeVTK("den"); 
+    //exit(1); 
     mass=0; double part=0; 
     for (auto i=0; i < grid->listCell.size(); ++i) {
       double vol = grid->listCell[i]->vol().abs();
       auto Tval = T->get(i); 
-      if (Tval > 0.99) T->set(i, 1.0); 
-      if (Tval < 0.01) T->set(i, 0.0); 
+      if (Tval > 0.995) T->set(i, 1.0); 
+      if (Tval < 0.005) T->set(i, 0.0); 
       mass += vol*T->get(i);
       if (Tval > 0) part += vol; 
     }
-
+    //exit(1); 
     //    auto gt = grid->valGrad(T); 
-    if (iter == 0 || iter % 1 == 0) {
+    if (iter == 0 || iter % 5 == 0) {
 
       grid->solBasedAdapt2(grid->getError(T)); 
 
@@ -275,7 +279,7 @@ int main(int argc,char *argv[]) {
       writeCnt = writeTime; 
       //cin.ignore().get(); 
      } 
-    
+    // exit(1);
     cout << "---------------------------------------------------"<<endl; 
   }
   cput = clock()-cput; 

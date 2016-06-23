@@ -49,19 +49,19 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
   }  
 
   vector<vector<int_8 > > ind; 
-  vector<vector<vector<double > > > ovar; 
-  vector<int_8 > intv; 
+  // vector<vector<vector<double > > > ovar; 
+  // vector<int_8 > intv; 
   ind.resize(n1+1); 
   for (int_8 i=0; i < n1+1; ++i) ind[i].assign(n2+1,-1);
  
   // variables; 
-  ovar.resize(n1+1); 
-  for (int_8 i=0; i < n1+1; ++i) {
-    ovar[i].resize(n2+1); 
-    for (int_8 j = 0; j < n2+1; ++j) {
-      ovar[i][j].assign(grid->listVar.size(), 0); 
-    }
-  }
+  //ovar.resize(n1+1); 
+  // for (int_8 i=0; i < n1+1; ++i) {
+  //   ovar[i].resize(n2+1); 
+  //   for (int_8 j = 0; j < n2+1; ++j) {
+  //     ovar[i][j].assign(grid->listVar.size(), 0); 
+  //   }
+  // }
   
   ind[0][0] = node[0];   
   ind[n1][0] = node[1];
@@ -83,14 +83,14 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
   dy1 = edge(3)/double(n2);     
   x0 = Vec3(**getVertex(0)); 
 
-  for (auto j = 0; j < n2+1 ; ++j) {
-    for (auto i = 0; i < n1+1 ; ++i) {
-      if (ind[i][j] < 0) continue;
-      if (grid->listVertex[ind[i][j]]->xcoef.data.size() > 0) {
-	intv.emplace_back(ind[i][j]); 
-      }
-    }
-  }
+  // for (auto j = 0; j < n2+1 ; ++j) {
+  //   for (auto i = 0; i < n1+1 ; ++i) {
+  //     if (ind[i][j] < 0) continue;
+  //     if (grid->listVertex[ind[i][j]]->xcoef.data.size() > 0) {
+  // 	intv.emplace_back(ind[i][j]); 
+  //     }
+  //   }
+  // }
   // cout << id <<  " : " ; 
   // for (auto j : intv) {
   //   cout << j << " " ; 
@@ -118,27 +118,27 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
     }
   }
 
-  for (auto j = 0; j < n2+1 ; ++j) {
-    for (auto i = 0; i < n1+1 ; ++i) {
-      int_8 i0 = -1; 
-      for (auto k : intv) {
-	if (grid->listVertex[k]->isIn(*(grid->listVertex[ind[i][j]]))) {
-	  i0 = k; 
-	  break; 
-	}
-      }
-      if (i0 < 0) {
-	for (auto k = 0; k < grid->listVar.size(); ++k) { 
-	  ovar[i][j][k] = grid->listVar[k]->get(id); 
-	}
-      } else {
-	for (auto k = 0; k < grid->listVar.size(); ++k) { 
-	  auto x = *(grid->listVertex[ind[i][j]]); 
-	  ovar[i][j][k] = grid->listVertex[i0]->evalPhi(grid->listVar[k], &x); 
-	}
-      }
-    }
-  }
+  // for (auto j = 0; j < n2+1 ; ++j) {
+  //   for (auto i = 0; i < n1+1 ; ++i) {
+  //     int_8 i0 = -1; 
+  //     for (auto k : intv) {
+  // 	if (grid->listVertex[k]->isIn(*(grid->listVertex[ind[i][j]]))) {
+  // 	  i0 = k; 
+  // 	  break; 
+  // 	}
+  //     }
+  //     if (i0 < 0) {
+  // 	for (auto k = 0; k < grid->listVar.size(); ++k) { 
+  // 	  ovar[i][j][k] = grid->listVar[k]->get(id); 
+  // 	}
+  //     } else {
+  // 	for (auto k = 0; k < grid->listVar.size(); ++k) { 
+  // 	  auto x = *(grid->listVertex[ind[i][j]]); 
+  // 	  ovar[i][j][k] = grid->listVertex[i0]->evalPhi(grid->listVar[k], &x); 
+  // 	}
+  //     }
+  //   }
+  // }
   //cin.ignore().get(); 
 
   // 0 th cell; xhat(0-3) =  0.5*(0.5*(1+1/n1), 0.5*(1+1/n2))
@@ -197,15 +197,15 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
 	
 	auto x = getCoord(); 	
 	for (auto k = 0; k < grid->listVar.size(); ++k) {
-	  auto val = 0.25*(ovar[i][j][k] + ovar[i+1][j][k] + ovar[i+1][j+1][k] + ovar[i][j+1][k]); 
-	  grid->listVar[k]->set(id, val); //oldv[k] + (x-xcold)*oldg[k]); 	
+	  //auto val = 0.25*(ovar[i][j][k] + ovar[i+1][j][k] + ovar[i+1][j+1][k] + ovar[i][j+1][k]); 
+	  grid->listVar[k]->set(id, oldv[k] + (x-xcold)*oldg[k]); 	
 	}
       } else {
 	grid->addCell({ind[i][j], ind[i+1][j], ind[i+1][j+1], ind[i][j+1]});
 	auto x = (*grid->listCell.rbegin())->getCoord();	
 	for (auto k = 0; k < grid->listVar.size(); ++k) {
-	  auto val = 0.25*(ovar[i][j][k] + ovar[i+1][j][k] + ovar[i+1][j+1][k] + ovar[i][j+1][k]); 
-	  grid->listVar[k]->set(grid->listCell.size()-1, val); //oldv[k] + (x-xcold)*oldg[k]); 
+	  //auto val = 0.25*(ovar[i][j][k] + ovar[i+1][j][k] + ovar[i+1][j+1][k] + ovar[i][j+1][k]); 
+	  grid->listVar[k]->set(grid->listCell.size()-1, oldv[k] + (x-xcold)*oldg[k]); 
 	}
 	// for (auto var: grid->listVar) 
 	//   var->set(grid->listCell.size()-1, var->get(id)); 
@@ -215,11 +215,11 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
     }
   }
 
-  for (auto j = 0; j < n2+1; ++j) {
-    for (auto i = 0; i < n1+1; ++i) { 
-      grid->listVertex[ind[i][j]]->setInterpCoef(); 
-    }
-  }
+  // for (auto j = 0; j < n2+1; ++j) {
+  //   for (auto i = 0; i < n1+1; ++i) { 
+  //     grid->listVertex[ind[i][j]]->setInterpCoef(); 
+  //   }
+  // }
 
   return;
 }

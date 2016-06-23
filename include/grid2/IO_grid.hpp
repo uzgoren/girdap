@@ -108,51 +108,90 @@ void writePast(string name, shared_ptr<Var > var) {
   out.open(name+std::to_string(filecnt++)+".vtk"); 
 
   int_8 nCell = listCell.size();
-  int t; // = listCell[0]->node.size()+1;
+ int t; // = listCell[0]->node.size()+1;
   out << "# vtk DataFile Version 2.0" << endl; 
-    out << "Unstructure Grid" << endl; 
-    out << "ASCII"<< endl; 
-    out << endl << "DATASET UNSTRUCTURED_GRID"<< endl; 
-    out << "POINTS " << listVertex.size() << " float" << endl; 
-    for (auto p = vbegin(); p != vend(); ++p) {
-      out << **p-vel[(*p)->id]*0.05 <<  endl ; 
-    }
-    if (nCell > 0) {
-      t = listCell[0]->node.size()+1;
-      out << endl << "CELLS "<< nCell << " " << nCell*t << endl; 
-      for (auto c = cbegin(); c != cend(); ++c) {
-	if ((*c)->isAlive) out << *c ; 
-      }
-      out << endl << "CELL_TYPES " << nCell <<endl; 
-      for (auto c = cbegin(); c != cend(); ++c) {
-	if ((*c)->isAlive) out << (*c)->getType() << endl; 
-      }
-    } else {
-      out << endl << "CELLS "<< listVertex.size() << " " << listVertex.size()*2 << endl; 
-      for (auto i = 0; i < listVertex.size(); ++i) 
-        out << "1 "<< i<< endl;     
-      out << endl << "CELL_TYPES " << listVertex.size() <<endl; 
-      for (auto i = 0; i < listVertex.size(); ++i) out << "1 "<< endl; 
-    }
-    out << endl << "POINT_DATA " << listVertex.size() << endl;
- 
-    out << "SCALARS " << var->name << " float 1"<<endl; 
-    out << "LOOKUP_TABLE default"<<endl; auto icnt = 0; 
-    for (auto v: listVertex) {
-      //auto val = v->phi(var).eval(var); 
-      double val = 0; 
-      if (var->loc == 0) {
-	auto x = Vec3(*v - vel[v->id]*dt*0.5); 
-	val=interp(var, x, v->id); //v->evalPhi(var, &x); 
-      } else if (var->loc == 1) 
-	val=var->get(v->id); 
-      out << ((abs(val) < 1e-10) ? 0 : val) << endl; 
-    }
-    out << endl; 
-
-    out<<endl; 	  
-    out.close(); 
+  out << "Unstructure Grid" << endl; 
+  out << "ASCII"<< endl; 
+  out << endl << "DATASET UNSTRUCTURED_GRID"<< endl; 
+  out << "POINTS " << listVertex.size() << " float" << endl; 
+  for (auto p = vbegin(); p != vend(); ++p) {
+    out << **p-vel[(*p)->id]*0.05 <<  endl ; 
   }
+  if (nCell > 0) {
+    t = listCell[0]->node.size()+1;
+    out << endl << "CELLS "<< nCell << " " << nCell*t << endl; 
+    for (auto c = cbegin(); c != cend(); ++c) {
+      if ((*c)->isAlive) out << *c ; 
+    }
+    out << endl << "CELL_TYPES " << nCell <<endl; 
+    for (auto c = cbegin(); c != cend(); ++c) {
+      if ((*c)->isAlive) out << (*c)->getType() << endl; 
+    }
+  } else {
+    out << endl << "CELLS "<< listVertex.size() << " " << listVertex.size()*2 << endl; 
+    for (auto i = 0; i < listVertex.size(); ++i) 
+      out << "1 "<< i<< endl;     
+    out << endl << "CELL_TYPES " << listVertex.size() <<endl; 
+      for (auto i = 0; i < listVertex.size(); ++i) out << "1 "<< endl; 
+  }
+  out << endl << "POINT_DATA " << listVertex.size() << endl;
+  
+  out << "SCALARS " << var->name << " float 1"<<endl; 
+  out << "LOOKUP_TABLE default"<<endl; auto icnt = 0; 
+  for (auto v: listVertex) {
+    //auto val = v->phi(var).eval(var); 
+    double val = 0; 
+    if (var->loc == 0) {
+      auto x = Vec3(*v - vel[v->id]*dt*0.5); 
+      val=interp(var, x, v->id); //v->evalPhi(var, &x); 
+    } else if (var->loc == 1) 
+      val=var->get(v->id); 
+    out << ((abs(val) < 1e-10) ? 0 : val) << endl; 
+  }
+  out << endl; 
+  
+  out<<endl; 	  
+  out.close(); 
+}
+
+
+void writeInterp(string name) {
+  ofstream out;
+  out.open(name+std::to_string(filecnt)+".vtk"); 
+  int_8 nCell = listVertex.size();
+ 
+  out << "# vtk DataFile Version 2.0" << endl; 
+  out << "Unstructure Grid" << endl; 
+  out << "ASCII"<< endl; 
+  out << endl << "DATASET UNSTRUCTURED_GRID"<< endl; 
+  out << "POINTS " << 4*nCell << " float" << endl;
+  for (auto v : listVertex) {
+    out << int3D.linFunc(Vec3(0,0,0), v->xcoef) << " "; 
+    out << int3D.linFunc(Vec3(0,0,0), v->ycoef) << " "; 
+    out << int3D.linFunc(Vec3(0,0,0), v->zcoef) << endl; 
+    out << int3D.linFunc(Vec3(1,0,0), v->xcoef) << " "; 
+    out << int3D.linFunc(Vec3(1,0,0), v->ycoef) << " "; 
+    out << int3D.linFunc(Vec3(1,0,0), v->zcoef) << endl; 
+    out << int3D.linFunc(Vec3(1,1,0), v->xcoef) << " "; 
+    out << int3D.linFunc(Vec3(1,1,0), v->ycoef) << " "; 
+    out << int3D.linFunc(Vec3(1,1,0), v->zcoef) << endl; 
+    out << int3D.linFunc(Vec3(0,1,0), v->xcoef) << " "; 
+    out << int3D.linFunc(Vec3(0,1,0), v->ycoef) << " "; 
+    out << int3D.linFunc(Vec3(0,1,0), v->zcoef) << endl;     
+  }
+  auto icnt = 0; 
+  out << endl << "CELLS "<< nCell << " " << nCell*5 << endl; 
+  for (auto v : listVertex) { 
+    out << "4 " << icnt << " " << icnt+1 << " " << icnt+2 << " " << icnt+3 << endl; 
+    icnt += 4; 
+  }
+  out << endl << "CELL_TYPES " << nCell <<endl; 
+  for (auto v : listVertex) {
+    out << "9 "<< endl; 
+  }
+  out.close();  
+
+}
 
 
   friend ostream &operator<<(ostream &out, Grid* const &a) {

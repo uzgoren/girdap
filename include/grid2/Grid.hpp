@@ -212,7 +212,10 @@ public:
   void setIntCoef() {
     int_8 sum = 0; 
     for (auto v : listVertex) {
-      if (v->coefUpdate) { v->setInterpCoef(); sum++;}
+      //if (v->coefUpdate) { 
+	v->setInterpCoef(); 
+	sum++;
+	//}
     }
     // cout << "Set coef for " << sum << " vertices out of " << listVertex.size() << endl; 
     // cin.ignore().get(); 
