@@ -39,14 +39,14 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
   else {  return; }
   if (debug) cout << "Converting cell: "<<id << " to block ("<< n1<< ", "<<n2<<")"<<endl; 
 
-  auto xcold = getCoord(); 
-  vector<double> oldv(grid->listVar.size()); 
-  vector<Vec3> oldg(grid->listVar.size()); 
-  for (auto i = 0; i < grid->listVar.size(); ++i) {
-    auto var = grid->listVar[i]; 
-    oldv[i] = var->get(id); 
-    oldg[i] = grad(var).eval(var); 
-  }  
+  // auto xcold = getCoord(); 
+  // vector<double> oldv(grid->listVar.size()); 
+  // vector<Vec3> oldg(grid->listVar.size()); 
+  // for (auto i = 0; i < grid->listVar.size(); ++i) {
+  //   auto var = grid->listVar[i]; 
+  //   oldv[i] = var->get(id); 
+  //   oldg[i] = grad(var).eval(var); 
+  // }  
 
   vector<vector<int_8 > > ind; 
   // vector<vector<vector<double > > > ovar; 
@@ -195,17 +195,17 @@ void Quad::convertToSimpleBlock(initializer_list<int> n, bool debug) {
       if (i == 0 && j == 0) {
 	reset({ind[i][j], ind[i+1][j], ind[i+1][j+1], ind[i][j+1]});	
 	
-	auto x = getCoord(); 	
-	for (auto k = 0; k < grid->listVar.size(); ++k) {
-	  //auto val = 0.25*(ovar[i][j][k] + ovar[i+1][j][k] + ovar[i+1][j+1][k] + ovar[i][j+1][k]); 
-	  grid->listVar[k]->set(id, oldv[k] + (x-xcold)*oldg[k]); 	
-	}
+	// auto x = getCoord(); 	
+	// for (auto k = 0; k < grid->listVar.size(); ++k) {
+	//   //auto val = 0.25*(ovar[i][j][k] + ovar[i+1][j][k] + ovar[i+1][j+1][k] + ovar[i][j+1][k]); 
+	//   grid->listVar[k]->set(id, oldv[k] + (x-xcold)*oldg[k]); 	
+	// }
       } else {
 	grid->addCell({ind[i][j], ind[i+1][j], ind[i+1][j+1], ind[i][j+1]});
 	auto x = (*grid->listCell.rbegin())->getCoord();	
 	for (auto k = 0; k < grid->listVar.size(); ++k) {
 	  //auto val = 0.25*(ovar[i][j][k] + ovar[i+1][j][k] + ovar[i+1][j+1][k] + ovar[i][j+1][k]); 
-	  grid->listVar[k]->set(grid->listCell.size()-1, oldv[k] + (x-xcold)*oldg[k]); 
+	  grid->listVar[k]->set(grid->listCell.size()-1,grid->listVar[k]->get(id)); // oldv[k] + (x-xcold)*oldg[k]); 
 	}
 	// for (auto var: grid->listVar) 
 	//   var->set(grid->listCell.size()-1, var->get(id)); 

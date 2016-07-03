@@ -85,22 +85,15 @@ int main(int argc,char *argv[]) {
     else if (name.compare("writeTime")==0) {infile >> writeTime; continue;}
     else if (name.compare("case")==0) {infile >> cname; continue;}
     else if (name.compare("veltype")==0) {
-      infile >> veltype; 
-      if (veltype.compare("-")==0) {
-	infile >> u0 >> v0; continue; 
-      } else if (veltype.compare("t")==0) {
+      infile >> veltype >> u0 >> v0; 
+      if (veltype.find("time") != std::string::npos) 
 	isVelTime =true;
-	infile >> u0 >> v0; 
-	continue; 
-      } else if (veltype.compare("x")==0) {
-	isVelSpace = true; 
-	infile >> u0 >> v0; 
-      } else if (veltype.compare("xt")==0) {
-	isVelTime = true; 
-	isVelSpace = true; 
-	infile >> u0 >> v0; 
-	continue;
-      }     
+      else 
+	isVelTime = false; 
+    
+      isVelSpace = true; 
+      continue; 
+	
     } else if (name.compare("geo")==0) {
       infile >> geotype; 
       if (geotype.compare("bar")==0) {	
@@ -148,39 +141,51 @@ int main(int argc,char *argv[]) {
   // Field variables; 
   double rho=10000, cp=1000, k=1; 
 
-  grid->addVar({"T", "ui", "vi"}); 
+  grid->addVar({"T"}); 
     
   auto T = grid->getVar("T");
   auto u = grid->getVar("u");
   auto v = grid->getVar("v");
-  auto ui = grid->getVar("ui"); 
-  auto vi = grid->getVar("vi"); 
 
   T->solver = "Gauss";   
   T->set(0); 
   double pi = 4.0*atan(1); 
+  auto dx = 1/Nx/pow(2,grid->levelMax[0]-1); 
   
-  ui->set(u0); 
-  vi->set(v0); 
   u->set(u0); 
   v->set(v0); 
   for (auto j = 0; j < grid->levelHighBound[0] + 1; ++j) {
 
-    auto dx = 1/Nx/pow(2,grid->levelMax[0]-1); 
     auto e = 4*dx; 
 
     for (auto i = 0; i < grid->listCell.size(); ++i) {
       auto x = grid->listCell[i]->getCoord(); // - Vec3(0.5, 0.5); 
-      if (veltype.find("x") != std::string::npos) {
+      if (veltype.find("lintrans") != std::string::npos) {
+	u->set(i, u0); 
+	u->set(i, v0); 
+      } else if (veltype.find("rottrans") != std::string::npos) { 
+	auto ut = sqrt(u0*u0 + v0*v0);        
+	auto r = (x - Vec3(0.5, 0.5, 0)).abs();
+	auto rc = r/0.15; 
+	ut = ut*rc/sqrt(1+pow(rc,4)); 
+	auto theta = atan2(x[1]-0.5, x[0]-0.5);
+
+	// if (r < 0.15) {
+	//   u->set(i, -ut*r*sin(theta)); 
+	//   v->set(i, ut*r*cos(theta)); 
+	// } else {
+	  u->set(i, -ut*sin(theta)); 
+	  v->set(i, ut*cos(theta)); 
+	// }
+      } else if (veltype.find("lindeform") != std::string::npos) {	
+	u->set(i, u0*(x[1]-0.5)); 
+	v->set(i, 0); 
+      } else if (veltype.find("rotdeform") != std::string::npos) {
 	if (geotype.compare("bar") != 0) {
-	  ui->set(i, -u0*2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0]));
-	  u->set(i, ui->get(i)); 
-	  vi->set(i, -v0*2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1])); 
-	  v->set(i, vi->get(i)); 
+	  u->set(i, -u0*2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0]));
+	  v->set(i, -v0*2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1])); 
 	} else {
-	  ui->set(i, u0*(1 + sin(pi*x[0]))); 
-	  u->set(i, ui->get(i));
-	  vi->set(i, 0); 
+	  u->set(i, u0*(1 + sin(pi*x[0]))); 
 	  v->set(i, 0); 
 	}
       }
@@ -199,7 +204,8 @@ int main(int argc,char *argv[]) {
     if (j == grid->levelHighBound[0]) break; 
     //    auto gt = grid->valGrad(T); 
     //grid->solBasedAdapt(gt); 
-    grid->solBasedAdapt2(grid->getError(T));
+    grid->solBasedAdapt2(grid->getError2(T), 5e-5, 0.8);
+    //    grid->solBasedAdapt2(grid->getError2(T));
     grid->adapt(); 
   }
   
@@ -207,9 +213,15 @@ int main(int argc,char *argv[]) {
   for (auto i=0; i < grid->listCell.size(); ++i) {
     mass0 += grid->listCell[i]->vol().abs()*T->get(i); 
   }
-
+  auto err = grid->getError2(T); 
+  cout << "Error: Minx=" << err.comp(0).min() << " Maxx=" << err.comp(0).max() << endl; 
+  cout << "Error: Miny=" << err.comp(1).min() << " Maxy=" << err.comp(1).max() << endl; 
+  u->set(err.comp(0)); 
+  v->set(err.comp(1)); 
+  
   grid->writeVTK(casedir+cname);
 
+  exit(1);
 
   int filecnt = 0; int it = 0, writeInt = 1; 
 
@@ -220,15 +232,48 @@ int main(int argc,char *argv[]) {
 
   T->itmax = 1000; 
   T->tol = 1e-6;  
-
+  //grid->dt = 0.0125/2; 
   auto writeCnt = writeTime; 
   while (time < endTime) {
     iter++; 
     for (auto i = 0; i < grid->listCell.size(); ++i) {
       auto x = grid->listCell[i]->getCoord(); // - Vec3(0.5, 0.5); 
-      if (veltype.find("t") != std::string::npos) {
-	u->set(i, ui->get(i)*cos(freq*pi*time/endTime));
-	v->set(i, vi->get(i)*cos(freq*pi*time/endTime));
+      double ui=u0, vi=v0; 
+      if (veltype.find("lintrans") != std::string::npos) {
+	ui = u0; 
+	vi = v0; 
+      } else if (veltype.find("rottrans") != std::string::npos) { 
+	auto ut = sqrt(u0*u0 + v0*v0); 
+	auto r = (x - Vec3(0.5, 0.5, 0)).abs();
+	auto rc = r/0.15; 
+	ut = ut*rc/sqrt(1+pow(rc,4)); 
+	auto theta = atan2(x[1]-0.5, x[0]-0.5); 
+	// if (r < 0.15) {
+	//   ui = -ut*r*sin(theta); 
+	//   vi = ut*r*cos(theta); 
+	// } else {
+	  ui = -ut*sin(theta); 
+	  vi = ut*cos(theta); 
+        // }
+      } else if (veltype.find("lindeform") != std::string::npos) {	
+	ui = u0*(x[1]-0.5); 
+	vi = 0; 
+      } else if (veltype.find("rotdeform") != std::string::npos) {
+	if (geotype.compare("bar") != 0) {	  
+	  ui = -u0*2*sin(pi*x[1])*cos(pi*x[1])*sin(pi*x[0])*sin(pi*x[0]);
+	  vi = -v0*2*sin(pi*x[0])*cos(pi*x[0])*sin(pi*x[1])*sin(pi*x[1]); 
+	} else {
+	  ui = u0*(1 + sin(pi*x[0])); 
+	  vi = 0; 
+	}
+      }
+      
+      if (veltype.find("time") != std::string::npos) {
+	u->set(i, ui*cos(freq*pi*time/endTime));
+	v->set(i, vi*cos(freq*pi*time/endTime));
+      } else {
+	u->set(i, ui); 
+	v->set(i, vi); 
       }
     }
 
@@ -243,7 +288,10 @@ int main(int argc,char *argv[]) {
     auto vel = grid->getVel();
     
 
-    grid->advanceDiv(T, vel, rk0, intscheme, intmethod, flux); 
+    //grid->advanceDiv(T, vel, rk0, intscheme, intmethod, flux); 
+    grid->lockBC(T); 
+    T->solve(grid->ddt(1.0) + grid->divRK2E(vel, 1.0)); 
+    grid->unlockBC(); 
     cout << "Min T: " << T->data.min() << ", Max T: "<< T->data.max() << endl; 
     //if (time == 0) cin.ignore().get(); 
     //grid->writeVTK("den"); 

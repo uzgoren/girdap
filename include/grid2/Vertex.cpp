@@ -281,8 +281,10 @@ vector<double> Vertex::getIntWeight(Vec3* x) {
      exit(1);
   }
   Vec3 xhattmp; 
-  //cout << " XHAT " << endl; 
-  if (x) xhattmp = grid->int3D.findXhat(*x, xcoef, ycoef, zcoef);  
+  if (x) {//cout << " xhat in " << endl; 
+    xhattmp = grid->int3D.findXhat(*x, xcoef, ycoef, zcoef);  
+    //cout << " out "<< endl; 
+}
   else xhattmp = xhat; 
 
   vector<double> w(cell.size(), 0);

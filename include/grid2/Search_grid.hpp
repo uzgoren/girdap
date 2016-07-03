@@ -26,7 +26,7 @@ int_8 searchVertexbyCoords(Vec3 a, int_8 i0=0) {
   int_8 i1 = i0; 
   // else search
   while (v.get()) {
-    //cout << " + Try: "<< i0 << " @ ( " << *v << " ) "; 
+    //cout << " + Try: "<< i0 << " @ ( " << *v << " ) " << endl; 
     if (v->isIn(a)) { 
       //cout << "[OK] " << endl; 
       return v->id; 
@@ -62,9 +62,9 @@ int_8 searchVertexbyCoords(Vec3 a, int_8 i0=0) {
 	//cout << "[!] bndr/hanging " << endl;  
       }    
     }
-    //if (i0 == i1) { cout << " No new candidate " << endl; }
+    if (i0 == i1) { cout << "Search failed " <<  endl; cin.ignore().get(); return i0; }//cout << " No new candidate " << endl; }
     v = listVertex[i1]; i0 = i1; 
-    //    cout << " + New cand: "<< i1 << " @ ( " << *v << " ) " << endl; 
+    //cout << " + New cand: "<< i1 << " @ ( " << *v << " ) " << endl; 
     //cin.ignore().get(); 
     if (blist[v->id]) { cout << "Search failed!!!!" << endl; cin.ignore().get(); return -1;}    
   }

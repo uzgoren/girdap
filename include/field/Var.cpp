@@ -65,7 +65,7 @@ void Var::solve(LinSys a) {
   // }
   //t = clock()-t; 
   // cout << " --> Normalization took "<< t/(double) CLOCKS_PER_SEC << " secs"<< endl; 
-  // cout << a.A << endl; 
+  //cout << a.A << endl; 
   //cout << a.b << endl; 
   a.setLimits(tol/dt, itmax); 
   t = clock(); 

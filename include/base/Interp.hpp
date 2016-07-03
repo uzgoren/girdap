@@ -59,12 +59,12 @@ public:
   }
 
   Vec3 findXhat(Vec3 x, VecX<double> &xcoef, VecX<double> &ycoef, VecX<double> &zcoef) {
-    Vec3 xhat(0, 0, 0); //INITIAL GUESS;
+    Vec3 xhat(0.5, 0.5, 0); //INITIAL GUESS;
     Vec3 dx(0, 0, 0);  // needed if not updated!
     double err = 1, err1; 
     int it = 0, bnd=0; 
 
-    while (true) {
+    while (it < 20) {
       it++; 
       double dxx = linDX(xhat, xcoef);
       double dxy = linDY(xhat, xcoef); 

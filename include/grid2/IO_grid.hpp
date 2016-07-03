@@ -108,7 +108,7 @@ void writePast(string name, shared_ptr<Var > var) {
   out.open(name+std::to_string(filecnt++)+".vtk"); 
 
   int_8 nCell = listCell.size();
- int t; // = listCell[0]->node.size()+1;
+  int t; // = listCell[0]->node.size()+1;
   out << "# vtk DataFile Version 2.0" << endl; 
   out << "Unstructure Grid" << endl; 
   out << "ASCII"<< endl; 

@@ -39,6 +39,36 @@ void solBasedAdapt(VecX<double> phi, double a=1.0, double b = 0.5) {
   } 
 }
 
+void solBasedAdapt3(VecX<double> phi, double lowlim=0.02, double highlim=0.1) {
+
+  for (auto i = 0; i < listFace.size(); ++i) {
+    auto f = listFace[i]; 
+    auto n = f->next; 
+    auto p = f->prev; 
+      
+    if (phi[i] > highlim) { 
+      if (n >= 0) {
+	auto c = listCell[n]; 
+	c->adapt[f->orient] = min(1, levelHighBound[f->orient] - c->level[f->orient]);
+      }
+      if (p >= 0) {
+	auto c = listCell[p]; 
+	c->adapt[f->orient] = min(1, levelHighBound[f->orient] - c->level[f->orient]);
+      }
+    } else if (phi[i] < lowlim) {
+      if (n >= 0) {
+	auto c = listCell[n]; 
+	c->adapt[f->orient] = max(-1, levelLowBound[f->orient] - c->level[f->orient]);
+      }
+      if (p >= 0) {
+	auto c = listCell[p]; 
+	c->adapt[f->orient] = max(-1, levelLowBound[f->orient] - c->level[f->orient]);
+      }
+    }
+  }       
+}
+
+
 void solBasedAdapt2(VecX<Vec3> phi, double lowlim=5e-6, double highlim=8e-5) {
   // refine if err > 0.03; coarsen if err < 1e-6; 
   //  auto lowlim = 5e-6; auto highlim = 8e-5;
@@ -369,7 +399,7 @@ VecX<Vec3> getError(shared_ptr<Var> const &a) {
       auto pf0 = a->data[n] + grad[n]*(xf - xc); 
       err[n] += abs(pf1 - pf0)*area;
       sum[n] += area.abs(); 
-    } 
+    }
     if (p >= 0) {
       auto xc = listCell[p]->getCoord(); 
       auto pf0 = a->data[p] + grad[p]*(xf - xc); 
@@ -383,6 +413,57 @@ VecX<Vec3> getError(shared_ptr<Var> const &a) {
     (err[j]).data[0] = abs((err[j]).data[0])/sum[j];
     (err[j]).data[1] = abs((err[j]).data[1])/sum[j];
     (err[j]).data[2] = abs((err[j]).data[2])/sum[j];
+  }
+  //   // if (err[j][0] > mx) mx = err[j][0]; 
+  //   // if (err[j][1] > mx) mx = err[j][1]; 
+  //   // if (err[j][2] > mx) mx = err[j][2]; 
+  // }
+  // // if (mx > 0) { 
+  // //   for (auto j = 0; j < sum.size(); ++j) {
+  // //     err[j] /= mx; 
+  // //   }    
+  // // }
+  // // cout << mx <<  endl;   
+  return err; 
+}
+
+
+VecX<Vec3> getError2(shared_ptr<Var>  &a) {
+  VecX<Vec3> err(a->data.size()); 
+  auto grad = valGrad(a); 
+  for (auto j = 0; j < listFace.size(); ++j) {
+    auto f = listFace[j]; 
+    auto xf = f->getCoord(); auto area = f->vol(); 
+    //    auto pf1 = f->phi(a).eval(a); 
+    auto pfl = listVertex[f->node[0]]->evalPhi(a); 
+    auto pfu = listVertex[f->node[1]]->evalPhi(a);
+    auto pf1 = 0.5*(pfl+pfu);
+    auto m = abs(pfl - pfu); 
+    if (m < 1e-6) continue; 
+    auto n = f->next; auto p = f->prev; 
+    auto orient = (f->orient + 1)%2;
+    if (n >= 0) {
+      auto xc = listCell[n]->getCoord();
+      //      auto m = abs(pf1 - a->get(n)); 
+      //      if (m < 1e-10) continue; 
+      auto pf0 = a->data[n] + grad[n]*(xf - xc); 
+      if (abs(pf1 - pf0) < 1e-6) continue; 
+      err[n][orient] = max(err[n][orient], abs(pf1 - pf0)/m); //abs(pfu - pfl); //*area;
+    }
+    if (p >= 0) {
+      auto xc = listCell[p]->getCoord(); 
+      //      auto m = abs(pf1 - a->get(p)); 
+      //if (m < 1e-10) continue; 
+      auto pf0 = a->data[p] + grad[p]*(xf - xc); 
+      if (abs(pf1 - pf0) < 1e-6) continue; 
+      err[p][orient] = max(err[p][orient], abs(pf1 - pf0)/m); //abs(pfu - pfl); //*area;
+    } 	
+
+    // auto row = (f->next < 0) ? f->prev : f->next; 
+    // auto xc = listCell[row]->getCoord(); 
+    // auto pf0 = a->get(row) + grad[row]*(xf - xc); 
+    // if (abs(pfu - pfl) < 1e-6) continue; 
+    // err[j] += abs(pf1 - pf0)/abs(pfu - pfl); //*area;
   }
   //   // if (err[j][0] > mx) mx = err[j][0]; 
   //   // if (err[j][1] > mx) mx = err[j][1]; 

@@ -253,11 +253,11 @@ void Grid::laplace(LinSys &axb, shared_ptr<Cell > f, double const &c) {
     auto flux = c*sch.val[i]*area;
     //cout << " : " << flux << endl; 
     //cin.ignore().get(); 
-    if (n >= 0) axb.A[n][sch.ind[i]] -= flux/listCell[n]->vol().abs(); 
-    if (p >= 0) axb.A[p][sch.ind[i]] += flux/listCell[p]->vol().abs(); 
+    if (n >= 0) axb.A[n][sch.ind[i]] -= flux; // /listCell[n]->vol().abs(); 
+    if (p >= 0) axb.A[p][sch.ind[i]] += flux; // /listCell[p]->vol().abs(); 
   }
-  if (n >= 0) axb.b[n] += c*sch.c*area/listCell[n]->vol().abs(); 
-  if (p >= 0) axb.b[p] -= c*sch.c*area/listCell[p]->vol().abs(); 
+  if (n >= 0) axb.b[n] += c*sch.c*area; // /listCell[n]->vol().abs(); 
+  if (p >= 0) axb.b[p] -= c*sch.c*area; // /listCell[p]->vol().abs(); 
   return;  
   // int n = f->next; 
   // int p = f->prev;
@@ -350,11 +350,11 @@ LinSys Grid::source(double c, double a, initializer_list<double> n) {
   LinSys axb(listCell.size());
   auto t = clock(); 
   for (auto i = 0; i < listCell.size(); ++i) {
-    // double vol = listCell[i]->vol().abs(); 
+    double vol = listCell[i]->vol().abs(); 
     if (c != 0) {
-      axb.A[i][i] += c;//*vol; 
+      axb.A[i][i] += c*vol; 
     }
-    axb.b[i] -= a;//*vol;
+    axb.b[i] -= a*vol;
   }
   t = clock() - t; 
   //cout << "Source is prepared in " << t/ (double) CLOCKS_PER_SEC << " secs"<< endl; 

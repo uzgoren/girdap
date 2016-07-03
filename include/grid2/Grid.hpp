@@ -424,7 +424,9 @@ public:
   double interp(shared_ptr<Var> &phi, Vec3 x, int_8 i0=0) {
     //    cout << " Interp: " << x << endl; 
     if (i0 < 0 || i0 >= listVertex.size()) i0=0; 
+    // cout << " IN search "<< endl; 
     i0 = searchVertexbyCoords(x, i0); // minimum distance; 
+    //cout << " OUT search " << endl; 
     if (i0 < 0) { cout << " coefs not found! after search point! " << endl; exit(1);  return 0;} 
     return listVertex[i0]->evalPhi(phi, &x);    
   }
