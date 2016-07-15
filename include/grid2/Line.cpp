@@ -28,6 +28,97 @@ void Line::assignCelltoNode() {
   }
 }
 
+void Line::convertToSimpleBlock(initializer_list<int> n, bool debug) {
+  int n1=1; 
+  // First find the existing vertex if non then proceed; 
+  if (n.size() >= 1) {n1 = *(n.begin());} 
+  else {  return; }
+  if (debug) cout << "Converting cell: "<<id << " to block ("<< n1<< ")"<<endl; 
+
+  vector<int_8 > ind; 
+  ind.assign(n1+1, -1); 
+  
+  ind[0] = node[0];   
+  ind[n1] = node[1];
+
+  Vec3 dx, x0,x1;
+  x0 = Vec3(**getVertex(0)); 
+  dx = edge()/double(n1); 
+
+  // Fill in non-existing Vertices
+  for (auto i = 0; i < n1+1 ; ++i) {
+    if (debug) cout << "Processing i = "<< i << " using index "<< ind[i] << endl; 
+    if (ind[i]>=0) {
+      if (debug)
+	cout<< "Existing vertex: " << ind[i] << " ("<< *(*(grid->listVertex.begin()+ind[i])) <<")"<< endl; 
+      //(*(grid->listVertex.begin()+ind[i][j]))->reset(4); 
+      continue;
+    }
+    grid->addVertex(x0 + double(i)*dx); 
+    ind[i] = grid->listVertex.size()-1;
+    (*(grid->listVertex.rbegin()))->reset(4);
+    if (debug) 	  
+      cout<< "New vertex: " << ind[i] << " ("<< *(*(grid->listVertex.begin()+ind[i])) <<")"<< endl; 
+    // boundary
+    //      (*(grid->listVertex.rbegin()))->setCell(0, (j-1)*n1+i-1+nCell);   
+  }
+
+  auto nCell = grid->listCell.size()-1; 
+  for (auto i = 0; i < n1+1; ++i) { 
+    auto v = (*(grid->listVertex.begin()+ind[i]));
+    int_8 i0 = i-1; i0 = (i0 == 0) ? id : i0+nCell; 
+    int_8 i1 = i;   i1 = (i1 == 0) ? id : i1+nCell; 
+    
+    if (i > 0 && i < n1) {
+      v->setCell({i0, i1}); 
+    } else if (i == 0) {
+      auto v0 = grid->listVertex.begin() + ind[i]; 
+      v->setCell({(*v0)->cell[0], i1}); 
+    } else if (i == n1) {
+      auto v0 = grid->listVertex.begin() + ind[i]; 
+      v->setCell({i0, (*v0)->cell[1]}); 
+    }
+  }
+
+  for (auto i = 0; i < n1; ++i) {
+    if (i == 0) {
+      reset({ind[i], ind[i+1]}); 
+    } else {
+      grid->addCell({ind[i], ind[i+1]}); 
+      auto x = (*grid->listCell.rbegin())->getCoord();	
+      for (auto k = 0; k < grid->listVar.size(); ++k) {
+	grid->listVar[k]->set(grid->listCell.size()-1,grid->listVar[k]->get(id)); // oldv[k] + (x-xcold)*oldg[k]); 
+      }
+    }
+  }
+
+  return;
+}
+
+
+void Line::refine(int dir) {
+  dir =0; 
+  if (adapt[0] < 1) return;
+  if (level[0] == grid->levelHighBound[0]) return; 
+  convertToSimpleBlock({2}); 
+  
+  adapt[dir]--; level[dir]++;
+  (*(grid->listCell.rbegin()))->masterx.assign(masterx.begin(), masterx.end()); 
+  (*(grid->listCell.rbegin()))->mastery.assign(mastery.begin(), mastery.end()); 
+  (*(grid->listCell.rbegin()))->masterz.assign(masterz.begin(), masterz.end()); 
+
+  if (dir == 0) masterx[level[dir]] = true; 
+  if (dir == 1) mastery[level[dir]] = true; 
+  if (dir == 2) masterz[level[dir]] = true; 
+
+  (*(grid->listCell.rbegin()))->adapt.assign(adapt.begin(), adapt.end()); 
+  (*(grid->listCell.rbegin()))->level.assign(level.begin(), level.end()); 
+}
+
+
+
+
+
 // Vec3 Line::grad(shared_ptr<Var > phi) {
 //   auto c0 = (prev>=0) ? &(**(grid->listCell.begin() + prev)) : this; 
 //   auto c1 = (next>=0) ? &(**(grid->listCell.begin() + next)) : this; 

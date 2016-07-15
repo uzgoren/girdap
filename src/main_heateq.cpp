@@ -30,13 +30,11 @@
 int main() {
   auto k = 2.0; auto qdot = 5e3; auto h = 50; auto Tinf = 20;
   Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10); 
-  grid->levelHighBound[0] = 2; 
-  grid->levelHighBound[1] = 2; 
+  grid->levelHighBound = {2, 2}; 
   grid->addVar("T"); 
 
   Block2* uni = new Block2({0, 0, 0}, {1, 1, 0}, 40, 40); 
-  uni->levelHighBound[0] = 0; 
-  uni->levelHighBound[1] = 0; 
+  uni->levelHighBound[0] = {0, 0}; 
   uni->addVar("T");   
 
   auto Tref = uni->getVar("T");

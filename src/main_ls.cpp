@@ -204,7 +204,7 @@ int main(int argc,char *argv[]) {
     if (j == grid->levelHighBound[0]) break; 
     //    auto gt = grid->valGrad(T); 
     //grid->solBasedAdapt(gt); 
-    grid->solBasedAdapt2(grid->getError2(T), 5e-5, 0.8);
+    grid->solBasedAdapt2(grid->getError(T)); //, 5e-5, 0.8);
     //    grid->solBasedAdapt2(grid->getError2(T));
     grid->adapt(); 
   }
@@ -213,15 +213,15 @@ int main(int argc,char *argv[]) {
   for (auto i=0; i < grid->listCell.size(); ++i) {
     mass0 += grid->listCell[i]->vol().abs()*T->get(i); 
   }
-  auto err = grid->getError2(T); 
-  cout << "Error: Minx=" << err.comp(0).min() << " Maxx=" << err.comp(0).max() << endl; 
-  cout << "Error: Miny=" << err.comp(1).min() << " Maxy=" << err.comp(1).max() << endl; 
-  u->set(err.comp(0)); 
-  v->set(err.comp(1)); 
+  // auto err = grid->getError2(T); 
+  // cout << "Error: Minx=" << err.comp(0).min() << " Maxx=" << err.comp(0).max() << endl; 
+  // cout << "Error: Miny=" << err.comp(1).min() << " Maxy=" << err.comp(1).max() << endl; 
+  // u->set(err.comp(0)); 
+  // v->set(err.comp(1)); 
   
   grid->writeVTK(casedir+cname);
 
-  exit(1);
+  // exit(1);
 
   int filecnt = 0; int it = 0, writeInt = 1; 
 
@@ -288,10 +288,10 @@ int main(int argc,char *argv[]) {
     auto vel = grid->getVel();
     
 
-    //grid->advanceDiv(T, vel, rk0, intscheme, intmethod, flux); 
-    grid->lockBC(T); 
-    T->solve(grid->ddt(1.0) + grid->divRK2E(vel, 1.0)); 
-    grid->unlockBC(); 
+    grid->advanceDiv(T, vel, rk0, intscheme, intmethod, flux); 
+    //grid->lockBC(T); 
+    //T->solve(grid->ddt(1.0) + grid->divRK2E(vel, 1.0)); 
+    //grid->unlockBC(); 
     cout << "Min T: " << T->data.min() << ", Max T: "<< T->data.max() << endl; 
     //if (time == 0) cin.ignore().get(); 
     //grid->writeVTK("den"); 
