@@ -119,12 +119,10 @@ int main(int argc,char *argv[]) {
     time += grid->dt;    
     cout << "Time: " << time << " " << grid->dt << " --> " << "xp: " << xp << "xm: "<< xm << endl;
     // Density
-    grid->lockBC(rho); 
-    rho->solve( grid->ddt(1) + grid->divRK2E(vel, 1) );
-    grid->unlockBC(); 
+    grid->advectDiv(vel, 1); 
 
     grid->lockBC(u); 
-    u->solve( grid->ddt(rho) + grid->divRK2E(vel, rho) 
+    u->solve( grid->ddt(1) + grid->divRK2E(vel*rho, 1) 
 	      + grid->source(0, grid->valGrad(p).comp(0) )  );
     grid->unlockBC(); 
 
