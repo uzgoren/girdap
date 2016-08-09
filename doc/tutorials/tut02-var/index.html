@@ -59,8 +59,8 @@ Above code produces the following result:
 
    Grid* surf = new Grid(); 
 
-   surf->addVertex({{0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46}}); 
-   surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
+   surf->addVertex( { {0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46} } ); 
+   surf->addCell( { {0,1}, {1,2}, {2,3}, {3,0} } ); 
    // Refine cell; 
    for (auto i=0; i<4; ++i) {
      for (auto c: surf->listCell) if (c->vol().abs() > 0.02) c->adapt[0] = 1;
@@ -84,8 +84,8 @@ Above code produces the following result:
    delete(volgrid); 
    delete(surf); 
 {% endhighlight %}
+![Result](res02.png)
 
-![Result](res02.png)  
 {% endcapture %}
 {{ md_content | markdownify }} 
 
