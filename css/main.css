@@ -19,10 +19,10 @@ nav ul a { color: #6699aa; }
 
 a {
     text-decoration: none;
-    color: #99c;
+    color: #c9a;
 }
 a:hover {
-    text-decoration: underline;
+    text-decoration: underline; color: #c96
 }
 h1 {
     font-size: 2em;
