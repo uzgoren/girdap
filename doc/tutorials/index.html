@@ -24,41 +24,14 @@ int main(int argc, char *argv[]) {
     
 {% endhighlight %}
   
-## Your first grid
-This example creates a grid handle and manually adds vertices and cells. h-refinement can be applied through adapt flag on the first cell.
+## Examples
 
-{% highlight c++ linenos %}
-Grid* grid = new Grid();
-grid->addVertex({ {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0} }); 
-
-grid->addCell( {0, 1, 2, 3} ) ; 
-
-for (auto i =0; i<3; ++i) {
-   grid->listCell[0]->adapt = {1, 1}; 
-   grid->adapt(); 
-   grid->writeVTK("myFirstGrid_"); 
-}
-  
-delete(grid); 
-{% endhighlight %}
+1. [Tutorial 01](tut01-grid.html): Grid generation/adaptation
+2. [Tutorial 02](tut02-var.html): Field variables
+3. [Tutorial 03](tut03-heat.html): Heat equation
+4. [Tutorial 04](tut04-advdiff.html): Transient advection/diffusion equation
+5. [Tutorial 05](tut05-incomp.html): Incompressible fluid flow
 	 
-
-## Multiple grids (volume & surface)
-	   
-{% highlight c++ linenos %}	   
- Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 10, 10); 
- Grid* surf = new Grid(); 
-
- surf->addVertex( { {0.5,0.4}, {0.6,0.5}, {0.5,0.6}, {0.4,0.5} } ); 
- surf->addCell( { {0,1}, {1,2}, {2,3}, {3,0} } ); 
-
- volgrid->writeVTK("vol"); 
- surf->writeVTK("surf"); 
-
- delete(volgrid); 
- delete(surf); 
-{% endhighlight %}	   
-
 	   
 
 
