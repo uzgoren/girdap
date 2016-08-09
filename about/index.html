@@ -2,7 +2,7 @@
 layout: page
 title: About/FAQ
 ---
-<div markdown="1">
+{% capture md_content %}
 ####_What is girdap?_
 _girdap_ provides building blocks for numerical simulations of complex transport equations. Tools are built around a grid management platform connected to finite volume method based differential operators. girdap’s primary goals are (1) _flexibility_ and (2) _accuracy_. 
 
@@ -76,5 +76,7 @@ It is not yet considered; but it is within our future plans.
 
 ####ACKNOWLEDGEMENT
 This work is part of a research project supported by a Marie Curie International Reintegration Grant within the 7th European Community Framework Programme.
+{% endcapture %}
 
-</div>
+{{ md_content | markdownify }} 
+
