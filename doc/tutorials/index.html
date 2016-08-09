@@ -1,0 +1,32 @@
+---
+title: Tutorials
+layout: page
+---
+
+{% capture md_content %}
+
+Following examples will help you start using _girdap_. Examples below should be considered as the driving code that use _girdap_ library. You can create your own ```main.cpp``` or modify one of ```main_xxx.cpp``` files which can be found in the ```src``` directory. Note that headers should be included before the main() function; 
+
+<% highlight c++ linenos %>
+#include <girdap_rootdir/grdap>
+#include <stdio>
+
+    int main(int argc, char *argv[]) {
+    // examples should be placed here
+    // --> begin here
+    
+    // --> end here 
+    exit(0); 
+    }
+    
+<% endhighlight %>
+  
+
+## Your first grid
+This example creates a grid handle and manually adds vertices and cells. h-refinement can be applied through adapt flag on the first cell.
+
+
+{% endcapture %}
+{{ md_content | markdownify }} 
+
+
