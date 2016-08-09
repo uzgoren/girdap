@@ -38,11 +38,11 @@ footer {
     font-size: .8em;
 }
 
-ol { font-size: 1.5em; margin-bottom:2px;  }
+ol, ul { font-size: 1.5em; margin-bottom:2px;  }
 
-ol ol { font-size: 0.8em; }
+ol ol, ul ul { font-size: 0.8em; }
 
-ol ol ol {font-size: 0.8em; }
+ol ol ol, ul ul ul {font-size: 0.8em; }
 
 ul.posts { 
     margin: 20px auto 40px; 
