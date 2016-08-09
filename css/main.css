@@ -33,7 +33,7 @@ footer {
     font-size: .8em;
 }
 
-ol { font-size: 1.5em; }
+ol { font-size: 1.5em; margin-bottom:2px;  }
 
 ol ol { font-size: 0.8em; }
 
