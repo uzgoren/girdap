@@ -30,10 +30,12 @@ A typical numerical simulation involve the following steps;
 2. Declare your own field variables (defined on cell centers)
 3. State initial and boundary conditions for each variable
 4. Start a time loop
-4.1. Solve for var_1 governed by a partial differential equation
-4.2. Solve for var_2 governed by algebraic equations
-4.3. Grid adaptation/movement
-4.4. Write an output to screen/file
+
+1. Solve for var_1 governed by a partial differential equation
+2. Solve for var_2 governed by algebraic equations
+3. Grid adaptation/movement
+4. Write an output to screen/file
+
 5. Exit
 
 _girdap_ provides tools for each step above. In addition, you can have as many grids and as many variables together governed by different set of equations; and interacting with each other. Such a flexibility allows developing various algorithms for fluid-structure interactions and multiphase flows. 
