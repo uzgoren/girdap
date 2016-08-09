@@ -10,6 +10,10 @@ Heat equation in the following form is to be solved on a unit domain:
 
 $$ \vec{\nabla} \cdot (k \vec{\nabla} T) + \dot q_{o} = 0 $$
 
+exposed to following boundary conditions:
+
+Convection at the top ($$ y = 1 $$): $$-k\frac{dT}{dy}\Big|_{y=1} = h (T - T_{\inf}) $$ 
+
 This example creates a grid handle and manually adds vertices and cells. h-refinement can be applied through adapt flag on the first cell. The output is written in VTK format to be visualized in additional software, i.e. Paraview.
 
 {% highlight c++ linenos %}
