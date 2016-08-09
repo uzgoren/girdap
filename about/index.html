@@ -48,20 +48,20 @@ Initial conditions can be defined easily through cell iterators on grid.
 So a thin long rod interacting with 3D incompressible flow can be declared as follows:
 
 1. Create grid1 and grid2
-1. Declare velocity, pressure and temperature for grid1 (3D);  temperature for grid2 (1D)
-1. State initial and boundary conditions
-1. Start a time loop
+2. Declare velocity, pressure and temperature for grid1 (3D);  temperature for grid2 (1D)
+3. State initial and boundary conditions
+4. Start a time loop
     1. Link temperature field of grid1 to grid2 as a boundary condition
-    1. Solve heat diffusion equation on grid 2
-    1. Adapt grid2 based on its temperature field
-    1. Solve flow velocity on grid1
-    1. Adapt grid1 based on its velocity field
-    1. Solve pressure equation on grid1
-    1. Correct flow velocity on grid1
-    1. Link temperature field of grid2 to grid1 as a dummy variable
-    1. Solve energy equation with a source term (dummy var) on grid1
-    1. Write an output to screen/file
-1. Exit
+    2. Solve heat diffusion equation on grid 2
+    3. Adapt grid2 based on its temperature field
+    4. Solve flow velocity on grid1
+    5. Adapt grid1 based on its velocity field
+    6. Solve pressure equation on grid1
+    7. Correct flow velocity on grid1
+    8. Link temperature field of grid2 to grid1 as a dummy variable
+    9. Solve energy equation with a source term (dummy var) on grid1
+    10. Write an output to screen/file
+5. Exit
 
 For those who are familiar, this is quite similar to scripting in Matlab. 
 
