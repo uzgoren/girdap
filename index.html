@@ -1,15 +1,7 @@
 ---
-layout: default
-title: About
+layout: page
+title: Home
 ---
-      <div class="blurb">
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/uzgoren/girdap/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/uzgoren/girdap/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/uzgoren/girdap" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
-
-        <hr>
 
         <section id="main_content">
           <h1>
@@ -30,9 +22,18 @@ title: About
 <h3>
 <a id="compile" class="anchor" href="#compile" aria-hidden="true"><span class="octicon octicon-link"></span></a>COMPILE</h3>
 
-<p>use "mk" script (tested on Linux and Mac) </p>
+{% highlight bash linenos %}
+cmake .
+make
+{% endhighlight %}
 
 
+        </section>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/uzgoren/girdap/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/uzgoren/girdap/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/uzgoren/girdap" id="view-on-github" class="button"><span>View on GitHub</span></a>
         </section>
 
         <footer>
