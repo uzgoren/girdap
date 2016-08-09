@@ -8,8 +8,9 @@ layout: page
 ## Heat Equation
 Heat equation in the following form is to be solved on a unit domain:
 
-$$\frac{\partial}{\partial x}(k\frac{\partial T}{\partial x}) +
-\frac{\partial}{\partial x}(k\frac{\partial T}{\partial x}) + \dot q_{o} = 0$$
+$$\frac{\partial}{\partial x}\big(k\frac{\partial T}{\partial x}\big) +
+\frac{\partial}{\partial x}\big(k\frac{\partial T}{\partial x}\big) + \dot q_{o} = 0
+$$
 
 This example creates a grid handle and manually adds vertices and cells. h-refinement can be applied through adapt flag on the first cell. The output is written in VTK format to be visualized in additional software, i.e. Paraview.
 
