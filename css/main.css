@@ -33,9 +33,9 @@ footer {
     font-size: .8em;
 }
 
-ol { font-size: 1.5em; }
+ol li { font-size: 1.5em; }
 
-ol ol { font-size: 1.2em; }
+ol li ol li { font-size: 1.2em; }
 
 ul.posts { 
     margin: 20px auto 40px; 
