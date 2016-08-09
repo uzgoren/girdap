@@ -49,8 +49,8 @@ delete(grid);
  Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 10, 10); 
  Grid* surf = new Grid(); 
 
- surf->addVertex({{0.5,0.4}, {0.6,0.5}, {0.5,0.6}, {0.4,0.5}}); 
- surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
+ surf->addVertex( { {0.5,0.4}, {0.6,0.5}, {0.5,0.6}, {0.4,0.5} } ); 
+ surf->addCell( { {0,1}, {1,2}, {2,3}, {3,0} } ); 
 
  volgrid->writeVTK("vol"); 
  surf->writeVTK("surf"); 
