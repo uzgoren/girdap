@@ -1,42 +1,80 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>{% if page.title %}{{ page.title }} – {% endif %}{{ site.name }} – {{ site.description }}</title>
+<head>
+    {% include head.html %}
+    <script>
+        $(document).ready(function() {
+            // Initialize navgoco with default options
+            $("#mysidebar").navgoco({
+                caretHtml: '',
+                accordion: true,
+                openClass: 'active', // open
+                save: false, // leave false or nav highlighting doesn't work right
+                cookie: {
+                    name: 'navgoco',
+                    expires: false,
+                    path: '/'
+                },
+                slide: {
+                    duration: 400,
+                    easing: 'swing'
+                }
+            });
 
-    <!--[if lt IE 9]>
-      <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    
-<link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/main.css">
-<link rel="stylesheet" type="text/css" href="{{ site.baseurl }}/css/syntax.css">
-<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
-	</head>
-	<body>
-		<nav>
-    		<ul>
-        		<li><a href="{{ site.baseurl }}/">Home</a></li>
-	        	<li><a href="{{ site.baseurl }}/about/">About</a></li>
-        		<li><a href="{{ site.baseurl }}/download/">Download</a></li>
-        		<li><a href="{{ site.baseurl }}/doc/">Documentation</a></li>
-			<li><a href="{{ site.baseurl }}/cont/">Contribute</a></li>
-			<li><a href="{{ site.baseurl }}/cite/">Citing</a></li>
-    		</ul>
-		</nav>
-		<hr>
-		<div class="container">
+            $("#collapseAll").click(function(e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', false);
+            });
 
-                {{ content }} 
+            $("#expandAll").click(function(e) {
+                e.preventDefault();
+                $("#mysidebar").navgoco('toggle', true);
+            });
 
+        });
 
+    </script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+    {% if page.datatable == true %}
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.js"></script>
+    <script>
+        $(document).ready(function(){
 
-		</div><!-- /.container -->
-		
-		<footer>
-    		<ul>
-        	  <li><a href="mailto:uzgoren@gmail.com">E-mail</a></li>
-		  <li><a href="/">Author</a></li>
-		  <li><a href="https://github.com/uzgoren/girdap">@github</a></li>
-			</ul>
-		</footer>
-	</body>
+            $('table.datatable').DataTable( {
+                        paging: false,
+                        stateSave: true
+                    }
+            );
+    </script>
+    {% endif %}
+
+</head>
+<body>
+{% include topnav.html %}
+<!-- Page Content -->
+<div class="container">
+    <div class="col-lg-12">&nbsp;</div>
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Sidebar Column -->
+        <div class="col-md-3">
+
+          {% include sidebar.html %}
+    <!-- Content Column -->
+    <div class="col-md-9">
+        {{content}}
+    </div>
+    <!-- /.row -->
+</div>
+<!-- /.container -->
+    </div>
+
+</body>
+{% if site.google_analytics %}
+{% include google_analytics.html %}
+{% endif %}
 </html>
