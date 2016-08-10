@@ -41,7 +41,7 @@ entries:
       output: web, pdf
 
     - title: FAQs
-      url: /mydoc_faqs.html
+      url: /doc_faq.html
       output: web, pdf
 
   - title: Installation
