@@ -1,4 +1,4 @@
-.highlight  { background: #dedede; }
+.highlight  { background: #ddd; }
 .highlight .c { color: #999988; font-style: italic } /* Comment */
 .highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
 .highlight .k { font-weight: bold } /* Keyword */
@@ -60,9 +60,10 @@
 .highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
 
 .highlight table{ max-width:100%; margin-bottom:0px;}
+.highlight td {padding-top:5px; padding-bottom:5px;}
 .highlight pre code .lineno {background: #FFFFFF; border-width:0px; }
 .highlight pre code .code {padding-left:2px;}
 .highlight .gutter, highlight .gl { width: 5px; padding-right:1px; padding-left:1px; border: 0px;  }
-.highlight pre {padding: 0px; }
+.highlight pre {padding: 0px; background: #ddd}
 .highlight pre code { display: block; }
 .highlight pre code table { width: 100%; }
