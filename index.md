@@ -1,7 +1,7 @@
 ---
 title: Getting started with girdap
 keywords: about
-tags: [getting_started]
+tags: [overview]
 sidebar: mydoc_sidebar
 permalink: index.html
 summary: girdap is a c++ based object oriented library for multiphysics simulations on self-managed grids. 
