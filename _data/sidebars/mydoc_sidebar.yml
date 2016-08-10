@@ -77,8 +77,8 @@ entries:
           url: /doc_tut_grid.html
           output: web, pdf
 
-        - title: h-refinement
-          url: /doc_tut_adapt.html
+        - title: Multiple grids
+          url: /doc_tut_volsurf.html
           output: web, pdf
 
         - title: Field variables
