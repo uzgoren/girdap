@@ -1,4 +1,8 @@
 _site
+.sass-cache/
+.jekyll-metadata
+_pdf
+.idea/
 .DS_Store
 .jekyll
 .jekyll-metadata
@@ -13,3 +17,7 @@ cmake*
 girdap
 Makefile
 *~
+include/
+src/
+\#*\#
+.#*
