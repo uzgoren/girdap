@@ -64,43 +64,46 @@ entries:
     output: web, pdf
 
     folderitems:
-    - title: Basic set
+    - title: README.first
       output: web, pdf
       url: /doc_tut.html
 
       subfolders:
-      - title: Grid basics
-        url: /doc_tut_grid.html
-        output: web, pdf
+      - title: Basics
+      - output: web, pdf
 
-      - title: h-refinement
-        url: /doc_tut_adapt.html
-        output: web, pdf
+        subfolderitems: 
+        - title: Grid
+          url: /doc_tut_grid.html
+          output: web, pdf
 
-      - title: Field variables
-        url: /doc_tut_var.html
-        output: web, pdf
+        - title: h-refinement
+          url: /doc_tut_adapt.html
+          output: web, pdf
 
-      - title: Intergrid connections
-        url: /doc_tut_manygrids.html
-        output: web, pdf
+        - title: Field variables
+          url: /doc_tut_var.html
+          output: web, pdf
 
-    - title: PDEs
-      output: web, pdf
-      url: /doc_tut.html
+        - title: Intergrid connections
+          url: /doc_tut_manygrids.html
+          output: web, pdf
 
-      subfolders:
-      - title: Heat Equation
-        url: /doc_tut_heat.html
+      - title: PDEs
         output: web, pdf
+	
+        subfolderitems:
+        - title: Heat Equation
+          url: /doc_tut_heat.html
+          output: web, pdf
 
-      - title: Adv/Diff equation
-        url: /mydoc_tut_advdiff.html
-        output: web, pdf
+        - title: Adv/Diff equation
+          url: /mydoc_tut_advdiff.html
+          output: web, pdf
 
-      - title: Incompressible flow
-        url: /mydoc_tut_fractional.html
-        output: web, pdf
+        - title: Incompressible flow
+          url: /mydoc_tut_fractional.html
+          output: web, pdf
 
   - title: Objects/Methods
     output: web, pdf
