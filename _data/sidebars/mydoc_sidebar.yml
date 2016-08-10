@@ -32,9 +32,9 @@ entries:
 #      url: /mydoc_intro.html
 #      output: web, pdf
 
-#    - title: Features
-#      url: /mydoc_supported_features.html
-#      output: web, pdf
+    - title: Features
+      url: /doc_feat_grid.html
+      output: web, pdf
 
 #    - title: Contributing
 #      url: /mydoc_people.html
