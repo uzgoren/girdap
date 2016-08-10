@@ -49,7 +49,7 @@ toc: false
    delete(surf); 
 {% endhighlight %}
 
-{% include image.html file="tut/tut-var02.gif" caption="Velocity vectors are transferred from volume grid to surface grid; and indicator function is created purely using surface grid locations." %}
+{% include image.html file="tut/tut-var02.png" caption="Velocity vectors are transferred from volume grid to surface grid; and indicator function is created purely using surface grid locations." %}
 
 
 
