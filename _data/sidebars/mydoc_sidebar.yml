@@ -86,7 +86,7 @@ entries:
           output: web, pdf
 
         - title: Intergrid connections
-          url: /doc_tut_manygrids.html
+          url: /doc_tut_intergrid.html
           output: web, pdf
 
       - title: PDEs
