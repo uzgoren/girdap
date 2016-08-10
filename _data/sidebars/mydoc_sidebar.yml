@@ -24,41 +24,41 @@ entries:
     folderitems:
 
     - title: Get started
-      url: /doc_getstarted.html
+      url: /index.html
       output: web, pdf
       type: homepage
 
-    - title: Introduction
-      url: /mydoc_intro.html
-      output: web, pdf
+#    - title: Introduction
+#      url: /mydoc_intro.html
+#      output: web, pdf
 
-    - title: Features
-      url: /mydoc_supported_features.html
-      output: web, pdf
+#    - title: Features
+#      url: /mydoc_supported_features.html
+#      output: web, pdf
 
-    - title: Contributing
-      url: /mydoc_people.html
-      output: web, pdf
+#    - title: Contributing
+#      url: /mydoc_people.html
+#      output: web, pdf
 
     - title: FAQs
       url: /doc_faq.html
       output: web, pdf
 
-  - title: Installation
-    output: web, pdf
-    folderitems:
+#  - title: Installation
+#    output: web, pdf
+#    folderitems:
 
-    - title: Getting girdap run
-      url: /mydoc_about_ruby_gems_etc.html
-      output: web, pdf
+#    - title: Getting girdap run
+#      url: /mydoc_about_ruby_gems_etc.html
+#      output: web, pdf
 
-    - title: on Linux
-      url: /mydoc_on_linux.html
-      output: web, pdf
+#    - title: on Linux
+#      url: /mydoc_on_linux.html
+#      output: web, pdf
 
-    - title: on Mac
-      url: /mydoc_on_mac.html
-      output: web, pdf
+#    - title: on Mac
+#      url: /mydoc_on_mac.html
+#      output: web, pdf
 
   - title: Tutorials
     output: web, pdf
@@ -97,75 +97,35 @@ entries:
           url: /doc_tut_heat.html
           output: web, pdf
 
-        - title: Adv/Diff equation
-          url: /mydoc_tut_advdiff.html
-          output: web, pdf
+#        - title: Adv/Diff equation
+#          url: /mydoc_tut_advdiff.html
+#          output: web, pdf
 
-        - title: Incompressible flow
-          url: /mydoc_tut_fractional.html
-          output: web, pdf
+#        - title: Incompressible flow
+#          url: /mydoc_tut_fractional.html
+#          output: web, pdf
 
-  - title: Objects/Methods
-    output: web, pdf
+#  - title: Objects/Methods
+#    output: web, pdf
 
-    folderitems:
-    - title: VecX
-      url: /mydoc_obj_vecx.html
-      output: web, pdf
-
-    - title: Cell
-      url: /mydoc_obj_cell.html
-      output: web, pdf
-
-    - title: Grid
-      url: /mydoc_obj_grid.html
-      output: web, pdf
-
-    - title: Var
-      url: /mydoc_obj_var.html
-      output: web, pdf
-      
-    - title: Solver
-      url: /mydoc_obj_solver.html
-      output: web, pdf
-
-#  - title: Tag archives
-#    output: web
 #    folderitems:
+#    - title: VecX
+#      url: /mydoc_obj_vecx.html
+#      output: web, pdf
 
-#    - title: Tag archives overview
-#      url: /mydoc_tag_archives_overview.html
-#      output: web
+#    - title: Cell
+#      url: /mydoc_obj_cell.html
+#      output: web, pdf
 
-#      subfolders:
-#      - title: Tag archive pages
-#        output: web
-#        subfolderitems:
+#    - title: Grid
+#      url: /mydoc_obj_grid.html
+#      output: web, pdf
 
-#        - title: Formatting pages
-#          url: /tag_formatting.html
-#          output: web
+#    - title: Var
+#      url: /mydoc_obj_var.html
+#      output: web, pdf
+      
+#    - title: Solver
+#      url: /mydoc_obj_solver.html
+#      output: web, pdf
 
-#        - title: Navigation pages
-#          url: /tag_navigation.html
-#          output: web
-
-#        - title: Content types pages
-#          url: /tag_content_types.html
-#          output: web
-
-#        - title: Publishing pages
-#          url: /tag_publishing.html
-#          output: web
-
-#        - title: Special layout pages
-#          url: /tag_special_layouts.html
-#          output: web
-
-#        - title: Collaboration pages
-#          url: /tag_collaboration.html
-#          output: web
-
-#        - title: Troubleshooting pages
-#          url: /tag_troubleshooting.html
-#          output: web
