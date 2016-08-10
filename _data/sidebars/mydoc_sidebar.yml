@@ -91,7 +91,7 @@ entries:
 
       - title: PDEs
         output: web, pdf
-	
+
         subfolderitems:
         - title: Heat Equation
           url: /doc_tut_heat.html
