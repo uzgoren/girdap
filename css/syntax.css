@@ -64,6 +64,6 @@
 .highlight pre code .lineno {background: #FFFFFF; border-width:0px; }
 .highlight pre code .code {padding-left:2px;}
 .highlight .gutter, highlight .gl { width: 15px; padding-right:1px; padding-left:1px; border: 0px; text-align:right; }
-.highlight pre {padding: 0px; background: #ddd}
+.highlight pre {padding: 0px; margin-top:5px; margin-bottom:5px; background: #eee}
 .highlight pre code { display: block; }
 .highlight pre code table { width: 100%; }
