@@ -24,7 +24,7 @@ entries:
     folderitems:
 
     - title: Get started
-      url: /index.html
+      url: /doc_getstarted.html
       output: web, pdf
       type: homepage
 
