@@ -60,3 +60,6 @@
 .highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
 
 .highlight .gutter { width: 5px; }
+.highlight pre {padding: 0px; 
+.highlight pre code { display: block; }
+.highlight pre code table { width: 100%; }
