@@ -9,7 +9,7 @@ Grid supports the following cell structures:
 |           | line | quad | tri | hexa |
 |-----------|------|------|-----|------|
 | Base    | &#10004; | &#10004; | &#x2717; | &#x2717; |
-| Auto domain| &#x2717; | &#10004;<br>`Block2` | &#x2717; | &#x2717; |
+| Auto domain| &#x2717; | `Block2` | &#x2717; | &#x2717; |
 | h-refinement    | &#10004; | &#10004; | &#x2717; | &#x2717; |
 |-----------|------|------|-----|------|
 | Var operators | | | | |

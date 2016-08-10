@@ -1,11 +1,14 @@
 ---
-title: Tutorial - Differential Equations
-layout: page
+title: Heat equation
+permalink: doc_tut_heat.html
+sidebar: mydoc_sidebar
+tags: [tutorials, pde, objects]
+keywords: tutorials, partial differential equation, pde, heat equation, steady
+last_updated: August 10, 2016
+folder: doc
+toc: false
 ---
 
-{% capture md_content %}
-
-## Heat Equation
 Heat equation in the following form is to be solved on a unit domain:
 
 <p> $$\vec{\nabla} \cdot (k \vec{\nabla} T) + \dot q_{o} = 0$$ </p>
@@ -65,11 +68,9 @@ $$T_{\infty} = 20 ^{\circ} C$$
 {% endhighlight %}
 
 Above code produces the following result:
-  
-![Result](res01.gif)
+
+{% include image.html file="tut/tut-heat01.gif" caption="Heat equation solved starting at 5x5 Cartesian grid and refined based on gradient." %}
 
 
-{% endcapture %}
-{{ md_content | markdownify }} 
 
 
