@@ -63,3 +63,6 @@
 .highlight .vg { color: #cc6666 } /* Name.Variable.Global */
 .highlight .vi { color: #cc6666 } /* Name.Variable.Instance */
 .highlight .il { color: #de935f } /* Literal.Number.Integer.Long */
+
+.highlight .lineno { color: #ccc; display:inline-block; padding: 0 5px; border-right:1px solid #ccc; }
+.highlight pre code { display: block; white-space: pre; overflow-x: auto; word-wrap: normal; border:1px solid #aaa; }
