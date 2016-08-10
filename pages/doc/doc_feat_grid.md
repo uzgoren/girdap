@@ -1,6 +1,7 @@
 ---
 title: Features - Grid
 permalink: /doc_feat_grid.html
+sidebar: mydoc_sidebar
 ---
 
 Grid supports the following cell structures:
