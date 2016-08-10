@@ -62,6 +62,7 @@ entries:
 
   - title: Tutorials
     output: web, pdf
+    url: /mydoc_tut.html
 
     folderitems:
     - title: First grid
