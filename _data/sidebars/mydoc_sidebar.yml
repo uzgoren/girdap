@@ -70,12 +70,12 @@ entries:
 
       subfolders:
       - title: Grid basics
-      	url: /doc_tut_grid.html
-      	output: web, pdf
+        url: /doc_tut_grid.html
+        output: web, pdf
 
       - title: h-refinement
-      	url: /doc_tut_adapt.html
-      	output: web, pdf
+        url: /doc_tut_adapt.html
+        output: web, pdf
 
       - title: Field variables
         url: /doc_tut_var.html
