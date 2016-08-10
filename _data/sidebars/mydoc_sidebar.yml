@@ -85,7 +85,6 @@ entries:
         url: /doc_tut_manygrids.html
         output: web, pdf
 
-    folderitems:
     - title: PDEs
       output: web, pdf
       url: /doc_tut.html
