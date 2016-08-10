@@ -24,12 +24,12 @@ dfaq:
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <h4 class="panel-title">
-                                <a class="noCrossRef accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                                <a class="noCrossRef accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse{{ forloop.index }}">
 				{{ q.q }} 
 				</a>
                             </h4>
                         </div>
-                        <div id="collapseOne" class="panel-collapse collapse noCrossRef">
+                        <div id="collapse{{ forloop.index }}" class="panel-collapse collapse noCrossRef">
                             <div class="panel-body">
                             {{ q.a }} 
                             </div>
