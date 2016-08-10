@@ -59,11 +59,12 @@
 .highlight .vi { color: #008080 } /* Name.Variable.Instance */
 .highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
 
-.highlight table{ max-width:100%; margin-bottom:0px;}
+.highlight table{ max-width:100%; margin-bottom:0px; border:none; }
 .highlight td {padding-top:5px; padding-bottom:5px;}
 .highlight pre code .lineno {background: #FFFFFF; border-width:0px; }
-.highlight pre code .code {padding-left:2px;}
-.highlight .gutter, highlight .gl { width: 15px; padding-right:1px; padding-left:1px; border: 0px; text-align:right; }
-.highlight pre {padding: 0px; margin-top:5px; margin-bottom:5px; background: #eee}
+.highlight pre code .code pre {padding-left:10px;}
+.highlight pre code .code {border:none;}
+.highlight .gutter, highlight .gl { width: 15px; padding-right:1px; padding-left:1px; border: none; text-align:right; }
+.highlight pre {padding: 0px; margin-top:5px; margin-bottom:5px; background: #fcfcfc;  border: 1px solid #dedede;  }
 .highlight pre code { display: block; }
 .highlight pre code table { width: 100%; }
