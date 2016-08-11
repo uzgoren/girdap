@@ -9,6 +9,3 @@ toc: false
 ---
 
 {% include image.html file="highlight.png" align="center" %}
-
-{% include links.html %}
-
