@@ -8,7 +8,7 @@ summary: girdap is a c++ based object oriented library for multiphysics simulati
 toc: false
 ---
 
-{% include image.html file="highlight.png" alt="" caption="" %}
+{% include image.html file="highlight.png" align="center" %}
 
 
 
