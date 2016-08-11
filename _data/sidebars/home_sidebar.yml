@@ -11,6 +11,7 @@ entries:
     - title: Highlights
       url: /index.html
       output: web
+      type: homepage
     - title: Download
       url: /download.html
       output: web
