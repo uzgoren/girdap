@@ -5,6 +5,10 @@ topnav:
   items:
     - title: News
       url: /news
+    - title: Contribute
+      url: /web_contribute.html
+    - title: Download
+      url: /download.html
 
 #Topnav dropdowns
 topnav_dropdowns:
@@ -22,11 +26,4 @@ topnav_dropdowns:
           external_url: http://uzgoren.github.io/
         - title: Eray Uzgoren
           external_url: http://blog.metu.edu.tr/uzgoren/
-    - title: Contribute
-      folderitems:
-        - title: End-user
-          url: /mydoc_introduction.html
-        - title: Developer
-          url: /p1_landing_page.html
-        - title: Feedback
-          url: /p2_landing_page.html
+

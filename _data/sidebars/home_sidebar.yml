@@ -23,8 +23,8 @@ entries:
       url: /news.html
       output: web
 
-    - title: Collaborate
-      url: /collaborate.html
+    - title: Contribute
+      url: /web_contribute.html
       output: web
 
     - title: Documentation
