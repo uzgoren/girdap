@@ -11,7 +11,8 @@
             <a class="navbar-brand" href="index.html"><span ><img src="{{ site.baseurl }}/images/girdap_logo32.png"></span>&nbsp;<span class="projectTitle"> {{site.topnav_title}}</span></a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
+          <ul class="nav navbar-nav navbar-right">
+	    <li><a class="fa fa-home fa-lg" href="{{site.base_url}}/index.html">&nbsp;</a></li>
                 <!-- entries without drop-downs appear here -->
                 {% for entry in site.data.topnav.topnav %}
                 {% for item in entry.items %}
