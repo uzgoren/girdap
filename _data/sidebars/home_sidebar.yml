@@ -3,25 +3,30 @@
 entries:
 - title: sidebar
   product: Project
-  levels: one
+  version:
   folders:
 
   - title: girdap
     output: web
     folderitems:
+    
     - title: Highlights
       url: /index.html
       output: web
       type: homepage
+      
     - title: Download
       url: /download.html
       output: web
+      
     - title: Documentation
       url: /doc_getstarted.html
       output: web
+
     - title: Collaborate
       url: /collaborate.html
       output: web
-    - title: News
-      url: /news
-      output: web
+
+  - title: News
+    url: /news
+    output: web
