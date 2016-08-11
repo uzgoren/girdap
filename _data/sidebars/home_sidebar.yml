@@ -19,14 +19,14 @@ entries:
       url: /download.html
       output: web
       
-    - title: Documentation
-      url: /doc_getstarted.html
+    - title: News
+      url: /news.html
       output: web
 
     - title: Collaborate
       url: /collaborate.html
       output: web
 
-  - title: News
-    url: /news
+  - title: Documentation
+    url: /doc_getstarted.html
     output: web
