@@ -5,7 +5,7 @@ output: web
 topnav_title: girdap project
 # this appears on the top navigation bar next to the home button
 
-site_title: girdap: automated grid management
+site_title: girdap - automated grid management
 # this appears in the html browser tab for the site title (seen mostly by search engines, not users)
 
 company_name: girdap project
