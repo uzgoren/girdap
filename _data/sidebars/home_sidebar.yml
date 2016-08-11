@@ -1,22 +1,25 @@
 # This is your sidebar TOC. The sidebar code loops through sections here and provides the appropriate formatting.
 
 entries:
-- title: girdap
-  levels: zero
+- title: Project
+  levels: one
   folders:
 
-#  - title: girdap
-#    output: web
-#    folderitems:
   - title: girdap
-    url: /index.html
     output: web
-  - title: Download
-    url: /download.html
-    output: web
-  - title: Documentation
-    url: /doc_getstarted.html
-    output: web
-  - title: Collaborate
-    url: /collaborate.html
-    output: web
+    folderitems:
+    - title: Highlights
+      url: /index.html
+      output: web
+    - title: Download
+      url: /download.html
+      output: web
+    - title: Documentation
+      url: /doc_getstarted.html
+      output: web
+    - title: Collaborate
+      url: /collaborate.html
+      output: web
+    - title: News
+      url: news
+      output: web
