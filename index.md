@@ -1,5 +1,5 @@
 ---
-title: girdap, Self-managed grids for solving PDEs
+title: girdap, Self managed grids for solving PDEs
 permalink: index.html
 keywords: about
 tags: [overview]
