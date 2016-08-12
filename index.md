@@ -69,6 +69,9 @@ toc: false
 <script>
 $(document).ready(function(e) {
 	$('img[usemap]').rwdImageMaps();
+
+});
+
 	var acc = $( "area" ); 
 
 	for (i = 0; i < acc.length; i++) {	
@@ -79,7 +82,6 @@ $(document).ready(function(e) {
 	      }
             }); 
         }
-});
 
 </script>
 
