@@ -71,12 +71,12 @@ $(document).ready(function(e) {
 	$('img[usemap]').rwdImageMaps();
 	var acc = $( "area" ); 
 
-	for (i = 0; i < acc.length; i++) {	
-            $( acc[i] ).onclick = function() {
-               //for (j = 0; j < acc.length; j++) {
-               //   acc[j].classList.remove("in");
-	       //}
-	       $( $(this).getAttribute('href') )[0].classList.toggle("in");
+	for (var i = 0; i < acc.length; i++) {	
+            $( acc[i] ).onclick = function() {	      
+              for (j = 0; j < acc.length; j++) {
+                 if (i != j) acc[j].classList.remove("in");
+	      }
+	      // $( $(this).getAttribute('href') )[0].classList.toggle("in");
             }; 
         }
 });
