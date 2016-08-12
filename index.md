@@ -8,6 +8,19 @@ summary: girdap is a c++ based object oriented library for multiphysics simulati
 toc: false
 ---
 
+
+<figure align="center" style="1px solid #ddd">
+<img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map">
+<map name="Map">
+    <area title="Highly Customizable" href="#flexible" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="455,57,778,190">
+    <area nametitle="Anisotropic grid refinement" href="#adapt" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="530,234,833,353">
+    <area title="Easy manage - object oriented" href="#ooo" class="noCrossRef accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="460,385,790,520">
+    <area title="girdap" title="girdap" href="#girdap" shape="rect" coords="0,0,200,180">
+</map>
+</figure>
+
+
+
 <div class="panel-group" id="accordion">
 
    <!-- girdap --> 
@@ -68,17 +81,6 @@ toc: false
 <p> Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks. The performance is expected to be affected but this is expected to be slight bump and it has yet to be compared against available popular software. </p>
       </div>
   </div>
-
-
-<figure align="center" style="1px solid #ddd">
-<img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map">
-<map name="Map">
-    <area title="Highly Customizable" href="#flexible" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="455,57,778,190">
-    <area nametitle="Anisotropic grid refinement" href="#adapt" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="530,234,833,353">
-    <area title="Easy manage - object oriented" href="#ooo" class="noCrossRef accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="460,385,790,520">
-    <area title="girdap" title="girdap" href="#girdap" shape="rect" coords="0,0,200,180">
-</map>
-</figure>
 
 </div>
 <script src="{{site.baseurl}}/js/jquery.rwdImageMaps.min.js"></script>
