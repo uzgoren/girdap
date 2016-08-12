@@ -26,15 +26,15 @@ toc: false
 
 <blockquote /> Better accuracy can be achieved by using quality grids, which can be produced by local h-refinement and r-refinement using the right error estimate </blockquote />
 
-Following is George Clooney's quote adapted for numerical simulations:
+<p />Following is George Clooney's quote adapted for numerical simulations: </p />
 
-<pre>"It is possible to produce *inaccurate results* out of a *good grid*, but it is almost impossible to produce *accurate results* out of a *bad grid*. </pre />
+<pre /> It is possible to produce *inaccurate results* out of a *good grid*, but it is almost impossible to produce *accurate results* out of a *bad grid*. </pre />
 
-<p>One of the biggest challenge in mesh-based simulation tools remains to be the need of robust and efficient tools for generating and maintaining quality grids around complex geometries for transient multi-scale problems. Adaptive solution techniques allow us to overcome these challenges. These adaptive strategies include </p>
-<ul>
-<li> **h-adaptation**: local mesh refinement through cell splitting/merging</li>
-<li> **r-adaptation**: relocating cell vertices</li>
-</ul>
+<p />One of the biggest challenge in mesh-based simulation tools remains to be the need of robust and efficient tools for generating and maintaining quality grids around complex geometries for transient multi-scale problems. Adaptive solution techniques allow us to overcome these challenges. These adaptive strategies include </p />
+<ul />
+<li /> **h-adaptation**: local mesh refinement through cell splitting/merging</li>
+<li /> **r-adaptation**: relocating cell vertices</li>
+</ul />
 
 
 </div />
