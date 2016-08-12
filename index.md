@@ -53,7 +53,6 @@ toc: false
       </div>
   </div>
 
-</div>
 
 <figure align="center" style="1px solid #ddd">
 <img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map">
@@ -65,6 +64,7 @@ toc: false
 </map>
 </figure>
 
+</div>
 <script src="{{site.baseurl}}/js/jquery.rwdImageMaps.min.js"></script>
 <script>
 $(document).ready(function(e) {
