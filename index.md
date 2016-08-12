@@ -72,12 +72,12 @@ $(document).ready(function(e) {
 	var acc = $( "area" ); 
 
 	for (i = 0; i < acc.length; i++) {	
-            $( acc[i] ).bind("click", {i:this}, function(event) {
+            $( acc[i] ).onclick = function() {
                //for (j = 0; j < acc.length; j++) {
                //   acc[j].classList.remove("in");
 	       //}
-	       $( this.getAttribute('href') )[0].classList.toggle("in");
-            }); 
+	       $( $(this).getAttribute('href') )[0].classList.toggle("in");
+            }; 
         }
 });
 
