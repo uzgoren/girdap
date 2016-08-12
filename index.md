@@ -74,12 +74,8 @@ $(document).ready(function(e) {
 
 	for (i = 0; i < acc.length; i++) {	
             $( acc[i] ).click(function() {
-	       alert('xxx clicked ' + acc.length); 
 	      for (j = 0; j < acc.length; j++) {
-	      	  alert('removing '+acc[j].getAttribute("href")); 
-                  alert(acc[j].classList);
-		  acc[j].classList.remove("in");
-                  alert(acc[j].classList);
+		  $( acc[j].getAttribute('href') )[0].classList.remove("in");
 	      }
             }); 
         }
