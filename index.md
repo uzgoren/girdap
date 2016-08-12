@@ -75,7 +75,7 @@ $(document).ready(function(e) {
 	for (i = 0; i < acc.length; i++) {	
             $( acc[i] ).click(function() {
 	      for (j = 0; j < acc.length; j++) {
-	      	  if ($(acc[j].attr('href') )[0].classList) {
+	      	  if ($( $(acc[j]).attr('href') )[0].classList) {
 		  $( $(acc[j]).attr('href') )[0].classList.remove("in");
 		  }
 	      }
