@@ -37,8 +37,8 @@ Following is George Clooney's quote adapted for numerical simulations:
 </ul>
 
 
-</div>
-</div>
+</div />
+</div />
 
 <figure align="center" style="1px solid #ddd">
 <img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map" />
