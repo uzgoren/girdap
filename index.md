@@ -71,7 +71,7 @@ $(document).ready(function(e) {
 	$('img[usemap]').rwdImageMaps();
 	var acc = $( "area" ); 
 
-	for (i = 0; i < acc.length; i++) {	
+	for (var i = 0; i < acc.length; i++) {	
             acc[i].onclick = function() {
                for (j = 0; j < acc.length; j++) {
                   acc[j].classList.remove("in");
