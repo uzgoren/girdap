@@ -9,7 +9,7 @@ toc: false
 ---
 
 <figure align="center" style="1px solid #ddd">
-<img class="docimage" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map" />
+<img class="docimage" width="833px" height="576px" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map" />
 <map name="Map">
     <area alt="Highly Customizable" title="flexible" href="flexible.html" shape="rect" coords="455,57,778,177" />
     <area alt="Anisotropic grid refinement" title="accurate" href="adaptive.html" shape="rect" coords="530,234,827,353" />
@@ -18,6 +18,7 @@ toc: false
 </map>
 </figure>
 
+<script src="{{site.baseurl}}/js/jquery.rwdImageMaps.min.js"></script>
 <script>
 $(document).ready(function(e) {
 	$('img[usemap]').rwdImageMaps();
