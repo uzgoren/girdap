@@ -72,7 +72,7 @@ $(document).ready(function(e) {
 	var acc = $( "area" ); 
 
 	for (i = 0; i < acc.length; i++) {	
-            acc[i].bind("click", {i:i}, function(event) {
+            $( acc[i] ).bind("click", {i:i}, function(event) {
                //for (j = 0; j < acc.length; j++) {
                //   acc[j].classList.remove("in");
 	       //}
