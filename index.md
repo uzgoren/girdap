@@ -76,7 +76,7 @@ $(document).ready(function(e) {
                for (j = 0; j < acc.length; j++) {
                   acc[j].classList.remove("in");
 	       }
-	       $( this.attr('href') ).classList.toggle("in");
+	       $( this.getAttribute('href') )[0].classList.toggle("in");
             }
         }
 });
