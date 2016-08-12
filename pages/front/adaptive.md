@@ -1,5 +1,5 @@
 ---
-title: Anisotropic h-refinement and r-refinement
+title: "Anisotropic h-refinement and r-refinement"
 permalink: /front_adapt.html
 tags: [overview]
 toc: false
