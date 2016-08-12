@@ -74,15 +74,14 @@ $(document).ready(function(e) {
 
 	for (i = 0; i < acc.length; i++) {	
             $( acc[i] ).click(function() {
-	       alert('xxx clicked'); 
+	       alert('xxx clicked ' + acc.length); 
 	      for (j = 0; j < acc.length; j++) {
+	      	  alert('removing acc[j].getAttribute("href")'); 
                  acc[j].classList.remove("in");
 	      }
             }); 
         }
 });
-
-
 
 </script>
 
