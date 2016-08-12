@@ -3,7 +3,7 @@ title: "Anisotropic h-refinement and r-refinement"
 permalink: /front_adapt.html
 tags: [overview]
 toc: false
-summary: "> It’s possible for me to make a bad movie out of a good script, but I can’t make a good movie from a bad script. > George Clooney"
+summary: "<blockquote>It’s possible for me to make a bad movie out of a good script, but I can’t make a good movie from a bad script. </blockquote>George Clooney"
 ---
 
 George Clooney's quote for moview can be altered for numerical simulations:
