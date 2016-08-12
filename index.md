@@ -15,7 +15,7 @@ toc: false
     <area title="Highly Customizable" href="#flexible" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="455,57,778,190">
     <area nametitle="Anisotropic grid refinement" href="#adapt" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="530,234,833,353">
     <area title="Easy manage - object oriented" href="#ooo" class="noCrossRef accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="460,385,790,520">
-    <area title="girdap" title="girdap" href="#girdap" shape="rect" coords="0,0,200,180">
+    <area title="brief" title="girdap" href="#girdap" shape="rect" coords="0,0,200,180">
 </map>
 </figure>
 
