@@ -67,12 +67,10 @@ toc: false
 </div>
 <script src="{{site.baseurl}}/js/jquery.rwdImageMaps.min.js"></script>
 <script>
+var acc; 
 $(document).ready(function(e) {
 	$('img[usemap]').rwdImageMaps();
-
-});
-
-	var acc = $( "area" ); 
+	acc = $( "area" ); 
 
 	for (i = 0; i < acc.length; i++) {	
             $( acc[i] ).click(function() {
@@ -82,6 +80,9 @@ $(document).ready(function(e) {
 	      }
             }); 
         }
+});
+
+
 
 </script>
 
