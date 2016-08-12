@@ -12,11 +12,10 @@ toc: false
 <img class="docimage" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map" />
 <map name="Map">
     <area alt="Highly Customizable" title="flexible" href="flexible.html" shape="rect" coords="455,57,778,177" />
-    <area alt="Anisotropic grid refinement" title="accurate" href="adaptive.html" shape="rect" coords="737,295,1087,427" />&nbsp; </a>
-    <area alt="Easy manage - object oriented" title="readable" href="object oriented" shape="rect" coords="679,450,1021,585" />
-    <area alt="girdap" title="girdap" href="index.html" shape="poly" coords="198,211,297,88,417,52,458,112,343,180,289,263" />
+    <area alt="Anisotropic grid refinement" title="accurate" href="adaptive.html" shape="rect" coords="530,234,827,353" />&nbsp; </a>
+    <area alt="Easy manage - object oriented" title="readable" href="object oriented" shape="rect" coords="460,385,790,520" />
+    <area alt="girdap" title="girdap" href="index.html" shape="rect" coords="0,0,200,180" />
 </map>
-</div>
 </figure>
 
 <script>
