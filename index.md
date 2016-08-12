@@ -21,7 +21,7 @@ toc: false
 </div>
 
 <!-- accurate --> 
-<div id="flexible" class="panel-collapse collapse noCrossRef">
+<div id="accurate" class="panel-collapse collapse noCrossRef">
 <div class="panel-body"
 
 <blockquote /> Better accuracy can be achieved by using quality grids, which can be produced by local h-refinement and r-refinement using the right error estimate </blockquote />
