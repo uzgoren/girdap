@@ -71,13 +71,13 @@ $(document).ready(function(e) {
 	$('img[usemap]').rwdImageMaps();
 	var acc = $( "area" ); 
 
-	for (var i = 0; i < acc.length; i++) {	
-            acc[i].onclick = function() {
+	for (i = 0; i < acc.length; i++) {	
+            acc[i].click({i:i}, function(event) {
                for (j = 0; j < acc.length; j++) {
                   acc[j].classList.remove("in");
 	       }
 	       $( acc[i].getAttribute('href') )[0].classList.toggle("in");
-            }
+            }); 
         }
 });
 </script>
