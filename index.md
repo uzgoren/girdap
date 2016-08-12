@@ -15,7 +15,7 @@ toc: false
     <area alt="Anisotropic grid refinement" title="accurate" href="adaptive.html" shape="rect" coords="737,295,1087,427" />&nbsp; </a>
     <area alt="Easy manage - object oriented" title="readable" href="object oriented" shape="rect" coords="679,450,1021,585" />
     <area alt="girdap" title="girdap" href="index.html" shape="poly" coords="198,211,297,88,417,52,458,112,343,180,289,263" />
-</map -->
+</map>
 </div>
 </figure>
 
