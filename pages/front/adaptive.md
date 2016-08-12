@@ -1,6 +1,6 @@
 ---
 title: Anisotropic h-refinement and r-refinement
-permalink: /adaptive.html
+permalink: /front_adaptive.html
 tags: [overview]
 toc: false
 summary: > It’s possible for me to make a bad movie out of a good script, but I can’t make a good movie from a bad script. > George Clooney

@@ -1,6 +1,6 @@
 ---
 title: Customize according to your needs
-permalink: /flexible.html
+permalink: /front_flexible.html
 tags: [overview]
 toc: false
 summary: Use your own numerical algorithm or modify one available according to your needs
