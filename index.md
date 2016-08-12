@@ -10,19 +10,19 @@ toc: false
 
 <div class="panel-group" id="accordion">
 
-<!-- Flexible --> 
-<div id="flexible" class="panel-collapse collapse noCrossRef">
-<div class="panel-body"
+   <!-- Flexible --> 
+   <div id="flexible" class="panel-collapse collapse noCrossRef">
+       <div class="panel-body">
 
-<blockquote />Use your own numerical algorithm or modify one available according to your needs</blockquoate />
-<p>Many open source and commercial software allows an interface that allow the user to change parameters of a numerical algorithm. Even changing boundary conditions of a partial differential equation dynamically is almost impossible. `girdap` is a library equipped with objects and their methods to allow such a flexibility and allows the user to develop their own algorithms through not so complicated i.e. conditional statements and loops.</p>
-<p>At this early stage of the development, girdap will remain as a library while it is envisioned to be equipped with a REPL (read-eval-print loop) type command line interpreter, similar to Matlab, for increasing productivity. </p>
-</div>
-</div>
+          <blockquote />Use your own numerical algorithm or modify one available according to your needs</blockquote />
+          <p>Many open source and commercial software allows an interface that allow the user to change parameters of a numerical algorithm. Even changing boundary conditions of a partial differential equation dynamically is almost impossible. `girdap` is a library equipped with objects and their methods to allow such a flexibility and allows the user to develop their own algorithms through not so complicated i.e. conditional statements and loops.</p>
+          <p>At this early stage of the development, girdap will remain as a library while it is envisioned to be equipped with a REPL (read-eval-print loop) type command line interpreter, similar to Matlab, for increasing productivity. </p>
+      </div>
+  </div>
 
-<!-- accurate --> 
-<div id="accurate" class="panel-collapse collapse noCrossRef">
-<div class="panel-body"
+  <!-- accurate --> 
+    <div id="accurate" class="panel-collapse collapse noCrossRef">
+      <div class="panel-body">
 
 <blockquote /> Better accuracy can be achieved by using quality grids, which can be produced by local h-refinement and r-refinement using the right error estimate </blockquote />
 
@@ -39,8 +39,6 @@ Following is George Clooney's quote adapted for numerical simulations:
 
 </div>
 </div>
-
-<div>
 
 <figure align="center" style="1px solid #ddd">
 <img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map" />
