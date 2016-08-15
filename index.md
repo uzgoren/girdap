@@ -10,7 +10,7 @@ toc: false
 
 
 <figure align="center" style="1px solid #ddd">
-<img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map" style="width:50%">
+<img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map" style="max-width:400px">
 <map name="Map">
     <area title="Highly Customizable" href="#flexible" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="455,57,778,190">
     <area title="Anisotropic grid refinement" href="#adapt" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="530,234,833,353">
