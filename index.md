@@ -8,6 +8,21 @@ summary: girdap is a c++ based object oriented library for multiphysics simulati
 toc: false
 ---
 
+{% capture ooo %}
+<h2> Object oriented & c++11 standards</h2>
+
+<p> Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks. </p>
+<p> It is great if one can represent following equation: </p>
+<p> $$\frac{\partial \rho q}{\partial t} + \nabla \cdot (\rho \vec{u}) q = \vec{\nabla} \cdot (\Gamma \vec{\nabla} q) + \dot s_{o} $$ </p>
+<p> as follows:
+
+{% highlight c++ linenos %}
+q->solve( grid->time(rho) + grid->div(\rho*vel) - grid->laplace(\Gamma) - source(s0)) ; 
+{% endhighlight %}
+
+<p>The performance is yet to be compared against available popular software. </p>
+{% endcapture %}
+
 
 <figure align="center" style="1px solid #ddd">
 <img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map" style="max-width:400px">
@@ -78,9 +93,7 @@ It is possible to produce inaccurate results out of a good grid, but it is almos
    <!-- ooo --> 
    <div id="ooo" class="collapse">
        <div class="panel-body">
-<h2> Object oriented & c++11 standards</h2>
-
-<p> Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks. The performance is expected to be affected but this is expected to be slight bump and it has yet to be compared against available popular software. </p>
+       {{ ooo | markdownify }}
       </div>
   </div>
 
