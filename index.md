@@ -13,7 +13,7 @@ toc: false
 
 Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks.
 
-It is great if one can create a vectors and grids using curly braces; 
+It is great if one can create a vectors and grids using Matlab alike curly braces; 
 
 {% highlight c++ linenos %}
 Block2* grid = new Block2( {x0, y0, z0}, {x1, y1, z1}, Nx, Ny); 
@@ -52,7 +52,7 @@ The performance is yet to be compared against available popular software.
        <div class="panel-body">
 
           <blockquote>girdap provides object/methods for mesh-based numerical simulations</blockquote>
-<div class="alert alert-info" role="alert"><i class="fa fa-info-circle"></i> <b>Note:</b> girdap is still in the development phase. Most of the features are experimented in 1D/2D modes; mainly focusing on quad cells. That being said; undelying data structure is designed to allow easy extension to 3D with hexahedral cells. </div>
+<div class="alert alert-info" role="alert"><p><i class="fa fa-info-circle"></i> <b>Note:</b> girdap is still in the development phase. Most of the features are experimented in 1D/2D modes; mainly focusing on quad cells. That being said; undelying data structure is designed to allow easy extension to 3D with hexahedral cells. </p></div>
 
 <p> girdap project is started to enable moving boundary simulations around complex geometries through sharp and continuous interface methods. Sharp interface methods will be facilitated through vertex movement; similar to ALE/overset methods, while continous interface methods will be facilitated through level-set and immersed boundary methods. </p>
 <p> The development gives highest priority to <b>local</b> grid <i>hr</i>-adaptation, readability for better code maintenance, flexibility for use in various fields. </p>
