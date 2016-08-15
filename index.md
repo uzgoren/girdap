@@ -55,7 +55,7 @@ toc: false
       <div class="panel-body">
 <h2> Anisotropic grid adaptation </h2>
 
-<blockquote> Better accuracy can be achieved by using quality grids, which can be produced by local h-refinement and r-refinement using the right error estimate </blockquote>
+<div style="display:block; width:90%; padding-left:5%"><i>"Better accuracy can be achieved by using quality grids, which can be produced by local h-refinement and r-refinement using the right error estimate"</i></div>
 
 <p>Following is George Clooney's quote adapted for numerical simulations: </p>
 
