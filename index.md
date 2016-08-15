@@ -13,9 +13,9 @@ toc: false
 <img class="docimage" width="833" height="576" src="{{site.baseurl}}/images/highlight.png" alt="" usemap="#Map">
 <map name="Map">
     <area title="Highly Customizable" href="#flexible" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="455,57,778,190">
-    <area nametitle="Anisotropic grid refinement" href="#adapt" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="530,234,833,353">
+    <area title="Anisotropic grid refinement" href="#adapt" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="530,234,833,353">
     <area title="Easy manage - object oriented" href="#ooo" class="noCrossRef accordion-toggle" data-toggle="collapse" data-parent="#accordion" shape="rect" coords="460,385,790,520">
-    <area title="brief"  href="#girdap" shape="rect" coords="0,0,200,180">
+    <area title="brief"  href="#girdap1" shape="rect" coords="0,0,200,180">
 </map>
 </figure>
 
@@ -24,7 +24,7 @@ toc: false
 <div class="panel-group" id="accordion">
 
    <!-- girdap --> 
-   <div id="girdap" class="collapse in">
+   <div id="girdap1" class="collapse in">
        <div class="panel-body">
 
           <blockquote>girdap provides object/methods for mesh-based numerical simulations</blockquote>
