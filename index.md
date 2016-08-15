@@ -61,7 +61,7 @@ toc: false
 
 <div style="display:block; width:90%; padding-left:5%"><i>
 It is possible to produce inaccurate results out of a good grid, but it is almost impossible to produce accurate results out of a bad grid.
-</i></blockquote>
+</i></div>
 
 <p>One of the biggest challenge in mesh-based simulation tools remains to be the need of robust and efficient tools for generating and maintaining quality grids around complex geometries for transient multi-scale problems. Adaptive solution techniques allow us to overcome these challenges. These adaptive strategies include </p>
 <ul>
