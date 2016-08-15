@@ -13,7 +13,13 @@ toc: false
 
 Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks.
 
-It is great if one can represent following equation:
+It is great if one can create a vectors and grids using curly braces; 
+
+{% highlight c++ %}
+Block2* grid = new Block2( {x0, y0, z0}, {x1, y1, z1}, Nx, Ny); 
+{% endhighlight %}
+
+or if one can represent following equation:
 
 $$\frac{\partial \rho q}{\partial t} + \nabla \cdot (\rho \vec{u}) q = \vec{\nabla} \cdot (\Gamma \vec{\nabla} q) + \dot s_{o} $$
 
