@@ -9,18 +9,21 @@ toc: false
 ---
 
 {% capture ooo %}
-<h2> Object oriented & c++11 standards</h2>
+** Object oriented & c++11 standards
 
-<p> Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks. </p>
-<p> It is great if one can represent following equation: </p>
-<p> $$\frac{\partial \rho q}{\partial t} + \nabla \cdot (\rho \vec{u}) q = \vec{\nabla} \cdot (\Gamma \vec{\nabla} q) + \dot s_{o} $$ </p>
-<p> as follows:
+Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks.
+
+It is great if one can represent following equation:
+
+$$\frac{\partial \rho q}{\partial t} + \nabla \cdot (\rho \vec{u}) q = \vec{\nabla} \cdot (\Gamma \vec{\nabla} q) + \dot s_{o} $$
+
+as follows:
 
 {% highlight c++ linenos %}
-q->solve( grid->time(rho) + grid->div(\rho*vel) - grid->laplace(\Gamma) - source(s0)) ; 
+q->solve( grid->time(rho) + grid->div(rho*vel) - grid->laplace(gamma) - source(s0)) ; 
 {% endhighlight %}
 
-<p>The performance is yet to be compared against available popular software. </p>
+The performance is yet to be compared against available popular software. 
 {% endcapture %}
 
 
