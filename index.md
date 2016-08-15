@@ -15,7 +15,7 @@ Mesh-based simulations are very suitable for object oriented programming; where 
 
 It is great if one can create a vectors and grids using curly braces; 
 
-{% highlight c++ %}
+{% highlight c++ linenos %}
 Block2* grid = new Block2( {x0, y0, z0}, {x1, y1, z1}, Nx, Ny); 
 {% endhighlight %}
 
