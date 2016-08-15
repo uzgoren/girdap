@@ -9,7 +9,7 @@ toc: false
 ---
 
 {% capture ooo %}
-** Object oriented & c++11 standards
+## Object oriented & c++11 standards
 
 Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks.
 
