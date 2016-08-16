@@ -23,6 +23,13 @@ set(SOURCES  ./include/field/Var.cpp
              ./include/grid2/Line.cpp
              )
 
-add_executable(girdap src/main_basics.cpp ${SOURCES})
+add_library(girdap SHARED ${SOURCES})
+#install(TARGETS girdap RUNTIME DESTINATION bin)
 
-install(TARGETS girdap RUNTIME DESTINATION bin)
+
+set(EXMPS div lsp 1Dadvection)
+foreach(EX ${EXMPS})
+  add_executable(${EX} EXCLUDE_FROM_ALL src/main_${EX}.cpp)
+  target_link_libraries(${EX} girdap)  
+endforeach(EX)
+
