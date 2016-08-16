@@ -115,7 +115,7 @@ description: "Intended as a documentation theme based on Jekyll for technical wr
 # the description is used in the feed.xml file
 
 # needed for sitemap.xml file only
-url: http://uzgoren.github.io/girdap/
+url: http://uzgoren.github.io
 google_analytics: UA-69513172-3
 gems:
 - jekyll-sitemap
