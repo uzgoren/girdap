@@ -1,0 +1,52 @@
+---
+title: Tags
+last_updated: November 30, 2015
+keywords: shuffle, card layout, dynamic grid, doc portal, support portal
+permalink: doc_shuffle.html
+sidebar: mydoc_sidebar
+folder: doc
+---
+
+
+
+
+<script src="js/jquery.shuffle.min.js"></script>
+<script src="js/jquery.ba-throttle-debounce.min.js"></script>
+
+<div class="filter-options">
+  <button class="btn btn-primary" data-group="all">All</button>
+  {% for tag in site.data.tags.allowed-tags %}
+  <button class="btn btn-primary" data-group="{{tag}}">{{tag}}</button>
+  {% endfor %}
+</div>      
+
+<div id="grid" class="row">
+  {% for tagp in site.data.tags.allowed-tags %}
+  <div class="col-xs-6 col-sm-4 col-md-4" data-groups='["{{tagp}}"]'>
+    <div class="panel panel-default">
+      <div class="panel-heading">{{tagp}}</div>
+               <div class="panel-body">                 
+                  <ul>
+                    {% for page in site.pages %}
+                    {% for tag in page.tags %}
+                    {% if tag == tagp %}
+                    <li><a href="{{page.url | remove: '/'}}">{{page.title}}</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %} 
+                  </ul>
+               </div>
+          </div>
+    
+  </div>
+  {% endfor %}
+   
+  <!-- sizer -->
+  <div class="col-xs-6 col-sm-4 col-md-1 shuffle_sizer"></div>          
+
+
+</div><!-- /#grid -->
+
+{% include initialize_shuffle.html %}
+
+

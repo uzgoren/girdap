@@ -41,7 +41,7 @@ entries:
 
     - title: FAQs
       url: /doc_faq.html
-      output: web, pdf
+      output: web
 
 #  - title: Installation
 #    output: web, pdf
