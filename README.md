@@ -1,5 +1,7 @@
 #girdap
 
+Please refer to https://uzgoren.github.io/girdap for more information.
+
 <!-- This project's aim is to develop object-oriented c++ libraries for solving conservation equations on a self-managed grid. 
 
 ###DISCLAIMER
@@ -10,8 +12,8 @@ C++ compiler that accepts C++11 standards
 
 ###COMPILE
 use "mk" script (tested on Linux and Mac) 
-
-###FAQ -->
+-->
+###FAQ 
 ####_What is girdap?_
 _girdap_ provides building blocks for numerical simulations of complex transport equations. Tools are built around a grid management platform connected to finite volume method based differential operators. girdap’s primary goals are (1) _flexibility_ and (2) _accuracy_. 
 
