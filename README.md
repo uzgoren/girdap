@@ -1,8 +1,11 @@
 #girdap
 
+Please refer to https://uzgoren.github.io/girdap for more information.
+
+
 <!-- This project's aim is to develop object-oriented c++ libraries for solving conservation equations on a self-managed grid. 
 
-Please refer to https://uzgoren.github.io/girdap for more information. 
+
 
 ###DISCLAIMER
 This project is still in a early phase, expect to see bugs. 
