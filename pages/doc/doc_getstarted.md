@@ -13,7 +13,7 @@ First download or clone _girdap_ from the [Github repo](https://github.com/uzgor
 
 {% include note.html content="It is recommended to download `develop` branch rather than the `master` branch as many described functionalities are available in `develop` branch at this point." %}
 
-## Build this theme
+## Build _girdap_
 
 {% include warning.html content="Requires `cmake`" %}
 
