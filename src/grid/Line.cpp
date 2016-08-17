@@ -16,7 +16,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************
 */
-#include "Grid.hpp" 
+#include <girdap>
 
 void Line::assignCelltoNode() {
   // check size first; if this is the first time assign only current nodes; 

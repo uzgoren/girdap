@@ -10,26 +10,21 @@ else ()
   set (CMAKE_CXX_STANDARD 11)
 endif ()
 
-
 include_directories(include)
 
-set(SOURCES  ./include/field/Var.cpp 
-             ./include/grid2/Cell.cpp 
-             ./include/grid2/Quad.cpp  
-             ./include/grid2/Grid.cpp  
-             ./include/grid2/operator.cpp  
-             ./include/grid2/operator2.cpp  
-             ./include/grid2/Vertex.cpp
-             ./include/grid2/Line.cpp
-             )
+add_subdirectory(src)
+#add_library(girdap STATIC ${SOURCES})
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+add_executable(girdap src/main.cpp)
+target_link_libraries(girdap girdapcore)
+install(TARGETS girdap DESTINATION bin)
+#install(TARGETS girdap DESTINATION girdap)
+#install(DIRECTORY include/ DESTINATION include/girdap PATTERN "*cpp" EXCLUDE)
 
-add_library(girdap SHARED ${SOURCES})
-#install(TARGETS girdap RUNTIME DESTINATION bin)
-
-
-set(EXMPS div lsp 1Dadvection)
+set(EXMPS div lsp)
 foreach(EX ${EXMPS})
-  add_executable(${EX} EXCLUDE_FROM_ALL src/main_${EX}.cpp)
-  target_link_libraries(${EX} girdap)  
+  add_executable(${EX} EXCLUDE_FROM_ALL test/${EX}/main.cpp)
+  target_link_libraries(${EX} girdapcore)
 endforeach(EX)
+
 

@@ -13,3 +13,6 @@ CMakeCache.txt
 cmake_install.cmake
 girdap
 Makefile
+lib/*
+bin/*
+install_manifest.txt

@@ -17,13 +17,11 @@
  ***************************************************************************
 */
 #include <string>
-#include <grid2/Grid>
 #include <memory>
 #include <iomanip>
 //#include <MathExp>
-#include <linSolve/LinSys>
-#include <field/Var>
 
+#include <girdap>
 
 double Var::get(int_8 i) {
   if (i >= 0 && i < data.size()) return data[i]; 

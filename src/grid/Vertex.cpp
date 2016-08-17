@@ -16,7 +16,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************
 */
-#include "Grid.hpp"
+#include <girdap>
 
 void Vertex::cellResize(int_2 size)  {cell.resize(size);} 
 void Vertex::setCell(int_2 ind, int_8 value) {

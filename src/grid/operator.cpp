@@ -16,7 +16,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************
 */
-#include "Grid.hpp"
+#include <girdap>
 #include <time.h>
 
 void Grid::advanceDiv(shared_ptr<Var> &phi, VecX<Vec3> &vel, 

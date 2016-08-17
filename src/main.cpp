@@ -17,122 +17,262 @@
  ***************************************************************************
 */
 
-//*************************************************************
-// Codelet: Performance analysis of Linear system construction  
-//*************************************************************
+#include <iostream>
+#include <fstream>
 
-#include <linSolve/MatY.hpp>
-#include <linSolve/LinSys.hpp>
-#include <time.h>       /* clock_t, clock, CLOCKS_PER_SEC */
+#include <girdap>
 
 
-int main(int argc,char *argv[]) {
-  int_8 N; 
-  clock_t t; 
+int main() {
+  // Grid* grid = new Grid();
+  // grid->addVertex({ {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0} }); 
 
-  if (argc == 1) N = 5; 
-  else N = atoi(argv[1]); 
+  // grid->addCell( {0, 1, 2, 3} ) ; 
 
-  cout << N << endl; 
+  // for (auto i =0; i<3; ++i) {
+  //   grid->listCell[0]->adapt = {1, 1}; 
+  //   grid->adapt(); 
+  //   grid->writeVTK("myFirstGrid_"); 
+  // }
+  
+  // delete(grid); 
 
-  // Speed test: Matrix construction and solution old and new techniques  
-  LinSys old(N); VecX<double> x0(N); VecX<double> err0(N); 
-  old.x = &x0; 
-  old.error = &err0; 
+  // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 10, 10); 
+  // Grid* surf = new Grid(); 
 
-  t = clock(); 
-  for (auto i =0; i < N; ++i) {
-    old.A[i][i] = 4; 
-    if (i > 0) old.A[i][i-1] = -1; 
-    if (i < N-1) old.A[i][i+1] = -1; 
-    if (i-N >= 0) old.A[i][i-N] = -1; 
-    if (i+N < N) old.A[i][i+N] = -1; 
-    old.b[i] = 3*i+1; 
+  // surf->addVertex({{0.5,0.4}, {0.6,0.5}, {0.5,0.6}, {0.4,0.5}}); 
+  // surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
+
+  // volgrid->writeVTK("vol"); 
+  // surf->writeVTK("surf"); 
+
+  // delete(volgrid); 
+  // delete(surf); 
+  double pi = 4*atan(1.0); 
+
+  // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 5, 5); 
+  
+  // // add a new variable
+  // volgrid->addVar("f"); 
+  // auto f = volgrid->getVar("f"); // variable handle
+  
+  // f->setBC("east", "grad", 0);   // This is the default
+  // f->setBC("north", "val", 1);   //   
+
+  // for (auto i=0; i < 4; ++i) { 
+  //   for (auto c : volgrid->listCell) {
+  //     auto x = c->getCoord(); // cell-centers
+  //     f->set(c->id, sin(3*pi*x[0])*cos(2*pi*x[1]));
+  //   }
+  //   volgrid->solBasedAdapt2(volgrid->getError(f)); 
+  //   volgrid->adapt(); 
+  //   volgrid->writeVTK("field_"); 
+  // }
+  
+  // delete(volgrid); 
+
+
+  Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 50, 50); 
+
+  // Velocity field
+  auto uv = volgrid->getVar("u"); auto vv = volgrid->getVar("v"); 
+  uv->set(1.0); // set velocity
+  vv->set(-0.5); // set velocity
+  // New variable at cell center
+  volgrid->addVar("f"); auto f = volgrid->getVar("f"); 
+
+  Grid* surf = new Grid(); 
+
+  surf->addVertex({{0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46}}); 
+  surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
+  // Refine cell; 
+  for (auto i=0; i<4; ++i) {
+    for (auto c: surf->listCell) if (c->vol().abs() > 0.02) c->adapt[0] = 1;
+    surf->adapt(); 
   }
-  old.setVECX(old.A*old.b); 
-  t = clock() - t; 
-  float setup0 = float(t)/CLOCKS_PER_SEC; 
+  volgrid->updateOtherVertex(surf);
+  // mark location of this surface
+  volgrid->indicator(surf, f);
 
-  t = clock(); 
-  old.BiCGSTAB(); 
-  t = clock() - t; 
-  float solve0 = float(t)/CLOCKS_PER_SEC; 
+  // Assign velocity variables to surface at vertex  
+  surf->addVec("u",1);
 
-  //cout << *old.x << endl; 
-  cout << old.error->abs() << endl; 
+  // Get velocity on the surface
+  auto us = surf->getVar("u"); auto vs = surf->getVar("v");   
+  volgrid->passVar(surf, uv, us); 
+  volgrid->passVar(surf, vv, vs);   
 
-  triLinSys sp(N); VecX<double> x1(N); VecX<double> err1(N); 
-  sp.x = &x1; 
-  sp.error = &err1; 
+  volgrid->writeVTK("vol"); 
+  surf->writeVTK("surf"); 
 
-  t = clock(); 
-  for (auto i =0; i < N; ++i) {
-    sp.A += {(double)i, (double)i, 4}; //old.A[i][i] = 2; 
-    if (i > 0) sp.A += {(double)i, (double)i-1, -1}; //old.A[i][i-1] = -1; 
-    if (i < N-1) sp.A += {(double)i, (double)i+1, -1}; //old.A[i][i+1] = -1; 
-    if (i-N >= 0) sp.A += {(double)i, (double)i-N, -1}; //old.A[i][i-1] = -1; 
-    if (i+N < N) sp.A += {(double)i, (double)i+N, -1}; //old.A[i][i+1] = -1; 
+  delete(volgrid); 
+  delete(surf); 
 
-    sp.b[i] = 3*i+1; 
-  }
-  sp.setMat(sp.A); 
-  sp.b = sp.S*sp.b; 
-  t = clock()-t; 
-  float setup1 = float(t)/CLOCKS_PER_SEC; 
-
-  t = clock(); 
-  sp.BiCGSTAB(); 
-  t = clock()-t; 
-  float solve1 = float(t)/CLOCKS_PER_SEC; 
-  cout << " ----------- " << endl ; 
-  //cout << *sp.x << endl; 
-  cout << sp.error->abs() << endl; 
-
-  cout << "OLD: setup-> " << setup0 << " sec, solve-> " << solve0 << "sec."<<endl; 
-  cout << "NEW: setup-> " << setup1 << " sec, solve-> " << solve1 << "sec."<<endl; 
-
-  // cout << "Abs" << endl; 
-  Triplets vt, bt; 
+  // // Problem parameters
+  // auto k = 2.0; auto qdot = 5e3; auto h = 50; auto Tinf = 20;
+  // // Grid
+  // Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10); 
+  // grid->levelHighBound[0] = 2; 
+  // grid->levelHighBound[1] = 2; 
+  // grid->addVar("T"); 
+  // // Variables
+  // auto T = grid->getVar("T");
+  // // Linear solver
+  // T->solver = "BiCGSTAB";
+  // T->itmax = 1000; 
+  // T->set(100); 
+  // // Boundary conditions
+  // T->setBC("south", "grad", 0); 
+  // T->setBC("north", "grad", h/k*Tinf, -h/k);
+  // T->setBC("east", "val", 200); 
+  // T->setBC("west", "val", 100); 
   
-  triLinSys Ab; 
-  vt += {{0,0,4}, {0,1,-1}, {1,2,-1}, {2,1,-1}}; 
-  vt += {{2,2,4}, {3,2,-1}, {3,3,4}, {3,4,-1}}; 
-  bt += {{4,4,4}, {4,3,-1}, {1,1,4}, {2,3,-1}};
-  bt += {{1,0,-1}, {2,1,-2}, {1,4,-6}, {2,2,1}};
-  bt(2,2) = 7; 
+  // for (auto i = 0; i< 4; ++i) {
+  //   grid->solBasedAdapt2(grid->getError2(T), 2e-3, 2e-1);
+  //   grid->adapt();  
+    
+  //   // Equation 
+  //   grid->lockBC(T); 	
+  //   T->solve( grid->laplace(k) 
+  // 	      + grid->source(0, qdot) ); 
+  //   grid->unlockBC();
+    
+  //   grid->writeVTK("heat"); 
+  // }
+    
+  // delete(grid); 
+  
+  // Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10);
+  // double time= 0; double endTime = 1; //dt*50; 
+  // // Problem constants
+  // auto k = 2.0; auto qdot = 5e4; auto h = 20; auto Tinf = 20;
+  // auto rho=1000, cp=4000;
+  // // Field variables, velocity already defined
+  // grid->addVar("T"); 
 
-  Ab.setMat(-(2*vt-bt)); 
-  
-  for (auto i = 0; i < Ab.S.aij.size(); ++i) { 
-     cout << i << " " << Ab.S.aij[i] << " " << Ab.S.val[i] << endl; 
-  }
-  
-  // VecX<double> b(5); 
-  // cout << "----"<< endl<< Ab.A.rank << " " << b.size() << endl; 
-  // for (auto i = 0; i < Ab.A.rank; ++i) b[i] = i+1; 
-  
-  // Ab.b = Ab.A*b;
-  // old.setVECX(Ab.b); 
-  
-  // VecX<double> x(b.size());
-  // Ab.error = &b; 
-  // Ab.x = &x;
-  // Ab.BiCGSTAB(); 
-  
-  // cout << *Ab.x << endl; 
-  // cout << Ab.error->abs() << endl; 
+  // auto u = grid->getVar("u"); 
+  // auto v = grid->getVar("v"); 
+  // auto T = grid->getVar("T"); 
 
-  // cout << old.A<<endl; 
-  // cout << old.b<<endl; 
-  // old.error = &b; 
-  // old.x = &x;
+  // T->set(100); 
+  // T->setBC("west", "val", 20);
+  // T->setBC("south", "val", 20);
+  // T->itmax = 50; 
 
-  // old.BiCGSTAB(); 
+  // u->set(1); 
+  // v->set(0.2); 
+
+  // grid->cfl = 0.5; 
+  // int it = 0; 
+  // while (time < endTime) {
+  //   grid->setDt(0.5); // CFL condition     
+  //   auto vel = grid->getVel(); // freeze velocity! 
+
+  //   // Advection-diffusion equation ---
+  //   grid->lockBC(T); 
+  //   T->solve(
+  // 	     grid->ddt(1.0) 
+  // 	     + grid->div(vel, 1.0)
+  // 	     - grid->laplace(k/rho/cp) 
+  // 	     - grid->source(0, qdot/rho/cp)
+  // 	     ); 
+  //   grid->unlockBC();     
+  //   grid->writeVTK("heattime_"); 
+    
+  //   if (it++ % 5 == 0) {
+  //     grid->solBasedAdapt(grid->valGrad(T));
+  //     grid->adapt(); 
+  //   }
+
+  //   time += grid->dt; 
+  // }
+
+
+  // // GRID 
+  // Block2* grid = new Block2({0, 0, 0}, {10, 1, 0}, 20, 20);
+
+  // // CONST variables; 
+  // double rho = 1; double mu = 0.01; 
+
+  // // FIELD variables; Vorticity to appear in the output
+  // grid->addVar({"p", "vor"}); 
+    
+  // // initial and bc values; 
+  // auto u = grid->getVar("u"); 
+  // u->set(0.0);
+  // u->setBC("west", "val", 1.0); u->setBC("east", "val", 0);
+  // u->setBC("south", "val", 0); u->setBC("north", "val", 0); 
+ 
+  // auto v = grid->getVar("v"); 
+  // v->set(0.0);
+  // v->setBC("west", "val", 0); v->setBC("east", "val", 0);
+  // v->setBC("south", "val", 0); v->setBC("north", "val", 0); 
+
+  // auto p = grid->getVar("p");
+  // p->set(0.0);
+
+  // auto vor = grid->getVar("vor");
+
+  // // Solver behavior
+  // u->solver = "Gauss"; u->itmax = 20; u->tol = 1e-4; 
+  // v->solver = "Gauss"; v->itmax = 20; v->tol = 1e-4; 
+  // p->solver = "BiCGSTAB"; p->itmax = 10000; p->tol = 1e-6; 
+
+  // auto gp = grid->valGrad(p);   
+ 
+  // // Time control 
+  // grid->setDt(1.0); 
+  // double time= 0; double endTime = 10; 
+  // int it = 0, writeInt = 4; 
+
+  // while (time < endTime) {
+  //   auto vel = grid->getVel();
+  //   // Compute vorticity; 
+  //   vor->set(grid->valGrad(v).comp(0) - grid->valGrad(u).comp(1)); 
+    
+  //   // Solve for u*
+  //   grid->lockBC(u); 
+  //   u->solve(grid->ddt(rho) + grid->div(vel, rho) - grid->laplace(mu) );
+  //   grid->unlockBC();
+
+  //   // Solve for v*
+  //   grid->lockBC(v); 
+  //   v->solve(grid->ddt(rho) + grid->div(vel, rho) - grid->laplace(mu) ); 
+  //   grid->unlockBC();     
+
+  //   // Adapt grid using vorticity (0.9 sigma up/down for refine/coarsen); 
+  //   if (it == 1 || (it % writeInt == 0)) { 
+  //     grid->solBasedAdapt(vor->data, 0.9); 
+  //     grid->adapt(); 
+  //   }
+
+  //   // Get Vel*
+  //   auto velstar = grid->getVel();    
+
+  //   // Solve for pressure Poisson equation
+  //   grid->lockBC(p); 
+  //   p->solve(grid->laplace(1.0/rho) - grid->source(0, grid->valDiv(velstar)/dt));
+  //   grid->unlockBC(); 
+
+  //   // Correct velocities; 
+  //   u->set(velstar.comp(0)-dt/rho*gp.comp(0));  // 
+  //   v->set(velstar.comp(1)-dt/rho*gp.comp(1));  //
+
+  //   // Set new time step 
+  //   grid->setDt(dt); 
+  //   time += grid->dt; 
+
+  //   //Write output at intervals; 
+  //   if ( ( it++ % writeInt) == 0) {
+  //     grid->writeVTK(); //
+  //   } 
+
+  // }
+
+ 
+  // delete(grid);
   
-  // cout << *old.x << endl; 
-  // cout << old.error->abs() << endl; 
-  
-  
+
 
   return 0; 
 };

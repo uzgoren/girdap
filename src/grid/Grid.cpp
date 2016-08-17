@@ -16,7 +16,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************
 */
-#include "Grid.hpp"
+#include <girdap>
 
 void Grid::addVar(std::string n, int t) {
   if (!getVar(n)) {

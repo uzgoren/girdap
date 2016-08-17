@@ -17,10 +17,11 @@
  ***************************************************************************
 */
 
-#include <linSolve/LinSys>
-#include <grid2/Grid>
 #include <iostream>
 #include <fstream>
+
+#include <girdap>
+
 
 int main() {
   // Grid* grid = new Grid();
@@ -71,41 +72,41 @@ int main() {
   // delete(volgrid); 
 
 
-  // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 50, 50); 
+  Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 50, 50); 
 
-  // // Velocity field
-  // auto uv = volgrid->getVar("u"); auto vv = volgrid->getVar("v"); 
-  // uv->set(1.0); // set velocity
-  // vv->set(-0.5); // set velocity
-  // // New variable at cell center
-  // volgrid->addVar("f"); auto f = volgrid->getVar("f"); 
+  // Velocity field
+  auto uv = volgrid->getVar("u"); auto vv = volgrid->getVar("v"); 
+  uv->set(1.0); // set velocity
+  vv->set(-0.5); // set velocity
+  // New variable at cell center
+  volgrid->addVar("f"); auto f = volgrid->getVar("f"); 
 
-  // Grid* surf = new Grid(); 
+  Grid* surf = new Grid(); 
 
-  // surf->addVertex({{0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46}}); 
-  // surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
-  // // Refine cell; 
-  // for (auto i=0; i<4; ++i) {
-  //   for (auto c: surf->listCell) if (c->vol().abs() > 0.02) c->adapt[0] = 1;
-  //   surf->adapt(); 
-  // }
-  // volgrid->updateOtherVertex(surf);
-  // // mark location of this surface
-  // volgrid->indicator(surf, f);
+  surf->addVertex({{0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46}}); 
+  surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
+  // Refine cell; 
+  for (auto i=0; i<4; ++i) {
+    for (auto c: surf->listCell) if (c->vol().abs() > 0.02) c->adapt[0] = 1;
+    surf->adapt(); 
+  }
+  volgrid->updateOtherVertex(surf);
+  // mark location of this surface
+  volgrid->indicator(surf, f);
 
-  // // Assign velocity variables to surface at vertex  
-  // surf->addVec("u",1);
+  // Assign velocity variables to surface at vertex  
+  surf->addVec("u",1);
 
-  // // Get velocity on the surface
-  // auto us = surf->getVar("u"); auto vs = surf->getVar("v");   
-  // volgrid->passVar(surf, uv, us); 
-  // volgrid->passVar(surf, vv, vs);   
+  // Get velocity on the surface
+  auto us = surf->getVar("u"); auto vs = surf->getVar("v");   
+  volgrid->passVar(surf, uv, us); 
+  volgrid->passVar(surf, vv, vs);   
 
-  // volgrid->writeVTK("vol"); 
-  // surf->writeVTK("surf"); 
+  volgrid->writeVTK("vol"); 
+  surf->writeVTK("surf"); 
 
-  // delete(volgrid); 
-  // delete(surf); 
+  delete(volgrid); 
+  delete(surf); 
 
   // // Problem parameters
   // auto k = 2.0; auto qdot = 5e3; auto h = 50; auto Tinf = 20;
@@ -141,50 +142,50 @@ int main() {
     
   // delete(grid); 
   
-  Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10);
-  double time= 0; double endTime = 1; //dt*50; 
-  // Problem constants
-  auto k = 2.0; auto qdot = 5e4; auto h = 20; auto Tinf = 20;
-  auto rho=1000, cp=4000;
-  // Field variables, velocity already defined
-  grid->addVar("T"); 
+  // Block2* grid = new Block2({0, 0, 0}, {1, 1, 0}, 10, 10);
+  // double time= 0; double endTime = 1; //dt*50; 
+  // // Problem constants
+  // auto k = 2.0; auto qdot = 5e4; auto h = 20; auto Tinf = 20;
+  // auto rho=1000, cp=4000;
+  // // Field variables, velocity already defined
+  // grid->addVar("T"); 
 
-  auto u = grid->getVar("u"); 
-  auto v = grid->getVar("v"); 
-  auto T = grid->getVar("T"); 
+  // auto u = grid->getVar("u"); 
+  // auto v = grid->getVar("v"); 
+  // auto T = grid->getVar("T"); 
 
-  T->set(100); 
-  T->setBC("west", "val", 20);
-  T->setBC("south", "val", 20);
-  T->itmax = 50; 
+  // T->set(100); 
+  // T->setBC("west", "val", 20);
+  // T->setBC("south", "val", 20);
+  // T->itmax = 50; 
 
-  u->set(1); 
-  v->set(0.2); 
+  // u->set(1); 
+  // v->set(0.2); 
 
-  grid->cfl = 0.5; 
-  int it = 0; 
-  while (time < endTime) {
-    grid->setDt(0.5); // CFL condition     
-    auto vel = grid->getVel(); // freeze velocity! 
+  // grid->cfl = 0.5; 
+  // int it = 0; 
+  // while (time < endTime) {
+  //   grid->setDt(0.5); // CFL condition     
+  //   auto vel = grid->getVel(); // freeze velocity! 
 
-    // Advection-diffusion equation ---
-    grid->lockBC(T); 
-    T->solve(
-  	     grid->ddt(1.0) 
-  	     + grid->div(vel, 1.0)
-  	     - grid->laplace(k/rho/cp) 
-  	     - grid->source(0, qdot/rho/cp)
-  	     ); 
-    grid->unlockBC();     
-    grid->writeVTK("heattime_"); 
+  //   // Advection-diffusion equation ---
+  //   grid->lockBC(T); 
+  //   T->solve(
+  // 	     grid->ddt(1.0) 
+  // 	     + grid->div(vel, 1.0)
+  // 	     - grid->laplace(k/rho/cp) 
+  // 	     - grid->source(0, qdot/rho/cp)
+  // 	     ); 
+  //   grid->unlockBC();     
+  //   grid->writeVTK("heattime_"); 
     
-    if (it++ % 5 == 0) {
-      grid->solBasedAdapt(grid->valGrad(T));
-      grid->adapt(); 
-    }
+  //   if (it++ % 5 == 0) {
+  //     grid->solBasedAdapt(grid->valGrad(T));
+  //     grid->adapt(); 
+  //   }
 
-    time += grid->dt; 
-  }
+  //   time += grid->dt; 
+  // }
 
 
   // // GRID 
@@ -269,7 +270,8 @@ int main() {
   // }
 
  
-  delete(grid); 
+  // delete(grid);
+  
 
 
   return 0; 

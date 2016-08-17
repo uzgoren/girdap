@@ -20,8 +20,8 @@
 #define VAR
 
 #include <memory>
-#include <linSolve/LinSys> 
-#include <field/Boundary>
+#include "../linSolve/LinSys.hpp"
+#include "Boundary.hpp"
 
 class Grid;
 //template<typename T> class Scheme;

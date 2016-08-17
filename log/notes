@@ -1,3 +1,6 @@
+@17-08-2016: EU : Reconfiguring directory structure and cmake; so that static library is produced. Then the command line to link it is as follows:
+          g++ -o test main_div.cpp ../girdap/lib/libgirdap.a -I ../girdap/include -std=c++11
+
 @11-20-2015: EU : Internal corner cells are not yet supported (see Vertex.cpp)
                   Boundary cells are defined for only quad in Vertex.cpp
                   -- This can be extended through a new virtual function (in Cells)

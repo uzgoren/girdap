@@ -16,7 +16,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************
 */
-#include "Grid.hpp"
+#include <girdap>
 
 shared_ptr<Vertex> *Cell::getVertex(int_2 i) {
   if (i < 0) return NULL;

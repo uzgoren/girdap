@@ -1,7 +1,7 @@
 #ifndef INTERP
 #define INTERP
 
-#include <linSolve/MatX>
+#include "../linSolve/MatX.hpp"
 #include <cmath>
 
 class Interp {

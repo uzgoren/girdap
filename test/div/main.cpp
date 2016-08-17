@@ -23,9 +23,7 @@
 #include <time.h>
 #include <iomanip>
 
-#include <field/Var>
-#include <grid2/Grid>
-
+#include <girdap>
 
 int main() {
   auto dt = 0.01; auto writeTime = dt; 
