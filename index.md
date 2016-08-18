@@ -1,7 +1,7 @@
 ---
 title: girdap, Self managed grids for solving PDEs
 permalink: index.html
-keywords: about
+keywords: girdap, cfd, c++, object oriented, uzgoren, partial differential equations, computational fluid dynamics, numerical, simulations, eray uzgoren
 tags: [overview]
 sidebar: home_sidebar
 summary: girdap is a c++ based object oriented library for multiphysics simulations on self-managed grids 
