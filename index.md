@@ -101,10 +101,10 @@ The performance is yet to be compared against available popular software.
 <h2> Anisotropic grid adaptation </h2>
 
 <blockquote>
-"Better accuracy can be achieved by using quality grids, which can be produced by local h-refinement and r-refinement using the right error estimate"
+"Better accuracy through quality grids with hr-refinement"
 </blockquote>
 
-<div style="display:block; width:90%; padding-left:5%"><i>
+<div style="display:block; width:90%; padding-left:5%; margin-bottom:1em;"><i>
 It is possible to produce inaccurate results out of a good grid, but it is almost impossible to produce accurate results out of a bad grid.
 </i></div>
 
