@@ -13,21 +13,42 @@ toc: false
 
 Mesh-based simulations are very suitable for object oriented programming; where grids, variables are objects of objects; with special purpose. In addition, oop enhances productivity by enhancing readability and maintainance by making it possible to avoid repetition of code blocks.
 
-It is great if one can create a vectors and grids using Matlab alike curly braces; 
+girdap uses c++11 standars which makes variable declerations and initialization very easy. For example, use of `auto` with an initiazer removes tedious types; 
 
 {% highlight c++ linenos %}
-Block2* grid = new Block2( {x0, y0, z0}, {x1, y1, z1}, Nx, Ny); 
+auto k = 1.2;  // instead of double k=1.2; 
+auto b = new Grid(); // instead of Grid* b = new Grid(); 
+for (auto c : cells) { /* loop routing */};
 {% endhighlight %}
 
-or if one can represent following equation:
+Secondly, c++11 standards allows initializaters using curly braces;
+
+{% highlight c++ linenos %}
+double a{1.0, 2.0, 3.0}; // size of a is 3
+int b[5] = {1, 2, 3, 4, 5}; //
+vector<vector<int > > c = { {1, 2, 3}, {2, 3, 4}, {4, 5, 6} };
+{% endhighlight %}
+
+Note that initializer_lists can be passed to function as arguments as well;
+{% highlight c++ linenos %}
+grid->addCell({ {1, 2}, {2, 3}, {3, 4} }); 
+{% endhighlight %}
+
+Secondly, girdap use template based defition of differential equations. One can represent following equation:
 
 $$\frac{\partial \rho q}{\partial t} + \nabla \cdot (\rho \vec{u}) q = \vec{\nabla} \cdot (\Gamma \vec{\nabla} q) + \dot s_{o} $$
 
 as follows:
 
 {% highlight c++ linenos %}
-q->solve( grid->time(rho) + grid->div(rho*vel) - grid->laplace(gamma) - source(s0)) ; 
+q->solve( grid->time(rho) + grid->div(rho, vel) - grid->laplace(gamma) - source(s0)) ; 
 {% endhighlight %}
+
+which is another version of above equation where all terms are moved to right hand side of the equation, as shown below:
+
+$$\underbrace{\frac{\partial \rho q}{\partial t} + \nabla \cdot (\rho \vec{u}) q - \vec{\nabla} \cdot (\Gamma \vec{\nabla} q) - \dot s_{o}}_\text{RHS} = 0 $$
+
+Above equation is initiated through the variable to be solved, which is `q` in this case. Each term is considered to include `q` with multiplication with the existing parameters. The arguments can be single values; or field variables as well. 
 
 The performance is yet to be compared against available popular software. 
 {% endcapture %}

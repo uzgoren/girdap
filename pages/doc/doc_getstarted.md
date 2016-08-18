@@ -17,7 +17,17 @@ First download or clone _girdap_ from the [Github repo](https://github.com/uzgor
 
 {% include warning.html content="Requires `cmake`" %}
 
-Extract the package into a directory. The girdap's base folder is named as `girdap` as default. It does include two subdirectories; `src` and `include`. `src` contains different versions of c++'s `main()` function; each with a different purpose. These are files those utilize _girdap_'s functionality; which are available in the `include` directory. Develop your own or modify one of the `main_xxx.cpp` files as the driver file and make sure that `CMakeLists.txt` file to make sure that line at the end that starts with `add_executable` points to your driver file (`main_xxx.cpp`) in `girdap/src` folder. Now, you can go ahead with `cmake` and `make` commands as usual.
+Extract the package into a directory. The girdap's base folder is named as `girdap` as default. It comes with the following directory structure;
+<pre>
+- girdap
+  + src      // *.cpp files are here; also basic main.cpp is placed here; 
+  + include  // *.hpp files are here; 
+  + bin      // executables are placed here after build
+  + library  // a library w/o main.cpp is placed here after build
+  + example  // various examples of main.cpp can be found here; 
+</pre>
+
+`example` direction contain `main.cpp` files which can utilize _girdap_'s functionality. Some of the tutorials will be placed inside this directory. Develop your own or modify one of them as your `girdap` code and place it in the root of src directory and follow the procedure below to build your code:
 
 {% highlight bash linenos %}
 cd dir_of_your_choice
@@ -29,10 +39,18 @@ cmake .
 make
 {% endhighlight %}
 
-Now, you can run your code with the executable named as `girdap`:
+Now, you can run your code with the executable `girdap` which is placed in the `girdap/bin` directory.
 
 {% highlight bash linenos %}
-./girdap
+bin/girdap
 {% endhighlight %}
+
+Examples/tutorials can be built with the make command:
+
+{% highlight bash linenos %}
+make div          # div is the name of the example 
+{% endhighlight %}
+
+On a successful build, the executable will be placed in `girdap/bin` directory with the example's name. For the example above, executable file will be named as `div`.  
 
 {% include links.html %}
