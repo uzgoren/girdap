@@ -104,21 +104,24 @@ entries:
 #          url: /mydoc_tut_fractional.html
 #          output: web, pdf
 
-#  - title: Objects/Methods
-#    output: web, pdf
+  - title: Objects
+    output: web, pdf
+    folderitems:
+    
+    - title: VecX
+      output: web, pdf
 
-#    folderitems:
-#    - title: VecX
-#      url: /mydoc_obj_vecx.html
-#      output: web, pdf
+      subfolders:
+      - title: Grid
+        output: web, pdf
 
-#    - title: Cell
-#      url: /mydoc_obj_cell.html
-#      output: web, pdf
-
-#    - title: Grid
-#      url: /mydoc_obj_grid.html
-#      output: web, pdf
+        subfolderitems:  
+        - title: Introduction
+          url: /doc_obj_grid.html
+          output: web, pdf
+        - title: Block1
+          url: /doc_obj_grid_block1.html
+          output: web, pdf
 
 #    - title: Var
 #      url: /mydoc_obj_var.html
