@@ -101,7 +101,7 @@ The performance is yet to be compared against available popular software.
 <h2> Anisotropic grid adaptation </h2>
 
 <blockquote>
-"Better accuracy through quality grids with hr-refinement"
+"Strategy: Better accuracy through quality grids with hr-adaptation"
 </blockquote>
 
 <div style="display:block; width:90%; padding-left:5%; margin-bottom:1em;"><i>
