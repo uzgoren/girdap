@@ -23,7 +23,7 @@ install(TARGETS girdap DESTINATION bin)
 
 set(EXMPS div lsp)
 foreach(EX ${EXMPS})
-  add_executable(${EX} EXCLUDE_FROM_ALL test/${EX}/main.cpp)
+  add_executable(${EX} EXCLUDE_FROM_ALL example/${EX}/main.cpp)
   target_link_libraries(${EX} girdapcore)
 endforeach(EX)
 
