@@ -21,3 +21,5 @@ include/
 src/
 \#*\#
 .#*
+/bin
+/lib
