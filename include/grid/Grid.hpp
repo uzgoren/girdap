@@ -39,9 +39,6 @@
 class LinSys;
 class triLinSys;  
 
-//class Vertex; 
-//class Var; 
-
 class Grid {
 private:
   unsigned int filecnt; 
@@ -67,39 +64,19 @@ public:
   int_2 levelLowBound[3], levelHighBound[3]; 
   int_2 levelMin[3], levelMax[3]; 
 
-  double minD, maxD, meanD; 
-  // vector<shared_ptr<BNDR> > 
-
-  Grid() { nCellSize = 0; for (auto i = 0; i<3; ++i) {levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5; }; filecnt=0;}
-
-  Grid(initializer_list<initializer_list<double > > pts):Grid() {
-    addVertex(pts);
-  }
-  
-  Grid(Vec3 pts): Grid() {
-    addVertex(pts); 
-  }
-
+  //-----Section --------
+  // Constructors/ Deconstructors; 
+  //----------------------
+  Grid(); 
+  Grid(int_8 cap);
+  Grid(initializer_list<double > pts);
+  Grid(Vec3 pts); 
+  Grid(initializer_list<initializer_list<double > > pts);
   Grid(initializer_list<initializer_list<double> > pts, 
-       initializer_list<initializer_list<int_8> > cell): Grid(pts) {
-    addCell(cell);
-    // correct connectivity ! missing (hanging nodes) for the next step; 
-    // makeFace(); 
-  }
-
-  // ~Grid() {
-  //   // for (auto i = 0; i < otherVertex.size(); ++i) otherVertex[i].reset(); 
-  //   // for (auto i = 0; i < listFace.size(); ++i) listFace[i].reset(); 
-  //   // for (auto i = 0; i < listCell.size(); ++i) listCell[i].reset(); 
-  //   // for (auto i = 0; i < listVertex.size(); ++i) listVertex[i].reset(); 
-    
-  //   if (listVertex.size() > 0 ) cout << listVertex[0].use_count() << endl; 
-
-  //   otherVertex.clear(); cout << "OtherVertex size = "<< otherVertex.size() << endl; 
-  //   listFace.clear(); cout << "listFace size = "<< listFace.size() << endl; 
-  //   listCell.clear(); cout << "listCell size = "<< listCell.size() << endl; 
-  //   listVertex.clear(); cout << "listVertex size = "<< listVertex.size() << endl; 
-  // }
+       initializer_list<initializer_list<int_8> > cell); 
+  Grid(const Grid& copy); 
+  ~Grid(); 
+  //-----EndSection --------
 
 
   // Add vertex to the list; 
@@ -483,19 +460,108 @@ public:
 };
 
 
+class Block1: public Grid {
+public:
+  Block1():Grid() {};
+  Block1(Vec3 n1, Vec3 n2, int_4 nx):Grid() {
+    Vec3 del = (n2 - n1)/nx;
+    for (auto i = 0; i < nx+1; ++i) {
+      addVertex(n1[0] + i * del);
+    }
+    for (auto i = 0; i < nx; ++i) {
+      addCell({i, i+1}); 
+    }
+    setCurrentLevels(); 
+    makeFace(); 
+    cout << "Block1: Cells: " << listCell.size(); 
+    cout << " Faces: " << nFace << endl; 
+    return;
+  }
+  Block1(initializer_list<double> n1, initializer_list<double> n2, int_4 nx):Block1((Vec3)n1, Vec3(n2), nx){}
+
+  Block1(string geo, initializer_list<initializer_list<double> > pt, int_4 nx):Grid() {   
+       if (geo.compare("poly") == 0) {
+      double del = 0; bool loop = false; 
+      for (auto it = pt.begin(); it != pt.end()-1; ++it) {
+	del += ((Vec3)(*(it+1)) - (Vec3)(*it)).abs();
+	addVertex(*it);
+      }
+      if (del == 0) return;
+      del = del/(double)nx; 
+      if ((Vec3)*(pt.end()-1) == (Vec3)*(pt.begin())) {loop = true; }
+      else {addVertex(*(pt.end()-1));}
+      for (auto i = 0; i < listVertex.size()-1; ++i) {
+	addCell({i, i+1});
+      }
+      if (loop) {
+	addCell({(int_8)(listVertex.size()-1), 0});
+      }
+      resolve(del);
+      setCurrentLevels(); 
+      makeFace(); 
+    } else if (geo.compare("arc") == 0) {
+      auto pi = 4.0*atan(1.0);
+      if (pt.size() < 2) {return;}
+      auto x = (Vec3)(*pt.begin()); 
+      double r = ((Vec3)(*(pt.begin()+1))).abs(); 
+      Vec3 d = (pt.size() >= 3) ? (Vec3)(*(pt.begin()+2)) : Vec3(0, 360);
+      if (d[1]-d[0] > 360 || d[1] == d[0]) d[1] = d[0] + 360;
+      if (d[0]-d[1] > 360) d[1] = d[0] - 360; 
+      bool loop = (abs(d[1] - d[0]) == 360) ? true : false;
+      d = pi/180.0*d;
+      double del = (d[1] - d[0])/nx;
+      for (auto i = 0; i < nx; ++i) {
+	addVertex(x + Vec3({r*cos(d[0] + (double)i*del), r*sin(d[0] + (double)i*del)}));
+      }
+      if (!loop) addVertex(x + Vec3(r*cos(d[0] + (double)(nx)*del),
+				    r*sin(d[0] + (double)(nx)*del)));
+      for (auto i = 0; i < nx-1; ++i) {
+	addCell({i, i+1});	
+      }
+      if (loop) addCell({(int_8)(listVertex.size()-1), 0});
+      else addCell({(int_8)listVertex.size()-2, (int_8)listVertex.size()-1}); 
+      setCurrentLevels();
+      makeFace(); 	
+    }    
+  }
+
+  void resolve(double del) {
+    bool isadapt=true; 
+    while (isadapt) {
+      isadapt = false; 
+      for (auto c: listCell)
+	if (c->vol().abs() > del) {
+	  c->adapt[0] = 1;
+	  isadapt = true;
+	}
+      adapt();
+    } 
+  }
+
+  void add(Block1& o) {
+    // SIMPLE add;
+    auto noldv = listVertex.size(); 
+    for (auto v : o.listVertex) {
+      addVertex(*v);
+    }
+    for (auto c : o.listCell) {
+      addCell({c->node[0] + (int_8)noldv, c->node[1] + (int_8)noldv});
+    }
+  }
+  
+};
+
+
 class Block2: public Grid {
 public:
   Block2():Grid() {};
-  Block2(initializer_list<double> n1, initializer_list<double > n2, int_4 nx, int_4 ny):Grid() {  
-    Vec3 node1 = n1; 
-    Vec3 node2 = n2; 
-    Vec3 del = (node2 - node1);  
-    meanD = min(del[0]/double(nx), del[1]/double(ny)); 
+  Block2(Vec3 n1, Vec3 n2, int_4 nx, int_4 ny):Grid(nx*ny*4) {  
+    Vec3 del = (n2 - n1);  
     addVertex({
-	 {node1[0], node1[1], node1[2]}
-	,{node2[0], node1[1], node1[2]} 
-	,{node2[0], node2[1], node1[2]} 
-	,{node1[0], node2[1], node1[2]}
+	 {n1[0], n1[1], n1[2]}
+	,{n2[0], n1[1], n1[2]} 
+	,{n2[0], n2[1], n1[2]} 
+	,{n1[0], n2[1], n1[2]}
       }); 
     addCell({0,1,2,3});
     (*listCell.rbegin())->convertToSimpleBlock({nx,ny}); 
@@ -504,15 +570,13 @@ public:
     //setQuadBoundary(); 
     cout << "Block2: Cells: " << listCell.size(); 
     cout << " Faces: " << nFace << endl; 
-    addVec("u"); //, "v", "w"});
+    addVec("u"); 
   }
-
+   Block2(initializer_list<double> n1, initializer_list<double > n2, int_4 nx, int_4 ny):Block2((Vec3)n1, (Vec3)n2, nx, ny) {}; 
+};
   
-
-
-}; 
-
-
+ 
+ 
 class Block3: public Grid {
 public:
   Block3():Grid() {};
@@ -529,26 +593,11 @@ public:
 	,{node2[0], node2[1], node2[2]}
 	,{node1[0], node2[1], node2[2]}
       });
-    //addCell({0,1,2,3,4,5,6,7}); 
-    //if (listCell.capacity() < (listCell.size() + nx*ny*nz)) {listCell.reserve(listCell.size() + nx*ny*nz);}
-    //(*listCell.rbegin())->split({nx,ny, nz}); 
-    //    listCell.rbegin()->splitHexa(nx,ny,nz); 
   }
 
 }; 
 
 
-// template <typename T>
-// inline bool equals(const std::weak_ptr<T>& t, const std::weak_ptr<T>& u)
-// {
-//     return !t.owner_before(u) && !u.owner_before(t);
-// }
-
-// template <typename T>
-// inline bool equals(const std::weak_ptr<T>& t, const std::shared_ptr<T>& u)
-// {
-//     return !t.owner_before(u) && !u.owner_before(t);
-// }
 
 
 #endif

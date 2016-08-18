@@ -18,6 +18,70 @@
 */
 #include <girdap>
 
+// --- SECTION 1 -- Constructors; 
+// Base constructor for setting defaults; 
+Grid::Grid() {                   
+  nCellSize = 0;
+  for (auto i = 0; i<3; ++i) {
+    levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5;
+  }
+  filecnt=0;
+}
+
+// For large grids; better to start with reserved memory;
+// Note it can go beyond cap; 
+Grid::Grid(int_8 cap):Grid::Grid() {
+  listCell.reserve(cap);
+  listVertex.reserve(cap);
+}
+
+// Start with a single vertex ???
+Grid::Grid(initializer_list<double > pts):Grid::Grid() {
+  addVertex(pts);
+}
+// Vec3 form 
+Grid::Grid(Vec3 pts): Grid::Grid() {
+  addVertex(pts); 
+}
+
+// Start with many vertices; size adjusted; 
+Grid::Grid(initializer_list<initializer_list<double > > pts):Grid::Grid() {
+  listCell.reserve(2*pts.size());
+  listVertex.reserve(2*pts.size());
+  addVertex(pts);  
+}
+
+// Start with vertices; and cells
+Grid::Grid(initializer_list<initializer_list<double> > pts, 
+	   initializer_list<initializer_list<int_8> > cell): Grid::Grid(pts) {
+  addCell(cell);  
+  setCurrentLevels(); 
+  makeFace(); 
+  //setQuadBoundary(); 
+  cout << "Block2: Cells: " << listCell.size(); 
+  cout << " Faces: " << nFace << endl; 
+  addVec("u");  
+}
+// -- End section constructors; 
+
+
+// Section 2 - Deconstructors
+Grid::~Grid() {
+  listFace.clear();
+  listCell.clear();
+  listVertex.clear();
+  otherVertex.clear();
+}
+// End section 2 - Deconstructors
+
+// Section 3 - Copy
+// Grid::Grid(const Grid& copy) {
+//   filecnt = copy.filecnt;
+  
+// }
+
+
+
 void Grid::addVar(std::string n, int t) {
   if (!getVar(n)) {
     listVar.emplace_back(shared_ptr<Var>(new Var(n, t))); 

@@ -13,4 +13,5 @@ cmake_install.cmake
 Makefile
 lib/*
 bin/*
+debug/
 install_manifest.txt

@@ -24,7 +24,15 @@
 
 
 int main() {
-  // Grid* grid = new Grid();
+  Block2 grid({0, 0, 0}, {1, 1, 0}, 20, 20);
+  Block1 lin({0.2, 0.3, 0}, {0.8, 0.6, 0}, 20);
+  Block1 poly("poly", {{0.1, 0.1}, {0.2, 0.3}, {0.6, 0.2}
+      , {0.3, 0.2}, {0.4, 0.15}, {0.3, 0.13}, {0.1,0.1}}, 10); 
+  Block1 circ("arc", {{0.5, 0.75}, {0.15}, {360, 0}}, 4); 
+  poly.add(circ);
+  poly.add(lin); 
+
+  poly.writeVTK("lin");
   // grid->addVertex({ {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0} }); 
 
   // grid->addCell( {0, 1, 2, 3} ) ; 
@@ -35,7 +43,7 @@ int main() {
   //   grid->writeVTK("myFirstGrid_"); 
   // }
   
-  // delete(grid); 
+  //delete(grid); 
 
   // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 10, 10); 
   // Grid* surf = new Grid(); 
@@ -48,7 +56,7 @@ int main() {
 
   // delete(volgrid); 
   // delete(surf); 
-  double pi = 4*atan(1.0); 
+  //double pi = 4*atan(1.0); 
 
   // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 5, 5); 
   
@@ -72,41 +80,41 @@ int main() {
   // delete(volgrid); 
 
 
-  Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 50, 50); 
+  // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 50, 50); 
 
-  // Velocity field
-  auto uv = volgrid->getVar("u"); auto vv = volgrid->getVar("v"); 
-  uv->set(1.0); // set velocity
-  vv->set(-0.5); // set velocity
-  // New variable at cell center
-  volgrid->addVar("f"); auto f = volgrid->getVar("f"); 
+  // // Velocity field
+  // auto uv = volgrid->getVar("u"); auto vv = volgrid->getVar("v"); 
+  // uv->set(1.0); // set velocity
+  // vv->set(-0.5); // set velocity
+  // // New variable at cell center
+  // volgrid->addVar("f"); auto f = volgrid->getVar("f"); 
 
-  Grid* surf = new Grid(); 
+  // Grid* surf = new Grid(); 
 
-  surf->addVertex({{0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46}}); 
-  surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
-  // Refine cell; 
-  for (auto i=0; i<4; ++i) {
-    for (auto c: surf->listCell) if (c->vol().abs() > 0.02) c->adapt[0] = 1;
-    surf->adapt(); 
-  }
-  volgrid->updateOtherVertex(surf);
-  // mark location of this surface
-  volgrid->indicator(surf, f);
+  // surf->addVertex({{0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46}}); 
+  // surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
+  // // Refine cell; 
+  // for (auto i=0; i<4; ++i) {
+  //   for (auto c: surf->listCell) if (c->vol().abs() > 0.02) c->adapt[0] = 1;
+  //   surf->adapt(); 
+  // }
+  // volgrid->updateOtherVertex(surf);
+  // // mark location of this surface
+  // volgrid->indicator(surf, f);
 
-  // Assign velocity variables to surface at vertex  
-  surf->addVec("u",1);
+  // // Assign velocity variables to surface at vertex  
+  // surf->addVec("u",1);
 
-  // Get velocity on the surface
-  auto us = surf->getVar("u"); auto vs = surf->getVar("v");   
-  volgrid->passVar(surf, uv, us); 
-  volgrid->passVar(surf, vv, vs);   
+  // // Get velocity on the surface
+  // auto us = surf->getVar("u"); auto vs = surf->getVar("v");   
+  // volgrid->passVar(surf, uv, us); 
+  // volgrid->passVar(surf, vv, vs);   
 
-  volgrid->writeVTK("vol"); 
-  surf->writeVTK("surf"); 
+  // volgrid->writeVTK("vol"); 
+  // surf->writeVTK("surf"); 
 
-  delete(volgrid); 
-  delete(surf); 
+  // delete(volgrid); 
+  // delete(surf); 
 
   // // Problem parameters
   // auto k = 2.0; auto qdot = 5e3; auto h = 50; auto Tinf = 20;
