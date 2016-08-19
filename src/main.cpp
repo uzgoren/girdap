@@ -26,13 +26,55 @@
 int main() {
   Block2 grid({0, 0, 0}, {1, 1, 0}, 20, 20);
   Block1 lin({0.2, 0.3, 0}, {0.8, 0.6, 0}, 20);
+  lin.writeVTK("lin");
+  
   Block1 poly("poly", {{0.1, 0.1}, {0.2, 0.3}, {0.6, 0.2}
-      , {0.3, 0.2}, {0.4, 0.15}, {0.3, 0.13}, {0.1,0.1}}, 10); 
-  Block1 circ("arc", {{0.5, 0.75}, {0.15}, {360, 0}}, 4); 
+       , {0.3, 0.2}, {0.4, 0.15}, {0.3, 0.13}, {0.1,0.1}}, 10);
+  poly.writeVTK("poly");
+  
+  Block1 circ("arc", {{0.5, 0.75}, {0.15}, {360, 0}}, 4);
+  circ.writeVTK("circ");
+  
   poly.add(circ);
-  poly.add(lin); 
+  poly.writeVTK("poly");
+  
+  // //--- Circular arc ----
+  Block1 arc("arc", { {0.5, 0.75}, {0.15}, {30, 120} } , 40);
+  arc.writeVTK("arc");
+  
+  // //--- Rotated polygon "equal sided"
+  Block1 rotsqr("arc", { {0.5,0.75}, {0.15}, {30, 400} }, 4);
+  rotsqr.resolve(0.15/sqrt(2)*0.1);
+  rotsqr.writeVTK("rotsqr"); 
+  
+  Block1 rotpenta("arc", { {0.5,0.75}, {0.15}, {30, 400} }, 5);
+  rotpenta.resolve(0.01);
+  rotpenta.writeVTK("rotpenta");
 
-  poly.writeVTK("lin");
+  lin.add(0.0, 1.0, 10
+	       , [](double t) -> Vec3 {return Vec3(0.0) + t*Vec3(0.2, -0.1)/10;} );
+  lin.writeVTK("lin");
+
+  Block1 sine;
+  sine.add(0.0, 1.0, 50
+		, [](double t) -> Vec3 {return Vec3(t, 0.1*sin(5*t*3.14), 0);} );
+  sine.writeVTK("sine"); 
+
+  Block1 arc2;
+  arc2.add(0, 360, 20
+	      , [](double t) -> Vec3 {return Vec3(0.5,0.75) + 0.15*Vec3(cos(t*3.14/180), sin(t*3.14/180)); } ); 
+  arc2.writeVTK("ccc");
+
+  Block1 line2(new geoSine(Vec3(0.2, 0.4), Vec3(0.5, 0.5), 0.1, 5), 50);
+  line2.add(new geoLine(Vec3(0.5, 0.5), Vec3(0.8, 0.6)), 20); 
+  line2.writeVTK("sdsd"); 
+
+  geoCircle* g0 = new geoCircle(Vec3(0.5, 0.5), 0.2);
+  g0->s0 = 270*3.14/180; g0->s1 = 90*3.14/180; 
+  Block1 arc3(g0, 30);
+  delete g0; 
+  arc3.writeVTK("newCircle"); 
+  
   // grid->addVertex({ {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0} }); 
 
   // grid->addCell( {0, 1, 2, 3} ) ; 

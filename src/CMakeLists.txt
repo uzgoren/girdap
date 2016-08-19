@@ -6,6 +6,7 @@ set(SOURCES  field/Var.cpp
              grid/operator2.cpp  
              grid/Vertex.cpp
              grid/Line.cpp
+	     grid/Block1.cpp
              )
 
 add_library(girdapcore STATIC ${SOURCES})

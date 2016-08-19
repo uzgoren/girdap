@@ -99,7 +99,7 @@ void Line::convertToSimpleBlock(initializer_list<int> n, bool debug) {
 void Line::refine(int dir) {
   dir =0; 
   if (adapt[0] < 1) return;
-  if (level[0] == grid->levelHighBound[0]) return; 
+  if (level[0] == grid->levelHighBound[0]) return;
   convertToSimpleBlock({2}); 
   
   adapt[dir]--; level[dir]++;
