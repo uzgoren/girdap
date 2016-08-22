@@ -130,6 +130,7 @@ public:
       return out << "NULL" << endl;
     }
   };
+  virtual ~Cell() {}; 
 };
 
 #include "Line.hpp"

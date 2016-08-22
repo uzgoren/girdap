@@ -25,29 +25,29 @@
 
 int main() {
   Block2 grid({0, 0, 0}, {1, 1, 0}, 20, 20);
-  Block1 lin({0.2, 0.3, 0}, {0.8, 0.6, 0}, 20);
+  Block1 lin({0.2, 0.3, 0}, {0.8, 0.6, 0}, 20); //checks
   lin.writeVTK("lin");
   
-  Block1 poly("poly", {{0.1, 0.1}, {0.2, 0.3}, {0.6, 0.2}
-       , {0.3, 0.2}, {0.4, 0.15}, {0.3, 0.13}, {0.1,0.1}}, 10);
+  Block1 poly({{0.1, 0.1}, {0.2, 0.3}, {0.6, 0.2}
+      , {0.3, 0.2}, {0.4, 0.15}, {0.3, 0.09}, {0.1,0.1}}, 0.02); // check resolve
   poly.writeVTK("poly");
   
-  Block1 circ("arc", {{0.5, 0.75}, {0.15}, {360, 0}}, 4);
+  Block1 circ(new Geo1Circle(Vec3(0.5, 0.75), 0.15, 360, 0), 4); // OK
   circ.writeVTK("circ");
   
-  poly.add(circ);
+  poly.add(circ); // OK
   poly.writeVTK("poly");
   
   // //--- Circular arc ----
-  Block1 arc("arc", { {0.5, 0.75}, {0.15}, {30, 120} } , 40);
+  Block1 arc(new Geo1Circle(Vec3(0.5, 0.75), 0.15, 30, 120), 40); // OK
   arc.writeVTK("arc");
   
   // //--- Rotated polygon "equal sided"
-  Block1 rotsqr("arc", { {0.5,0.75}, {0.15}, {30, 400} }, 4);
+  Block1 rotsqr(new Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400), 4); // OK
   rotsqr.resolve(0.15/sqrt(2)*0.1);
   rotsqr.writeVTK("rotsqr"); 
   
-  Block1 rotpenta("arc", { {0.5,0.75}, {0.15}, {30, 400} }, 5);
+  Block1 rotpenta(new Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400), 5); //OK
   rotpenta.resolve(0.01);
   rotpenta.writeVTK("rotpenta");
 
@@ -65,12 +65,11 @@ int main() {
 	      , [](double t) -> Vec3 {return Vec3(0.5,0.75) + 0.15*Vec3(cos(t*3.14/180), sin(t*3.14/180)); } ); 
   arc2.writeVTK("ccc");
 
-  Block1 line2(new geoSine(Vec3(0.2, 0.4), Vec3(0.5, 0.5), 0.1, 5), 50);
-  line2.add(new geoLine(Vec3(0.5, 0.5), Vec3(0.8, 0.6)), 20); 
+  Block1 line2(new Geo1Sine(Vec3(0.2, 0.4), Vec3(0.5, 0.5), 0.1, 5), 50);
+  line2.add(new Geo1Line(Vec3(0.5, 0.5), Vec3(0.8, 0.6)), 20); 
   line2.writeVTK("sdsd"); 
 
-  geoCircle* g0 = new geoCircle(Vec3(0.5, 0.5), 0.2);
-  g0->s0 = 270*3.14/180; g0->s1 = 90*3.14/180; 
+  Geo1Circle* g0 = new Geo1Circle(Vec3(0.5, 0.5), 0.2);  
   Block1 arc3(g0, 30);
   delete g0; 
   arc3.writeVTK("newCircle"); 
