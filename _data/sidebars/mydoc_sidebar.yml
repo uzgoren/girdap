@@ -108,7 +108,8 @@ entries:
     output: web, pdf
     folderitems:
     
-    - title: VecX
+    - title: Geo1
+      url: /doc_obj_geo1.html
       output: web, pdf
 
       subfolders:
