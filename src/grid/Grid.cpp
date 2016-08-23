@@ -20,12 +20,13 @@
 
 // --- SECTION 1 -- Constructors; 
 // Base constructor for setting defaults; 
-Grid::Grid() {                   
+Grid::Grid(string id) {                   
   nCellSize = 0;
   for (auto i = 0; i<3; ++i) {
     levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5;
   }
   filecnt=0;
+  name = id; 
 }
 
 // For large grids; better to start with reserved memory;
@@ -84,7 +85,7 @@ Grid::~Grid() {
 
 void Grid::addVar(std::string n, int t) {
   if (!getVar(n)) {
-    listVar.emplace_back(shared_ptr<Var>(new Var(n, t))); 
+    listVar.emplace_back(make_shared<Var>(Var(n, t))); 
     if (t == 1) {
       (*listVar.rbegin())->data.resize(listVertex.size());
     } else if (t == 2) {

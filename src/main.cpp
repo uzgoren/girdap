@@ -29,25 +29,25 @@ int main() {
   lin.writeVTK("lin");
   
   Block1 poly({{0.1, 0.1}, {0.2, 0.3}, {0.6, 0.2}
-      , {0.3, 0.2}, {0.4, 0.15}, {0.3, 0.09}, {0.1,0.1}}, 0.02); // check resolve
+      , {0.3, 0.2}, {0.4, 0.15}, {0.3, 0.09}, {0.1,0.1}}); // check resolve
   poly.writeVTK("poly");
   
-  Block1 circ(new Geo1Circle(Vec3(0.5, 0.75), 0.15, 360, 0), 4); // OK
+  Block1 circ(make_shared<Geo1>( Geo1Circle(Vec3(0.5, 0.75), 0.15, 360, 0)), 4); // OK
   circ.writeVTK("circ");
   
   poly.add(circ); // OK
   poly.writeVTK("poly");
   
   // //--- Circular arc ----
-  Block1 arc(new Geo1Circle(Vec3(0.5, 0.75), 0.15, 30, 120), 40); // OK
+  Block1 arc(make_shared<Geo1>(Geo1Circle(Vec3(0.5, 0.75), 0.15, 30, 120)), 40); // OK
   arc.writeVTK("arc");
   
   // //--- Rotated polygon "equal sided"
-  Block1 rotsqr(new Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400), 4); // OK
+  Block1 rotsqr(make_shared<Geo1>(Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400)), 4); // OK
   rotsqr.resolve(0.15/sqrt(2)*0.1);
   rotsqr.writeVTK("rotsqr"); 
   
-  Block1 rotpenta(new Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400), 5); //OK
+  Block1 rotpenta(make_shared<Geo1>(Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400)), 5); //OK
   rotpenta.resolve(0.01);
   rotpenta.writeVTK("rotpenta");
 
@@ -56,8 +56,8 @@ int main() {
   lin.writeVTK("lin");
 
   Block1 sine;
-  sine.add(0.0, 1.0, 50
-		, [](double t) -> Vec3 {return Vec3(t, 0.1*sin(5*t*3.14), 0);} );
+  sine.add(0.0, 1.0, 250
+		, [](double t) -> Vec3 {return Vec3(t, 0.02*sin(25*t*3.14), 0);} );
   sine.writeVTK("sine"); 
 
   Block1 arc2;
@@ -65,14 +65,17 @@ int main() {
 	      , [](double t) -> Vec3 {return Vec3(0.5,0.75) + 0.15*Vec3(cos(t*3.14/180), sin(t*3.14/180)); } ); 
   arc2.writeVTK("ccc");
 
-  Block1 line2(new Geo1Sine(Vec3(0.2, 0.4), Vec3(0.5, 0.5), 0.1, 5), 50);
-  line2.add(new Geo1Line(Vec3(0.5, 0.5), Vec3(0.8, 0.6)), 20); 
+  Block1 line2(make_shared<Geo1>(Geo1Sine(Vec3(0.2, 0.4), Vec3(0.5, 0.5), 0.1, 5)), 50);
+  line2.add(make_shared<Geo1>(Geo1Line(Vec3(0.5, 0.5), Vec3(0.8, 0.6))), 20); 
   line2.writeVTK("sdsd"); 
 
-  Geo1Circle* g0 = new Geo1Circle(Vec3(0.5, 0.5), 0.2);  
-  Block1 arc3(g0, 30);
-  delete g0; 
-  arc3.writeVTK("newCircle"); 
+  Block1 arc3(make_shared<Geo1>(Geo1Circle(Vec3(0.5, 0.5), 0.2) ) , 30);
+  arc3.writeVTK("newCircle");
+
+  Block1 heart(0, 360, 50, [](double t)->Vec3
+	       { auto c=4*atan(1.0)/180.0;
+		 return (1.0 - sin(c*t))*Vec3(cos(c*t), sin(c*t)); } );
+  heart.writeVTK("heart"); 
   
   // grid->addVertex({ {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0} }); 
 

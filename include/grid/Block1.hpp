@@ -52,16 +52,16 @@ class Block1: public Grid {
 public:
   Block1():Grid() {};
   Block1(Vec3 n1, Vec3 n2, int_4 nx);
-  Block1(Geo1* a, int_4 nx); 
+  Block1(shared_ptr<Geo1> a, int_4 nx); 
   Block1(initializer_list<double> n1, initializer_list<double> n2, int_4 nx):Block1(Vec3(n1), Vec3(n2), nx){}
   
-  Block1(initializer_list<initializer_list<double> > pt, double del); 
+  Block1(initializer_list<initializer_list<double> > pt); 
   Block1(double s0, double s1, int_8 nx
 	 , std::function<Vec3 (double)> f); 
   
   void resolve(double del); 
 
-  void add(Geo1* a, int_4 nx); 
+  void add(shared_ptr<Geo1> a, int_4 nx); 
   void add(Block1& o);
   void add( double s0, double s1, int_8 nx
 	    , std::function<Vec3 (double)> f);

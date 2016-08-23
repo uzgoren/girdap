@@ -311,7 +311,7 @@ double Vertex::evalPhi(shared_ptr<Var> &var, Vec3* x) {
 }
 
 
-double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc=vector<shared_ptr<Boundary> >(6, shared_ptr<Boundary>(new Boundary())), Vec3* x) {
+double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc=vector<shared_ptr<Boundary> >(6, make_shared<Boundary>(Boundary())), Vec3* x) {
   auto w = getIntWeight(x);
   double a =0; 
   for (auto j=0; j<w.size(); ++j) {

@@ -2,53 +2,27 @@
 
 #include <grid/Block1.hpp>
 
-//  Block1():Grid() {}; //in include
 Block1::Block1(Vec3 n1, Vec3 n2, int_4 nx):Block1::Block1() {
-  Geo1* tmp = new Geo1Line(n1, n2); 
-  add(tmp, nx);
-  delete(tmp); 
+  add(make_shared<Geo1>( Geo1Line(n1, n2) ), nx);
   return;
 }
 
-Block1::Block1(Geo1* a, int_4 nx) {
+Block1::Block1(shared_ptr<Geo1> a, int_4 nx) {
   add(a, nx); 
 }
 
-void Block1::add(Geo1* a, int_4 nx) {
-  double del = (a->s1 - a->s0)/(double)nx;
-  double eps = (a->f(a->s0 + del) - a->f(a->s0)).abs();
-  int_8 nVertex=listVertex.size(), i0 = 0; 
-  if (nVertex > 0 && (a->f(a->s0) - **listVertex.rbegin()).abs() < eps*0.1) {i0 = 1; --nVertex;}
-  bool loop = false; 
-  for (auto i = i0; i < nx+1; ++i) {
-    // basic closure catch;
-    auto pt = a->f(a->s0 + (double)(i) * del);
-    if (i > 0 && (pt - *listVertex[nVertex]).abs() < 0.9*eps) {
-      loop = true;
-      break; 
-    }
-    addVertex(pt); 
-  }
-  if (loop) {
-    addCell({(*listVertex.rbegin())->id, nVertex});    
-  }
-  for (auto i = nVertex; i < listVertex.size()-1; ++i) {
-    addCell({i, i+1});
-  }
+void Block1::add(shared_ptr<Geo1> a, int_4 nx) {
+  add(a->s0, a->s1, nx, a->f); 
 }
 
-//   Block1(initializer_list<double> n1, initializer_list<double> n2, int_4 nx):Block1((Vec3)n1, Vec3(n2), nx){} // in include
-
-Block1::Block1(initializer_list<initializer_list<double> > pt, double del):Block1::Block1() {
+Block1::Block1(initializer_list<initializer_list<double> > pt):Block1::Block1() {
   auto itend = pt.end()-1; bool loop = false; 
   if (Vec3(*pt.begin()) == Vec3(*(pt.end()-1))) {loop = true; --itend;} 
   for (auto it = pt.begin(); it != itend; ++it) {
-    Geo1* tmp = new Geo1Line(Vec3(*it), Vec3(*(it+1))); 
-    add(tmp, 1);
-    delete(tmp);
+    add(make_shared<Geo1>( Geo1Line(Vec3(*it), Vec3(*(it+1))) ), 1);
   }
   if (loop) addCell({(int_8)listVertex.size()-1, 0}); 
-  resolve(del);
+  //  resolve(del);
 }
 
 Block1::Block1(double s0, double s1, int_8 nx
@@ -73,6 +47,7 @@ void Block1::resolve(double del) {
   setCurrentLevels(); 
 }
 
+
 void Block1::add(Block1& o) {
   // SIMPLE add;
   auto noldv = listVertex.size(); 
@@ -87,14 +62,25 @@ void Block1::add(Block1& o) {
 // Parametric add; 
 void Block1::add(double s0, double s1, int_8 nx
 		 , std::function<Vec3 (double)> f) {
+  
   double del = (s1 - s0)/(double)nx;
-  int ncell = listCell.size(); 
-  for (auto i = 0; i < nx+1; ++i) {
-    addVertex(f(s0 + (double)i * del));
+  double eps = (f(s0 + del) - f(s0)).abs();
+  int_8 nVertex=listVertex.size(), i0 = 0; 
+  if (nVertex > 0 && (f(s0) - **listVertex.rbegin()).abs() < eps*0.1) {
+    i0 = 1; --nVertex;
   }
-  if (listCell.size() > ncell) addCell({ncell-1, ncell}); 
-  for (auto i = 0; i < nx; ++i) {
-    addCell({ncell+i, ncell+i+1});
+  bool loop = false; int_8 i1 = nx+1; 
+  if ((f(s0) - f(s1)).abs() < eps*0.5) {loop = true; --i1;}
+  for (auto i = i0; i < i1; ++i) {
+    auto pt = f(s0 + (double)(i) * del);
+    if (i > 0 && (pt - **listVertex.rbegin()).abs() < eps*0.1) continue; 
+    addVertex(pt); 
+  }
+  if (loop) {
+    addCell({(*listVertex.rbegin())->id, nVertex});    
+  }
+  for (auto i = nVertex; i < listVertex.size()-1; ++i) {
+    addCell({i, i+1});
   }
 }
 

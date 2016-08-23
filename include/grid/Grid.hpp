@@ -41,7 +41,8 @@ class triLinSys;
 
 class Grid {
 private:
-  unsigned int filecnt; 
+  unsigned int filecnt;
+  string name;
 
 public:
   vector<shared_ptr<Vertex > > listVertex; 
@@ -52,7 +53,6 @@ public:
 
   vector<bool> selectCell; 
 
-  //vector<shared_ptr<Boundary > > listBNDR; 
   shared_ptr<Var > thisVar; 
   double dt, dt0, cfl; 
 
@@ -67,7 +67,7 @@ public:
   //-----Section --------
   // Constructors/ Deconstructors; 
   //----------------------
-  Grid(); 
+  Grid(string id="Grid");
   Grid(int_8 cap);
   Grid(initializer_list<double > pts);
   Grid(Vec3 pts); 
@@ -78,10 +78,12 @@ public:
   virtual ~Grid(); 
   //-----EndSection --------
 
-
+  string getName() {return name;}
+  void setName(string id) {name = id;}
+  
   // Add vertex to the list; 
   void addVertex(Vec3 v) {
-    listVertex.emplace_back( shared_ptr<Vertex>(new Vertex(v)) ); 
+    listVertex.emplace_back( make_shared<Vertex>( Vertex(v)) ); 
     (*listVertex.rbegin())->id = listVertex.size()-1;
     (*listVertex.rbegin())->grid = this; 
     otherVertex.emplace_back( -1 ); 
@@ -100,16 +102,17 @@ public:
   }
 
   // // //Add cell to the list
-  void addCell(initializer_list<int_8 > l) {    
-    if (l.size() == 2) {
-      listCell.emplace_back( shared_ptr<Cell > (new Line(l)) ); 
- //     //listCell.emplace_back(shared_ptr<Cell > (new Line(tmp)) );
+  void addCell(initializer_list<int_8 > l) {
+    if (l.size() == 1) {
+      listCell.emplace_back( make_shared<Cell > (Cell(l)) ); 
+    } else if (l.size() == 2) {
+      listCell.emplace_back( make_shared<Cell > (Line(l)) ); 
     } else if (l.size() == 3) {
-  //     //listCell.emplace_back(shared_ptr<Cell > (new Tri(tmp)) ); 
+
     } else if (l.size() == 4) {
-      listCell.emplace_back( shared_ptr<Cell > (new Quad(l)) ); 
+      listCell.emplace_back( make_shared<Cell > (Quad(l)) ); 
     } else if (l.size() == 8) {
-       //listCell.emplace_back( shared_ptr<Cell > (new Hexa(tmp)) ); 
+
     } else {
       cout << "Cell type not understood!"<<endl; 
       exit(1); 
@@ -176,7 +179,7 @@ public:
     
     for (auto v : listVertex) {
       if (v->cell.size() == 2) {
-	listFace.emplace_back(new Cell({v->id})); 
+	listFace.emplace_back(make_shared<Cell>(Cell({v->id}))); 
 	(*listFace.rbegin())->next = (v->cell[1] < 0) ? -1 : v->cell[1]; 
 	(*listFace.rbegin())->prev = (v->cell[0] < 0) ? -2 : v->cell[0];
 	(*listFace.rbegin())->grid = this;
@@ -188,7 +191,7 @@ public:
       } else if (v->cell.size() == 4) { 
 	auto n = v->ngbr(1); 
 	if (n && *n) {
-	  listFace.emplace_back(shared_ptr<Cell>(new Line({v->id, (*n)->id}))); 
+	  listFace.emplace_back(make_shared<Cell>(Line({v->id, (*n)->id}))); 
 	  (*listFace.rbegin())->next = (v->cell[2] < 0) ? -2 : v->cell[2];
 	  (*listFace.rbegin())->prev = (v->cell[1] < 0) ? -1 : v->cell[1];
 	  if (v->cell[2] < 0) v->cell[2] = -2; 
@@ -205,7 +208,7 @@ public:
 	}
 	n = v->ngbr(2); 
 	if (n && *n) { 
-	  listFace.emplace_back(shared_ptr<Cell>(new Line({(*n)->id, v->id}))); 
+	  listFace.emplace_back(make_shared<Cell>(Line({(*n)->id, v->id}))); 
 	  (*listFace.rbegin())->next = (v->cell[2] < 0) ? -4 : v->cell[2];
 	  (*listFace.rbegin())->prev = (v->cell[3] < 0) ? -3 : v->cell[3];
 	  if (v->cell[2] < 0) v->cell[2] = -4; 
@@ -463,7 +466,7 @@ public:
 
 class Block2: public Grid {
 public:
-  Block2():Grid() {};
+  Block2():Grid("Block2_") {setName("Block2");};
   Block2(Vec3 n1, Vec3 n2, int_4 nx, int_4 ny):Grid(nx*ny*4) {  
     Vec3 del = (n2 - n1);  
     addVertex({

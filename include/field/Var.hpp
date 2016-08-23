@@ -75,7 +75,7 @@ public:
     listBC.resize(6); 
     auto icnt =0; 
     for (auto i = 0; i<listBC.size(); ++i) {
-      listBC[i] = shared_ptr<Boundary>(new Boundary()); 
+      listBC[i] = make_shared<Boundary>(Boundary()); 
      }
    }
 

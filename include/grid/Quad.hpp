@@ -75,15 +75,7 @@ public:
   vector<int_8> ngbrCellList(); 
   void checkIslandLevels(int dir);
   void checkNgbrLevel(int dir);
-  // // shared_ptr<Cell >  makeFace(int_2 i=0) { 
-  // //   vector<shared_ptr<Vertex > > tmp;
-  // //   if (i >= 4) {cout << "Quad: makeFace(i): i is out of bounds "<<i<<endl; exit(1);}
-  // //   int_2 j = i+1; if (j == 4) j = 0;
-  // //   tmp.emplace_back(node.at(i)); 
-  // //   tmp.emplace_back(node.at(j)); 
-  // //   shared_ptr<Cell > c = shared_ptr<Cell >(new Line(tmp));
-  // //   return c;
-  // //}
+
   bool isPointIn(Vec3 a) {
     double sum = 0; 
     for (auto i = 0; i < 4; ++i) {
