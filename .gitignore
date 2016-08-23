@@ -1,5 +1,4 @@
 cart3*
-include/grid/
 *~
 *.o
 ._*
@@ -14,3 +13,5 @@ cmake_install.cmake
 girdap
 Makefile
 _site
+bin/*
+lib/*
