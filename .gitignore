@@ -1,5 +1,5 @@
 cart3*
-include/grid
+include/grid/
 *~
 *.o
 ._*
