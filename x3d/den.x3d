@@ -7,16 +7,7 @@
     <meta name="numberofelements" content="17"/>
   </head>
   <Scene>
-    <Background skyColor="1 1 1"/>
-    <Viewpoint fieldOfView="0.523599" position="0.5 0.5 2.73205" description="Default View" orientation="0 0 1 -0" centerOfRotation="0.5 0.5 0"/>
-    <NavigationInfo type='"EXAMINE" "FLY" "ANY"' speed="4" headlight="true"/>
-    <DirectionalLight ambientIntensity="1" intensity="0" color="1 1 1"/>
-    <Transform DEF="ROOT" translation="0 0 0">
-      <DirectionalLight direction="-0.111619 -0.766044 -0.633022" color="1 0.97232 0.90222" intensity="0.75" on="true"/>
-      <DirectionalLight direction="0.0449435 0.965926 -0.254887" color="0.90824 0.93314 1" intensity="0.25" on="true"/>
-      <DirectionalLight direction="-0.939693 0 0.34202" color="0.9998 0.9998 0.9998" intensity="0.214286" on="true"/>
-      <DirectionalLight direction="0.939693 0 0.34202" color="0.9998 0.9998 0.9998" intensity="0.214286" on="true"/>
-      <Transform translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">
+<Viewpoint position="0.50000 0.50000 1.21468" orientation="0.00000 0.00000 0.00000 0.00000" zNear="0.94206" zFar="3.11015" description="Default View"></Viewpoint>
         <Shape>
           <Appearance>
             <Material ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="0.666667 0.666667 0.498039" specularColor="0 0 0" shininess="0.78125" transparency="0"/>
@@ -8374,8 +8365,5 @@
               "/>
           </IndexedFaceSet>
         </Shape>
-      </Transform>
-      <Transform translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1"/>
-    </Transform>
   </Scene>
 </X3D>
