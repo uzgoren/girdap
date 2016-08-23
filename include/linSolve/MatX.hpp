@@ -27,7 +27,7 @@
 
 
 
-#include <VecX>
+#include "../base/VecX.hpp"
 
 template <typename T> class MatX {
 public: 

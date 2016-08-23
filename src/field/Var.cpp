@@ -17,13 +17,11 @@
  ***************************************************************************
 */
 #include <string>
-#include <grid2/Grid>
 #include <memory>
 #include <iomanip>
 //#include <MathExp>
-#include <linSolve/LinSys>
-#include <field/Var>
 
+#include <girdap>
 
 double Var::get(int_8 i) {
   if (i >= 0 && i < data.size()) return data[i]; 
@@ -65,7 +63,7 @@ void Var::solve(LinSys a) {
   // }
   //t = clock()-t; 
   // cout << " --> Normalization took "<< t/(double) CLOCKS_PER_SEC << " secs"<< endl; 
-  // cout << a.A << endl; 
+  //cout << a.A << endl; 
   //cout << a.b << endl; 
   a.setLimits(tol/dt, itmax); 
   t = clock(); 

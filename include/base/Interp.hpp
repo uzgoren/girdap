@@ -1,7 +1,7 @@
 #ifndef INTERP
 #define INTERP
 
-#include <linSolve/MatX>
+#include "../linSolve/MatX.hpp"
 #include <cmath>
 
 class Interp {
@@ -35,26 +35,37 @@ public:
       + coef[6]*xhat.y()*xhat.z() + coef[7]*xhat.x()*xhat.y()*xhat.z(); 
   }
 
-  // Partial derivation with respect to xhat
+  // Partial derivative with respect to xhat
   double linDX(Vec3 xhat, VecX<double> &coef) {
     return coef[1] + coef[4]*xhat.y() + coef[5]*xhat.z() + coef[7]*xhat.y()*xhat.z();
   }
   
-  // Partial derivation with respect to yhat
+  // Partial derivative with respect to yhat
   double linDY(Vec3 xhat, VecX<double> &coef) {
       return coef[2] + coef[4]*xhat.x() + coef[6]*xhat.z() + coef[7]*xhat.x()*xhat.z(); 
   }
 
-  // Partial derivation with respect to zhat
+  // Partial derivative with respect to zhat
   double linDZ(Vec3 xhat, VecX<double> &coef) { 
       return coef[3] + coef[5]*xhat.x() + coef[6]*xhat.y() + coef[7]*xhat.x()*xhat.y(); 
   }
 
-  Vec3 findXhat(Vec3 x, VecX<double> &xcoef, VecX<double> &ycoef, VecX<double> &zcoef) {
-    Vec3 xhat(0, 0, 0); //INITIAL GUESS;
-    Vec3 dx(0, 0, 0);  // needed if not updated!
+  bool isIn(Vec3 xhat) {
+    for (auto i=0; i < 3; ++i) {
+      if (xhat[i] < -0.5) return false; 
+      if (xhat[i] > 1.5) return false; 
+    }
+    return true; 
+  }
 
-    while (true) {
+  Vec3 findXhat(Vec3 x, VecX<double> &xcoef, VecX<double> &ycoef, VecX<double> &zcoef) {
+    Vec3 xhat(0.5, 0.5, 0); //INITIAL GUESS;
+    Vec3 dx(0, 0, 0);  // needed if not updated!
+    double err = 1, err1; 
+    int it = 0, bnd=0; 
+
+    while (it < 20) {
+      it++; 
       double dxx = linDX(xhat, xcoef);
       double dxy = linDY(xhat, xcoef); 
       double dxz = linDZ(xhat, xcoef);
@@ -79,10 +90,20 @@ public:
 	dx[2] = (x[2] - linFunc(xhat, zcoef) - dx[0]*dzx - dx[1]*dzy)/dzz; 
       }
       xhat += dx; 
-
-      if (abs(dx[0]) + abs(dx[1]) + abs(dx[2]) < 1e-6) break; 
+      
+      // if (!isIn(xhat)) ++bnd; 
+      // if (bnd > 3) break; 
+      err1 = abs(dx[0]) + abs(dx[1]) + abs(dx[2]); //sqrt(pow(dx[0],2) + pow(dx[1],2) + pow(dx[2],2)); 
+      if (err1 > err) ++bnd; 
+      err = err1; 
+      if (err < 1e-6) break; 
+      if (bnd > 2) break; 
 
     }
+    // if (xhat[0] < 0 || xhat[0] > 1 || xhat[1] < 0 || xhat[1] > 1 || xhat[2] < 0 || xhat[2] > 1) {
+    //   cout << "not a good value" <<endl; 
+    //   exit(-1); 
+    // }
     xhat[0] = rint(1e6*xhat[0])*1e-6;
     xhat[1] = rint(1e6*xhat[1])*1e-6;
     xhat[2] = rint(1e6*xhat[2])*1e-6; 

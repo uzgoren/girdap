@@ -28,6 +28,9 @@ public:
   }
 
   void assignCelltoNode(); 
+  void convertToSimpleBlock(initializer_list<int> n, bool debug=false);
+  //bool refine();
+  void refine(int dir);
 
   Vec3 vol() { 
     Vec3 a = edge(); 

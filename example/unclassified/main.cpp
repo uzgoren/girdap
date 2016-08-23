@@ -24,56 +24,7 @@
 
 
 int main() {
-  Block2 grid({0, 0, 0}, {1, 1, 0}, 20, 20);
-  Block1 lin({0.2, 0.3, 0}, {0.8, 0.6, 0}, 20); //checks
-  lin.writeVTK("lin");
-  
-  Block1 poly({{0.1, 0.1}, {0.2, 0.3}, {0.6, 0.2}
-      , {0.3, 0.2}, {0.4, 0.15}, {0.3, 0.09}, {0.1,0.1}}, 0.02); // check resolve
-  poly.writeVTK("poly");
-  
-  Block1 circ(new Geo1Circle(Vec3(0.5, 0.75), 0.15, 360, 0), 4); // OK
-  circ.writeVTK("circ");
-  
-  poly.add(circ); // OK
-  poly.writeVTK("poly");
-  
-  // //--- Circular arc ----
-  Block1 arc(new Geo1Circle(Vec3(0.5, 0.75), 0.15, 30, 120), 40); // OK
-  arc.writeVTK("arc");
-  
-  // //--- Rotated polygon "equal sided"
-  Block1 rotsqr(new Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400), 4); // OK
-  rotsqr.resolve(0.15/sqrt(2)*0.1);
-  rotsqr.writeVTK("rotsqr"); 
-  
-  Block1 rotpenta(new Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400), 5); //OK
-  rotpenta.resolve(0.01);
-  rotpenta.writeVTK("rotpenta");
-
-  lin.add(0.0, 1.0, 10
-	       , [](double t) -> Vec3 {return Vec3(0.0) + t*Vec3(0.2, -0.1)/10;} );
-  lin.writeVTK("lin");
-
-  Block1 sine;
-  sine.add(0.0, 1.0, 50
-		, [](double t) -> Vec3 {return Vec3(t, 0.1*sin(5*t*3.14), 0);} );
-  sine.writeVTK("sine"); 
-
-  Block1 arc2;
-  arc2.add(0, 360, 20
-	      , [](double t) -> Vec3 {return Vec3(0.5,0.75) + 0.15*Vec3(cos(t*3.14/180), sin(t*3.14/180)); } ); 
-  arc2.writeVTK("ccc");
-
-  Block1 line2(new Geo1Sine(Vec3(0.2, 0.4), Vec3(0.5, 0.5), 0.1, 5), 50);
-  line2.add(new Geo1Line(Vec3(0.5, 0.5), Vec3(0.8, 0.6)), 20); 
-  line2.writeVTK("sdsd"); 
-
-  Geo1Circle* g0 = new Geo1Circle(Vec3(0.5, 0.5), 0.2);  
-  Block1 arc3(g0, 30);
-  delete g0; 
-  arc3.writeVTK("newCircle"); 
-  
+  // Grid* grid = new Grid();
   // grid->addVertex({ {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0} }); 
 
   // grid->addCell( {0, 1, 2, 3} ) ; 
@@ -84,7 +35,7 @@ int main() {
   //   grid->writeVTK("myFirstGrid_"); 
   // }
   
-  //delete(grid); 
+  // delete(grid); 
 
   // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 10, 10); 
   // Grid* surf = new Grid(); 
@@ -97,7 +48,7 @@ int main() {
 
   // delete(volgrid); 
   // delete(surf); 
-  //double pi = 4*atan(1.0); 
+  double pi = 4*atan(1.0); 
 
   // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 5, 5); 
   
@@ -121,41 +72,41 @@ int main() {
   // delete(volgrid); 
 
 
-  // Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 50, 50); 
+  Block2* volgrid = new Block2({0,0,0}, {1,1,0}, 50, 50); 
 
-  // // Velocity field
-  // auto uv = volgrid->getVar("u"); auto vv = volgrid->getVar("v"); 
-  // uv->set(1.0); // set velocity
-  // vv->set(-0.5); // set velocity
-  // // New variable at cell center
-  // volgrid->addVar("f"); auto f = volgrid->getVar("f"); 
+  // Velocity field
+  auto uv = volgrid->getVar("u"); auto vv = volgrid->getVar("v"); 
+  uv->set(1.0); // set velocity
+  vv->set(-0.5); // set velocity
+  // New variable at cell center
+  volgrid->addVar("f"); auto f = volgrid->getVar("f"); 
 
-  // Grid* surf = new Grid(); 
+  Grid* surf = new Grid(); 
 
-  // surf->addVertex({{0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46}}); 
-  // surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
-  // // Refine cell; 
-  // for (auto i=0; i<4; ++i) {
-  //   for (auto c: surf->listCell) if (c->vol().abs() > 0.02) c->adapt[0] = 1;
-  //   surf->adapt(); 
-  // }
-  // volgrid->updateOtherVertex(surf);
-  // // mark location of this surface
-  // volgrid->indicator(surf, f);
+  surf->addVertex({{0.55,0.32}, {0.58,0.5}, {0.45,0.68}, {0.42,0.46}}); 
+  surf->addCell({{0,1}, {1,2}, {2,3}, {3,0}}); 
+  // Refine cell; 
+  for (auto i=0; i<4; ++i) {
+    for (auto c: surf->listCell) if (c->vol().abs() > 0.02) c->adapt[0] = 1;
+    surf->adapt(); 
+  }
+  volgrid->updateOtherVertex(surf);
+  // mark location of this surface
+  volgrid->indicator(surf, f);
 
-  // // Assign velocity variables to surface at vertex  
-  // surf->addVec("u",1);
+  // Assign velocity variables to surface at vertex  
+  surf->addVec("u",1);
 
-  // // Get velocity on the surface
-  // auto us = surf->getVar("u"); auto vs = surf->getVar("v");   
-  // volgrid->passVar(surf, uv, us); 
-  // volgrid->passVar(surf, vv, vs);   
+  // Get velocity on the surface
+  auto us = surf->getVar("u"); auto vs = surf->getVar("v");   
+  volgrid->passVar(surf, uv, us); 
+  volgrid->passVar(surf, vv, vs);   
 
-  // volgrid->writeVTK("vol"); 
-  // surf->writeVTK("surf"); 
+  volgrid->writeVTK("vol"); 
+  surf->writeVTK("surf"); 
 
-  // delete(volgrid); 
-  // delete(surf); 
+  delete(volgrid); 
+  delete(surf); 
 
   // // Problem parameters
   // auto k = 2.0; auto qdot = 5e3; auto h = 50; auto Tinf = 20;

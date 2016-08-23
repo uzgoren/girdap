@@ -39,6 +39,36 @@ void solBasedAdapt(VecX<double> phi, double a=1.0, double b = 0.5) {
   } 
 }
 
+void solBasedAdapt3(VecX<double> phi, double lowlim=0.02, double highlim=0.1) {
+
+  for (auto i = 0; i < listFace.size(); ++i) {
+    auto f = listFace[i]; 
+    auto n = f->next; 
+    auto p = f->prev; 
+      
+    if (phi[i] > highlim) { 
+      if (n >= 0) {
+	auto c = listCell[n]; 
+	c->adapt[f->orient] = min(1, levelHighBound[f->orient] - c->level[f->orient]);
+      }
+      if (p >= 0) {
+	auto c = listCell[p]; 
+	c->adapt[f->orient] = min(1, levelHighBound[f->orient] - c->level[f->orient]);
+      }
+    } else if (phi[i] < lowlim) {
+      if (n >= 0) {
+	auto c = listCell[n]; 
+	c->adapt[f->orient] = max(-1, levelLowBound[f->orient] - c->level[f->orient]);
+      }
+      if (p >= 0) {
+	auto c = listCell[p]; 
+	c->adapt[f->orient] = max(-1, levelLowBound[f->orient] - c->level[f->orient]);
+      }
+    }
+  }       
+}
+
+
 void solBasedAdapt2(VecX<Vec3> phi, double lowlim=5e-6, double highlim=8e-5) {
   // refine if err > 0.03; coarsen if err < 1e-6; 
   //  auto lowlim = 5e-6; auto highlim = 8e-5;
@@ -186,22 +216,24 @@ void adapt() {
     
   bool isCellRemoved = false; 
   // [3] Coarsen cells (index directions - 3 to be defined)
-  for (auto pass =0; pass < 3; ++pass) { 
-    for (auto j = 0; j < 2; ++j) {	
-      auto lmin = levelMin[j]; auto lmax = levelMax[j];
-      for (auto l = lmax; l > lmin-1; --l) {
-	for (auto i = 0; i < listCell.size(); ++i) {
-	  auto c = listCell[i]; 
-	  if (!c->isAlive) continue; 
-	  if (c->adapt[j] >= 0) continue;
-	  if (c->level[j] != l) continue; 
-	  if (c->coarsen(j) && !isCellRemoved) { 
-	    isCellRemoved = true;
+  if (true) {
+    for (auto pass =0; pass < 3; ++pass) { 
+      for (auto j = 0; j < 2; ++j) {	
+	auto lmin = levelMin[j]; auto lmax = levelMax[j];
+	for (auto l = lmax; l > lmin-1; --l) {
+	  for (auto i = 0; i < listCell.size(); ++i) {
+	    auto c = listCell[i]; 
+	    if (!c->isAlive) continue; 
+	    if (c->adapt[j] >= 0) continue;
+	    if (c->level[j] != l) continue; 
+	    if (c->coarsen(j) && !isCellRemoved) { 
+	      isCellRemoved = true;
+	    }
 	  }
 	}
       }
-    }
-  }    
+    }    
+  }
 
   // [4] correct cell lists;     
   if (isCellRemoved) cleanGrid(); 
@@ -367,7 +399,7 @@ VecX<Vec3> getError(shared_ptr<Var> const &a) {
       auto pf0 = a->data[n] + grad[n]*(xf - xc); 
       err[n] += abs(pf1 - pf0)*area;
       sum[n] += area.abs(); 
-    } 
+    }
     if (p >= 0) {
       auto xc = listCell[p]->getCoord(); 
       auto pf0 = a->data[p] + grad[p]*(xf - xc); 
@@ -391,8 +423,58 @@ VecX<Vec3> getError(shared_ptr<Var> const &a) {
   // //     err[j] /= mx; 
   // //   }    
   // // }
-  // // cout << mx <<  endl; 
+  // // cout << mx <<  endl;   
+  return err; 
+}
 
+
+VecX<Vec3> getError2(shared_ptr<Var>  &a) {
+  VecX<Vec3> err(a->data.size()); 
+  auto grad = valGrad(a); 
+  for (auto j = 0; j < listFace.size(); ++j) {
+    auto f = listFace[j]; 
+    auto xf = f->getCoord(); auto area = f->vol(); 
+    //    auto pf1 = f->phi(a).eval(a); 
+    auto pfl = listVertex[f->node[0]]->evalPhi(a); 
+    auto pfu = listVertex[f->node[1]]->evalPhi(a);
+    auto pf1 = 0.5*(pfl+pfu);
+    auto m = abs(pfl - pfu); 
+    if (m < 1e-6) continue; 
+    auto n = f->next; auto p = f->prev; 
+    auto orient = (f->orient + 1)%2;
+    if (n >= 0) {
+      auto xc = listCell[n]->getCoord();
+      //      auto m = abs(pf1 - a->get(n)); 
+      //      if (m < 1e-10) continue; 
+      auto pf0 = a->data[n] + grad[n]*(xf - xc); 
+      if (abs(pf1 - pf0) < 1e-6) continue; 
+      err[n][orient] = max(err[n][orient], abs(pf1 - pf0)/m); //abs(pfu - pfl); //*area;
+    }
+    if (p >= 0) {
+      auto xc = listCell[p]->getCoord(); 
+      //      auto m = abs(pf1 - a->get(p)); 
+      //if (m < 1e-10) continue; 
+      auto pf0 = a->data[p] + grad[p]*(xf - xc); 
+      if (abs(pf1 - pf0) < 1e-6) continue; 
+      err[p][orient] = max(err[p][orient], abs(pf1 - pf0)/m); //abs(pfu - pfl); //*area;
+    } 	
+
+    // auto row = (f->next < 0) ? f->prev : f->next; 
+    // auto xc = listCell[row]->getCoord(); 
+    // auto pf0 = a->get(row) + grad[row]*(xf - xc); 
+    // if (abs(pfu - pfl) < 1e-6) continue; 
+    // err[j] += abs(pf1 - pf0)/abs(pfu - pfl); //*area;
+  }
+  //   // if (err[j][0] > mx) mx = err[j][0]; 
+  //   // if (err[j][1] > mx) mx = err[j][1]; 
+  //   // if (err[j][2] > mx) mx = err[j][2]; 
+  // }
+  // // if (mx > 0) { 
+  // //   for (auto j = 0; j < sum.size(); ++j) {
+  // //     err[j] /= mx; 
+  // //   }    
+  // // }
+  // // cout << mx <<  endl;   
   return err; 
 }
 
@@ -430,6 +512,7 @@ void cleanGrid() {
   }
   vector<int_8> o2n_node(listVertex.size(), -1); int_8 inode = 0; 
   for (auto it = vbegin(); it != vend(); ) {
+    (*it)->coefUpdate = true; 
     auto isConnected = false; 
     for (auto jt = 0; jt < (*it)->cell.size(); ++jt) {
       if ((*it)->cell[jt] >= 0) {isConnected = true; break;}
@@ -481,6 +564,37 @@ void cleanGrid() {
 
   o2n_cell.clear(); 
   o2n_node.clear(); 
+}
+
+void valAdapt(shared_ptr<Var> phi, double low, double high) {
+  auto mid = 0.5*(low + high); 
+  // for (auto j = 0; j < 3; ++j) {
+  //   auto dl = (mid - low)/(levelHighBound[j] - levelLowBound[j]);
+  //   for (auto i = 0; i < listCell.size(); ++i) {
+  //     int_2 targetLevel = levelHighBound[j] - ((int)(abs(phi->get(i) - mid)/dl)); 
+  //     if (listCell[i]->level[j] < targetLevel) {
+  // 	listCell[i]->adapt[j] = min(1, levelHighBound[j] - listCell[i]->level[j]);
+  //     } else if (listCell[i]->level[j] > targetLevel) {
+  // 	listCell[i]->adapt[j] = max(-1, levelLowBound[j] - listCell[i]->level[j]);  
+  //     }
+  //     if (j==0) 
+  // 	cout << levelHighBound[j] << " " << targetLevel << " " << listCell[i]->level[j] << " " << listCell[i]->adapt[j] << endl; 
+
+  //   }
+  //     if (abs(phi->get(i) - mid) < (k+1)*dl) {
+
+  //     }
+    
+   for (auto i = 0; i < listCell.size(); ++i) {
+    
+     if (phi->get(i) > low && phi->get(i) < high) {
+       for (auto j=0; j <3; ++j) 
+	 listCell[i]->adapt[j] = min(1, levelHighBound[j] - listCell[i]->level[j]);
+          } else {
+       for (auto j=0; j <3; ++j) 
+		listCell[i]->adapt[j] = max(-1, levelLowBound[j] - listCell[i]->level[j]);  
+     }
+  }
 }
 
 

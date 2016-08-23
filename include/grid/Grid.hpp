@@ -19,6 +19,9 @@
 #ifndef GRID
 #define GRID
 
+#define SL 0
+#define FOU 1
+
 #include <memory>
 #include <typeinfo>
 #include <cmath>
@@ -26,17 +29,15 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <algorithm>
 
+#include "../base/Interp.hpp"
+#include "../field/Var.hpp"
+#include "Vertex.hpp"
+#include "Cell.hpp"
 
-#include <base/Interp.hpp>
-#include <field/Var>
-#include <grid2/Vertex>
-#include <grid2/Cell>
-
-class LinSys; 
-
-//class Vertex; 
-//class Var; 
+class LinSys;
+class triLinSys;  
 
 class Grid {
 private:
@@ -58,44 +59,24 @@ public:
   int_8 nCellSize; 
   int nFace; 
 
-  Interp interp; // interpolation scheme
+  Interp int3D; // interpolation scheme
 
   int_2 levelLowBound[3], levelHighBound[3]; 
   int_2 levelMin[3], levelMax[3]; 
 
-  double minD, maxD, meanD; 
-  // vector<shared_ptr<BNDR> > 
-
-  Grid() { nCellSize = 0; for (auto i = 0; i<3; ++i) {levelLowBound[i] = 0; levelHighBound[i] = 4; cfl = 0.5; }; filecnt=0;}
-
-  Grid(initializer_list<initializer_list<double > > pts):Grid() {
-    addVertex(pts);
-  }
-  
-  Grid(Vec3 pts): Grid() {
-    addVertex(pts); 
-  }
-
+  //-----Section --------
+  // Constructors/ Deconstructors; 
+  //----------------------
+  Grid(); 
+  Grid(int_8 cap);
+  Grid(initializer_list<double > pts);
+  Grid(Vec3 pts); 
+  Grid(initializer_list<initializer_list<double > > pts);
   Grid(initializer_list<initializer_list<double> > pts, 
-       initializer_list<initializer_list<int_8> > cell): Grid(pts) {
-    addCell(cell);
-    // correct connectivity ! missing (hanging nodes) for the next step; 
-    // makeFace(); 
-  }
-
-  // ~Grid() {
-  //   // for (auto i = 0; i < otherVertex.size(); ++i) otherVertex[i].reset(); 
-  //   // for (auto i = 0; i < listFace.size(); ++i) listFace[i].reset(); 
-  //   // for (auto i = 0; i < listCell.size(); ++i) listCell[i].reset(); 
-  //   // for (auto i = 0; i < listVertex.size(); ++i) listVertex[i].reset(); 
-    
-  //   if (listVertex.size() > 0 ) cout << listVertex[0].use_count() << endl; 
-
-  //   otherVertex.clear(); cout << "OtherVertex size = "<< otherVertex.size() << endl; 
-  //   listFace.clear(); cout << "listFace size = "<< listFace.size() << endl; 
-  //   listCell.clear(); cout << "listCell size = "<< listCell.size() << endl; 
-  //   listVertex.clear(); cout << "listVertex size = "<< listVertex.size() << endl; 
-  // }
+       initializer_list<initializer_list<int_8> > cell); 
+  Grid(const Grid& copy);
+  virtual ~Grid(); 
+  //-----EndSection --------
 
 
   // Add vertex to the list; 
@@ -118,17 +99,6 @@ public:
      for (auto i = pts.begin(); i != pts.end(); ++i) { addVertex(*i); }    
   }
 
-  // void forCells(vector<shared_ptr<Cell > >::iterator cit, function fn()) {
-  //   vector<bool> visited(listCell.size(), false); 
-  //   vector<int_8> queue(1, (*cit)->id); 
-  //   auto qit = queue.begin(); 
-  //   while (qit != queue.end()) {
-  //     c = listCell[*qit]; 
-  //     auto ngbrList = c->ngbrCellList(); 
-      
-  //   }
-  // }
-
   // // //Add cell to the list
   void addCell(initializer_list<int_8 > l) {    
     if (l.size() == 2) {
@@ -146,6 +116,7 @@ public:
     }
     nCellSize += l.size() + 1;
     auto c = *(listCell.rbegin()); 
+
     c->id = listCell.size()-1;
     c->grid = this; 
     c->assignCelltoNode();
@@ -166,29 +137,10 @@ public:
     }
   }
 
-  // void removeUnusedVertexFromList() {
-  //   int_8 icnt = 0;
-  //   for (auto v=listVertex.begin(); v!=listVertex.end(); ) {
-  //     if ((*v)->isActive()) {
-  // 	(*v)->id = icnt; 
-  // 	++icnt; ++v; 
-  //     }	else {
-  // 	listVertex.erase(v); 
-  //     }
-  //   }
-  // }
-
-  // void removeCell(vector<weak_ptr<Cell > >::iterator cit) {
-  //   //    (*cit)->reset(); 
-  //   listCell.erase(cit); 
-  // }
-
-  void setDt(double c) {
+  void setDt(double cdt) {
     auto U = getVar("u"); auto V = getVar("v"); auto W = getVar("w");     
     auto maxU = abs(min(U->data.min(), min(V->data.min(), W->data.min()))); 
-    cout << maxU << " ";
     maxU = max(maxU, max(U->data.max(), max(V->data.max(), W->data.max())));
-    cout << maxU << endl; 
     double dx = 1e10;  
     for (auto c : listCell) {
       double cdx, cdy, cdz; 
@@ -197,20 +149,22 @@ public:
       if (cdy > 0) dx = min(dx, cdy); 
       if (cdz > 0) dx = min(dx, cdz); 
     }
+    cout << " SetDt: " << dt << " Vel: " << maxU << endl; 
     dt0 = dt;
     if (maxU < 1e-6 || dx < 1e-6)
-      dt = c;
+      dt = cdt;
     else 
-      dt = min(c, cfl*dx/maxU);
-    cout << dt << " " << dx << " " << maxU << endl; 
+      dt = min(cdt, cfl*dx/maxU);
   }
 
   void setIntCoef() {
     int_8 sum = 0; 
     for (auto v : listVertex) {
-      if (v->setInterpCoef()) sum++; 
+      //if (v->coefUpdate) { 
+	v->setInterpCoef(); 
+	sum++;
+	//}
     }
-    //cout << "Set coef for " << sum << " vertices out of " << listVertex.size() << endl; 
   }
 
   void makeFace() {
@@ -322,9 +276,9 @@ public:
     }
 
     for (auto i = 0; i<listVertex.size(); ++i) {
-      val[i][0] = (u->loc==1) ? u->get(i): listVertex[i]->phi(u).eval(u); 
-      val[i][1] = (v->loc==1) ? v->get(i): listVertex[i]->phi(v).eval(v); 
-      val[i][2] = (w->loc==1) ? w->get(i): listVertex[i]->phi(w).eval(w); 
+      val[i][0] = (u->loc==1) ? u->get(i): listVertex[i]->evalPhi(u); //.eval(u); 
+      val[i][1] = (v->loc==1) ? v->get(i): listVertex[i]->evalPhi(v); //.eval(v); 
+      val[i][2] = (w->loc==1) ? w->get(i): listVertex[i]->evalPhi(w);//.eval(w); 
     }
     return val; 
   }
@@ -401,8 +355,6 @@ public:
     }    
   }
 	
-
-
   void debug() {
     for (auto v = vbegin(); v!=vend(); ++v) {
       cout << (*v)->id << " ("; 
@@ -413,6 +365,54 @@ public:
       cout << ") "<<endl; 
     }
   }
+
+  // INTERPOLATION at a point
+  double interp(shared_ptr<Var> &phi, Vec3 x, int_8 i0=0) {
+    //    cout << " Interp: " << x << endl; 
+    if (i0 < 0 || i0 >= listVertex.size()) i0=0; 
+    // cout << " IN search "<< endl; 
+    i0 = searchVertexbyCoords(x, i0); // minimum distance; 
+    //cout << " OUT search " << endl; 
+    if (i0 < 0) { cout << " coefs not found! after search point! " << endl; exit(1);  return 0;} 
+    return listVertex[i0]->evalPhi(phi, &x);    
+  }
+
+  Vec3 interpVec(shared_ptr<Var> &phi, Vec3 x, int_8 i0=0) { 
+    //   cout << " in " << endl; 
+    if (!phi->isVec) {cout << "Nonvector interpolation" << endl; return Vec3(0); }
+    if (i0 < 0 || i0 >= listVertex.size()) i0=0; 
+    i0 = searchVertexbyCoords(x, i0); 
+    if (i0 < 0) return 0; //BC
+    shared_ptr<Var > u, v, w; 
+    if (phi->name == "u") {
+      u = getVar("u"); v = getVar("v"); w = getVar("w");
+    } else {
+      auto a = phi->name; 
+      a.pop_back(); 
+      u = getVar(a+"x"); v = getVar(a+"y"); w = getVar(a+"z"); 
+    } 
+    auto val0 = listVertex[i0]->evalPhi(u, &x); 
+    auto val1 = listVertex[i0]->evalPhi(v, &x); 
+    auto val2 = listVertex[i0]->evalPhi(w, &x); 
+    
+    //    cout << " out "<< endl; 
+    return Vec3(val0, val1, val2); 
+
+  }
+  /**
+
+  VecX<double> expDdt();
+  VecX<double> expDiv();
+  VecX<double> expLaplace();
+  VecX<double> expGrad();
+  
+  triLinSys impDdt(); 
+  triLinSys impDiv();
+  triLinSys impLaplace();
+  triLinSys impGrad(); 
+  **/
+  void advanceDiv(shared_ptr<Var> &phi, VecX<Vec3> &vel, 
+		  int &rko, double aveflux[3], int &tri, bool isflux[3]); 
 
   void laplace(LinSys &axb, shared_ptr<Cell > f, double const &c);
   LinSys laplace(double c, initializer_list<double> n={}); 
@@ -435,6 +435,16 @@ public:
   LinSys ddt(VecX<double> c); 
   void timeScheme(LinSys &axb, initializer_list<double> &n, VecX<double> &prev); 
   
+  void triLaplace(triLinSys &axb, shared_ptr<Cell > f, double const &c);
+  triLinSys laplace2(double c, initializer_list<double> n);
+  triLinSys laplace2(VecX<double>& c, initializer_list<double> n);
+  triLinSys source2(double c, double a, initializer_list<double> n);
+  triLinSys source2(double c, VecX<double>& a, initializer_list<double> n);
+
+  void triDiv(triLinSys &axb, shared_ptr<Cell > f, Vec3 const &c);
+  triLinSys div2(VecX<Vec3>& vel, double c, initializer_list<double> n);
+  triLinSys div2(VecX<Vec3>& vel, VecX<double> c, initializer_list<double> n);
+
 #include "IO_grid.hpp"
 
 #include "Connect_grid.hpp"
@@ -450,19 +460,17 @@ public:
 };
 
 
+
 class Block2: public Grid {
 public:
   Block2():Grid() {};
-  Block2(initializer_list<double> n1, initializer_list<double > n2, int_4 nx, int_4 ny):Grid() {  
-    Vec3 node1 = n1; 
-    Vec3 node2 = n2; 
-    Vec3 del = (node2 - node1);  
-    meanD = min(del[0]/double(nx), del[1]/double(ny)); 
+  Block2(Vec3 n1, Vec3 n2, int_4 nx, int_4 ny):Grid(nx*ny*4) {  
+    Vec3 del = (n2 - n1);  
     addVertex({
-	 {node1[0], node1[1], node1[2]}
-	,{node2[0], node1[1], node1[2]} 
-	,{node2[0], node2[1], node1[2]} 
-	,{node1[0], node2[1], node1[2]}
+	 {n1[0], n1[1], n1[2]}
+	,{n2[0], n1[1], n1[2]} 
+	,{n2[0], n2[1], n1[2]} 
+	,{n1[0], n2[1], n1[2]}
       }); 
     addCell({0,1,2,3});
     (*listCell.rbegin())->convertToSimpleBlock({nx,ny}); 
@@ -471,15 +479,13 @@ public:
     //setQuadBoundary(); 
     cout << "Block2: Cells: " << listCell.size(); 
     cout << " Faces: " << nFace << endl; 
-    addVec("u"); //, "v", "w"});
+    addVec("u"); 
   }
-
+   Block2(initializer_list<double> n1, initializer_list<double > n2, int_4 nx, int_4 ny):Block2((Vec3)n1, (Vec3)n2, nx, ny) {}; 
+};
   
-
-
-}; 
-
-
+ 
+ 
 class Block3: public Grid {
 public:
   Block3():Grid() {};
@@ -496,26 +502,11 @@ public:
 	,{node2[0], node2[1], node2[2]}
 	,{node1[0], node2[1], node2[2]}
       });
-    //addCell({0,1,2,3,4,5,6,7}); 
-    //if (listCell.capacity() < (listCell.size() + nx*ny*nz)) {listCell.reserve(listCell.size() + nx*ny*nz);}
-    //(*listCell.rbegin())->split({nx,ny, nz}); 
-    //    listCell.rbegin()->splitHexa(nx,ny,nz); 
   }
 
 }; 
 
 
-// template <typename T>
-// inline bool equals(const std::weak_ptr<T>& t, const std::weak_ptr<T>& u)
-// {
-//     return !t.owner_before(u) && !u.owner_before(t);
-// }
-
-// template <typename T>
-// inline bool equals(const std::weak_ptr<T>& t, const std::shared_ptr<T>& u)
-// {
-//     return !t.owner_before(u) && !u.owner_before(t);
-// }
 
 
 #endif

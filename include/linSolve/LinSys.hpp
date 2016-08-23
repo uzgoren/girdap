@@ -88,7 +88,7 @@ public:
 
     err = 0; 
     *error = (b - A*(*x));
-    p = *error; 
+    cout << p.abs() << endl; 
     rsold = *error*(*error);
     for (; iter < itmax; ++iter) {
 	q = A*p;
@@ -103,7 +103,7 @@ public:
 	  // cout << "CG: " << iter << ": "<< log10(rsnew) << endl; 
       }  
     it = iter; 
-    err = sqrt(rsnew); 
+    err = sqrt(rsold); 
     //cout << "CG: " << iter << ": " << log10(rsnew) << " DONE!" << endl;
    }
     

@@ -241,7 +241,7 @@ void passVar(Grid* cGrid, shared_ptr<Var> from, shared_ptr<Var> to) {
     auto v1 = cGrid->listVertex[i]; 
     auto v0s = cGrid->otherVertex[i]; //searchVertexbyCoords(*v1, v0->id);
     if (v0s >= 0) {
-      auto xhat = interp.findXhat(*v1, listVertex[v0s]->xcoef, listVertex[v0s]->ycoef, listVertex[v0s]->zcoef);
+      auto xhat = int3D.findXhat(*v1, listVertex[v0s]->xcoef, listVertex[v0s]->ycoef, listVertex[v0s]->zcoef);
       to->set(i, listVertex[v0s]->evalPhi(from)); 
     } else {
       cout << " no vertex found! now what! 2"<< endl;

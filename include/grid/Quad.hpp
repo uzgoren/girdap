@@ -84,6 +84,14 @@ public:
   // //   shared_ptr<Cell > c = shared_ptr<Cell >(new Line(tmp));
   // //   return c;
   // //}
+  bool isPointIn(Vec3 a) {
+    double sum = 0; 
+    for (auto i = 0; i < 4; ++i) {
+      sum += 0.5*((a - **getVertex(i))^(**getVertex((i+1)%4) - a)).abs();
+    }
+    if (abs(sum - vol().abs()) < 1e-3) return true; 
+    else return false;
+  }
 };
 
 

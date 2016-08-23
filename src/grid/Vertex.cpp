@@ -16,7 +16,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************
 */
-#include "Grid.hpp"
+#include <girdap>
 
 void Vertex::cellResize(int_2 size)  {cell.resize(size);} 
 void Vertex::setCell(int_2 ind, int_8 value) {
@@ -178,7 +178,7 @@ Scheme<double> Vertex::phi(shared_ptr<Var> var, int_2 bias) {
 // -------------------------------------------------------------------------
 bool Vertex::setInterpCoef() {
   // save some time by ommitting valid coefs during adaptation; 
-  if (!coefUpdate) return false; 
+  //if (!coefUpdate) return false; 
 
   // Form a CV and prepare for transformation; 
   VecX<double> x(8), y(8), z(8);
@@ -231,27 +231,62 @@ bool Vertex::setInterpCoef() {
   }
   
   // 2. USE AI to calculate its coefficients; 
-  xcoef = grid->interp.getCoef(x); 
-  ycoef = grid->interp.getCoef(y); 
-  zcoef = grid->interp.getCoef(z);
+  xcoef = grid->int3D.getCoef(x); 
+  ycoef = grid->int3D.getCoef(y); 
+  zcoef = grid->int3D.getCoef(z);
 
   // 3. ALSO get xhat at its location; 
 
-  xhat = grid->interp.findXhat(Vec3(this->x(), this->y(), this->z()), 
+  xhat = grid->int3D.findXhat(Vec3(this->x(), this->y(), this->z()), 
 			      xcoef, ycoef, zcoef); 
   coefUpdate = false; 
   return true; 
 }
 
+// int Vertex::isXhat(Vec3 &xh) {
+//   return grid->int3D.isIn(xh); 
+// }
+
+// Vec3 Vertex:: getXhat(Vec3 &x) {
+//   return grid->int3D.findXhat(x, xcoef, ycoef, zcoef); 
+// }
+
+bool Vertex::isIn(Vec3 a) {
+  Vec3 pt[4]; 
+  pt[0] = Vec3(grid->int3D.linFunc(Vec3(0, 0, 0), xcoef), grid->int3D.linFunc(Vec3(0, 0, 0), ycoef), 0); 
+  pt[1] = Vec3(grid->int3D.linFunc(Vec3(1, 0, 0), xcoef), grid->int3D.linFunc(Vec3(1, 0, 0), ycoef), 0); 
+  pt[2] = Vec3(grid->int3D.linFunc(Vec3(1, 1, 0), xcoef), grid->int3D.linFunc(Vec3(1, 1, 0), ycoef), 0);   
+  pt[3] = Vec3(grid->int3D.linFunc(Vec3(0, 1, 0), xcoef), grid->int3D.linFunc(Vec3(0, 1, 0), ycoef), 0); 
+  double sum = 0; 
+  for (auto i = 0; i < 4; ++i) {
+    sum += ((a - pt[i])^(pt[(i+1)%4] - a)).abs();
+  }
+  double vol = ((pt[2] - pt[0])^(pt[3] - pt[1])).abs(); 
+  if (std::abs(sum - vol) < 1e-3) return true; 
+  else return false;
+  //return grid->int3D.isIn(getXhat(a)); 
+}
+
+Vec3 Vertex::getXhat(Vec3 a) {
+  if (xcoef.data.size() == 0) setInterpCoef(); 
+  return grid->int3D.findXhat(a, xcoef, ycoef, zcoef); 
+}
+
 vector<double> Vertex::getIntWeight(Vec3* x) {
-  if (coefUpdate) {
-    cout << "Error: Coefficients are not yet computed! " << id << endl;
-    exit(1);
+  if (xcoef.data.size() == 0) {
+     cout << "Error: Coefficients are not yet computed! " << id << endl;
+     cout << xcoef << endl;
+     cout << ycoef << endl;
+     cout << zcoef << endl;
+     exit(1);
   }
   Vec3 xhattmp; 
-  if (x) xhattmp = grid->interp.findXhat(*x, xcoef, ycoef, zcoef);  
+  if (x) {//cout << " xhat in " << endl; 
+    xhattmp = grid->int3D.findXhat(*x, xcoef, ycoef, zcoef);  
+    //cout << " out "<< endl; 
+}
   else xhattmp = xhat; 
- 
+
   vector<double> w(cell.size(), 0);
   w[0] = (1-xhattmp.x())*(1-xhattmp.y())*(1-xhattmp.z()); 
   w[1] = xhattmp.x()*(1-xhattmp.y())*(1-xhattmp.z()); 
@@ -274,6 +309,7 @@ vector<double> Vertex::getIntWeight(Vec3* x) {
 double Vertex::evalPhi(shared_ptr<Var> &var, Vec3* x) {
   return evalPhi(var->data, var->listBC, x);  
 }
+
 
 double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &bc=vector<shared_ptr<Boundary> >(6, shared_ptr<Boundary>(new Boundary())), Vec3* x) {
   auto w = getIntWeight(x);
@@ -313,7 +349,8 @@ double Vertex::evalPhi(VecX<double> &phi, vector<shared_ptr<Boundary> > const &b
 	    bcval = (del*bc[bndr]->a_val+1)*phi[cell[(i+3)%4]] + del*bc[bndr]->b_val; 
 	  } else {
 	    auto cg = (*getCell((i+2)%4));
-	    auto dn = this->getCoord() - cg->getCoord(); 
+	    auto n2 = *(cg->getVertex(i)); 
+	    auto dn = (0.5*(this->getCoord() + n2->getCoord()) - cg->getCoord()); //this->getCoord() - cg->getCoord(); 
 	    auto del = (bndr%2 == 0) ? -dn.abs() : dn.abs();
 	    bcval = (del*bc[bndr]->a_val+1.0)*phi[cell[(i+2)%4]] + del*bc[bndr]->b_val; 
 	  } 
