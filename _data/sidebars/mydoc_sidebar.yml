@@ -27,13 +27,13 @@ entries:
       url: /doc_getstarted.html
       output: web, pdf
 
-#    - title: Introduction
-#      url: /mydoc_intro.html
-#      output: web, pdf
-
-    - title: Features
-      url: /doc_feat_grid.html
+    - title: Open Source License
+      url: /doc_license.html
       output: web, pdf
+
+#    - title: Features
+#      url: /doc_feat_grid.html
+#      output: web, pdf
 
 #    - title: Contributing
 #      url: /mydoc_people.html
@@ -43,9 +43,9 @@ entries:
       url: /doc_faq.html
       output: web
 
-#  - title: Installation
-#    output: web, pdf
-#    folderitems:
+    - title: Talks and publications
+      output: web, pdf
+      url: /doc_pub.html
 
 #    - title: Getting girdap run
 #      url: /mydoc_about_ruby_gems_etc.html

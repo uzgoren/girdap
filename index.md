@@ -4,7 +4,7 @@ permalink: index.html
 keywords: girdap, cfd, c++, object oriented, uzgoren, partial differential equations, computational fluid dynamics, numerical, simulations, eray uzgoren
 tags: [overview]
 sidebar: home_sidebar
-summary: girdap is a c++ based object oriented library for multiphysics simulations on self-managed grids 
+summary: girdap is an open source c++11 based object oriented library for multiphysics simulations on self-managed grids 
 toc: false
 ---
 

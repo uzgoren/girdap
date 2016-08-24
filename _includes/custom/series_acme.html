@@ -1,19 +1,63 @@
-<div class="seriesContext">
-    <div class="btn-group">
-        <button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle">Series Demo <span class="caret"></span></button>
-        <ol class="dropdown-menu">
-            {% assign pages = site.pages | sort:"weight"  %}
-            {% for p in pages %}
-            {% if p.series == "ACME series" %}
-            {% if p.url == page.url %}
-            <li class="active"> → {{p.weight}}. {{p.title}}</li>
-            {% else %}
-            <li>
-                <a href="{{p.url}}">{{p.weight}}. {{p.title}}</a>
-            </li>
+{% if site.output contains "web" %}
+{% assign prev = "null" %}
+{% assign curr = "null" %}
+{% assign next = "null" %}
+{% include custom/sidebarconfigs.html %}
+{% for entry in sidebar %}
+  {% for folder in entry.folders %}
+    {% if folder.output contains "web" %}
+      {% for folderitem in folder.folderitems %}
+        {% if folderitem.output contains "web" %}
+          {% if folderitem.external_url %}
+          {% elsif page.url == folderitem.url %}
+            {% assign prev = past %} {% assign ptitle = pasttitle %}
+            {% assign curr = folderitem.url %}
+          {% else %}
+            {% assign past = folderitem.url %} {% assign pasttitle = folderitem.title %}
+            {% unless curr contains "null" %}
+              {% assign next = folderitem.url %} {% assign ntitle = folderitem.title %}
+              {% break %}
+            {% endunless %}
+          {% endif %}
+          {% for subfolders in folderitem.subfolders %}
+            {% if subfolders.output contains "web" %}
+               {% for subfolderitem in subfolders.subfolderitems %}
+                  {% if subfolderitem.output contains "web" %}
+                    {% if subfolderitem.external_url %}
+                    {% elsif page.url == subfolderitem.url %}
+                      {% assign prev = past %} {% assign ptitle = pasttitle %}
+                      {% assign curr = subfolderitem.url %}
+                    {% else %}
+                      {% assign past = subfolderitem.url %}
+                      {% assign pasttitle = subfolderitem.title %}
+                      {% unless curr contains "null" %}
+                         {% assign next = subfolderitem.url %} {% assign ntitle = subfolderitem.title %}
+                         {% break %}
+                      {% endunless %}
+                    {% endif %}
+                  {% endif %}
+               {% endfor %} 
             {% endif %}
-            {% endif %}
-            {% endfor %}
-        </ol>
-    </div>
+            {% unless next contains "null" %}
+               {% break %}
+            {% endunless %}
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+      {% unless next contains "null" %}
+         {% break %}
+      {% endunless %}
+    {% endif %}
+  {% endfor %}
+  {% unless next contains "null" %}
+     {% break %}
+  {% endunless %}
+{% endfor %}
+
+<div class="seriesContext" style="width:90%; text-align:right;">
+  
+{% if prev %}{% unless prev contains "null" %}<a href="{{site.baseurl}}{{prev}}"><button type="button" class="btn btn-primary"> Prev: {{ptitle}}</Button></a>{% endunless %}{% endif %}
+{% if next %}{% unless next contains "null" %}<a href="{{site.baseurl}}{{next}}"><button type="button" class="btn btn-primary"> Next: {{ntitle}}</Button></a>{% endunless %}{% endif %}
 </div>
+
+{% endif %}

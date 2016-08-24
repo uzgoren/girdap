@@ -7,6 +7,8 @@ keywords: frequently asked questions, FAQ, question and answer
 last_updated: August 10, 2016
 toc: false
 folder: doc
+series: "ACME series"
+weight: 1.0
 
 dfaq:
 - q: What is girdap?

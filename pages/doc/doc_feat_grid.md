@@ -2,6 +2,8 @@
 title: Features - Grid
 permalink: /doc_feat_grid.html
 sidebar: mydoc_sidebar
+series: "ACME series"
+weight: 1.0
 ---
 
 Grid supports the following cell structures:
