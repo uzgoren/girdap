@@ -7,5 +7,5 @@ toc: false
 
 ## Presentations
 
-- girdap: Object oriented autonomous grid management library: ICCFD9 - June 2016
+- girdap: Object oriented autonomous grid management library: [ICCFD9 - June 2016]({{site.baseurl}}/pres_2016_01.html)
 - Semi-Lagrangian Transport: ICCFD9 - June 2016
