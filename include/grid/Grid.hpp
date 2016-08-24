@@ -106,11 +106,11 @@ public:
     if (l.size() == 1) {
       listCell.emplace_back( make_shared<Cell > (Cell(l)) ); 
     } else if (l.size() == 2) {
-      listCell.emplace_back( make_shared<Cell > (Line(l)) ); 
+      listCell.emplace_back( make_shared<Line > (Line(l)) ); 
     } else if (l.size() == 3) {
 
     } else if (l.size() == 4) {
-      listCell.emplace_back( make_shared<Cell > (Quad(l)) ); 
+      listCell.emplace_back( make_shared<Quad > (Quad(l)) ); 
     } else if (l.size() == 8) {
 
     } else {
@@ -191,7 +191,7 @@ public:
       } else if (v->cell.size() == 4) { 
 	auto n = v->ngbr(1); 
 	if (n && *n) {
-	  listFace.emplace_back(make_shared<Cell>(Line({v->id, (*n)->id}))); 
+	  listFace.emplace_back(make_shared<Line>(Line({v->id, (*n)->id}))); 
 	  (*listFace.rbegin())->next = (v->cell[2] < 0) ? -2 : v->cell[2];
 	  (*listFace.rbegin())->prev = (v->cell[1] < 0) ? -1 : v->cell[1];
 	  if (v->cell[2] < 0) v->cell[2] = -2; 
@@ -208,7 +208,7 @@ public:
 	}
 	n = v->ngbr(2); 
 	if (n && *n) { 
-	  listFace.emplace_back(make_shared<Cell>(Line({(*n)->id, v->id}))); 
+	  listFace.emplace_back(make_shared<Line>(Line({(*n)->id, v->id}))); 
 	  (*listFace.rbegin())->next = (v->cell[2] < 0) ? -4 : v->cell[2];
 	  (*listFace.rbegin())->prev = (v->cell[3] < 0) ? -3 : v->cell[3];
 	  if (v->cell[2] < 0) v->cell[2] = -4; 
@@ -467,7 +467,8 @@ public:
 class Block2: public Grid {
 public:
   Block2():Grid("Block2_") {setName("Block2");};
-  Block2(Vec3 n1, Vec3 n2, int_4 nx, int_4 ny):Grid(nx*ny*4) {  
+  Block2(Vec3 n1, Vec3 n2, int_4 nx, int_4 ny):Grid(nx*ny*4) {
+    cout << "Creating " << getName() << endl; 
     Vec3 del = (n2 - n1);  
     addVertex({
 	 {n1[0], n1[1], n1[2]}
@@ -476,7 +477,9 @@ public:
 	,{n1[0], n2[1], n1[2]}
       }); 
     addCell({0,1,2,3});
-    (*listCell.rbegin())->convertToSimpleBlock({nx,ny}); 
+    
+    (*listCell.rbegin())->convertToSimpleBlock({nx,ny});
+    
     setCurrentLevels(); 
     makeFace(); 
     //setQuadBoundary(); 

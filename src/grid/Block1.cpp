@@ -21,8 +21,8 @@ Block1::Block1(initializer_list<initializer_list<double> > pt):Block1::Block1() 
   for (auto it = pt.begin(); it != itend; ++it) {
     add(make_shared<Geo1>( Geo1Line(Vec3(*it), Vec3(*(it+1))) ), 1);
   }
-  if (loop) addCell({(int_8)listVertex.size()-1, 0}); 
-  //  resolve(del);
+  if (loop) addCell({(int_8)listVertex.size()-1, 0});
+  setCurrentLevels(); 
 }
 
 Block1::Block1(double s0, double s1, int_8 nx
@@ -57,6 +57,7 @@ void Block1::add(Block1& o) {
   for (auto c : o.listCell) {
     addCell({c->node[0] + (int_8)noldv, c->node[1] + (int_8)noldv});
   }
+  setCurrentLevels(); 
 }
 
 // Parametric add; 
@@ -82,6 +83,7 @@ void Block1::add(double s0, double s1, int_8 nx
   for (auto i = nVertex; i < listVertex.size()-1; ++i) {
     addCell({i, i+1});
   }
+  setCurrentLevels(); 
 }
 
 
