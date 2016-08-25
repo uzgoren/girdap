@@ -3,14 +3,24 @@
 
   <link rel="stylesheet" href="css/reveal.css">
   <link rel="stylesheet" href="css/theme/sky.css">
+  <link rel="stylesheet" href="css/syntax2.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script src="{{ "js/jquery.navgoco.min.js" }}"></script>
-
+<script src="lib/js/head.min.js"></script>
   <script src="js/reveal.js"></script>
   <script>
     $(document).ready(function() {
-    Reveal.initialize({ 
+    Reveal.initialize({
+    dependencies: [
+    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+        { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+
+        { src: 'plugin/notes/notes.js', async: true },
+
+        { src: 'plugin/math/math.js', async: true }
+    ],
     width: 960,
     height: 700,
     margin: 0.1,
@@ -18,12 +28,24 @@
     maxScale: 1.5,
     slideNumber: true,
     showNotes: true,
-    transition: "slide"   
+    transition: "slide",
+    controls: true,
+    progress: true,
+    history: true,
+    center: true
     });
+    $( ".slide" ).click( function() {Reveal.next();} )
     });
-
+   $(window).bind('mousewheel DOMMouseScroll', function(e){
+        if(e.originalEvent.wheelDelta > 0 ) {
+            Reveal.prev(); 
+        }
+        else{
+            Reveal.next(); 
+        }
+    });
+    
     </script>
-    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>    
     
 </head>
 <body>
