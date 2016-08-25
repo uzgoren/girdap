@@ -4,6 +4,7 @@
   <link rel="stylesheet" href="css/reveal.css">
   <link rel="stylesheet" href="css/theme/sky.css">
   <link rel="stylesheet" href="css/syntax2.css">
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script src="{{ "js/jquery.navgoco.min.js" }}"></script>
@@ -31,23 +32,38 @@
     transition: "slide",
     controls: true,
     progress: true,
-    center: true
+    center: true,
+    rollingLinks: true,
+    mouseWheel: true
     });
     $( ".slide" ).click( function() {Reveal.next();} )
     });
-   $(window).bind('mousewheel DOMMouseScroll', function(e){
-        if(e.originalEvent.wheelDelta > 0 ) {
-            Reveal.prev(); 
-        }
-        else{
-            Reveal.next(); 
-        }
-    });
+//   $(window).bind('mousewheel DOMMouseScroll', function(e){
+//        if(e.originalEvent.wheelDelta > 0 ) {
+//            Reveal.prev(); 
+//        }
+//        else{
+//            Reveal.next(); 
+//        }
+//    });
     
     </script>
     
 </head>
 <body>
+
+    <style>
+    .wrap_2 .content { float:left; width:62%; box-shadow:0px 0px 6px #666; margin-bottom:20px; font-size:0.7em; padding-top:0px; padding-bottom:10px; text-align:left; background:rgba(180,180,180,0.2); }
+    .wrap_2 h4 {border-bottom:1px solid #999; background:#79a; display:block; margin:0px; margin-bottom:5px; padding:0px; padding-left:20px; color:white;}
+    .wrap_2 .content li { font-size:0.9em; margin-bottom:5px; }
+    .wrap_2 .content div { margin:5px 10px; }
+    .wrap_2 p { margin-left:20px; margin-right:10px; }
+    .wrap_2 .side { float:right; width:35%; margin-left:-35%; }
+    .wrap_2 .side img {width:100%; }
+    .wrap_2 .clear { clear: both; }
+    
+    </style>
+  
   <div class="reveal">
     <div class="slides">   
       {{content}}

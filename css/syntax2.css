@@ -67,7 +67,8 @@
 .highlight .gutter, highlight .gl { width: 25px; padding-right:4px; padding-left:1px; border: none; text-align:right; box-shadow:none; }
 .highlight pre code { margin:0px; display: block; }
 .reveal .highlight pre {margin:0px; padding:0px; box-shadow:none; width:99%}
-.reveal .highlight code {overflow-x: hidden;}
+.reveal .highlight code {overflow-x: auto;}
 .reveal .highlight .code {overflow-x: auto; background: #fff; }
 .reveal .highlight { box-shadow:0px 0px 6px #ccf;}
 .reveal .highlight .lineno {text-align:right;padding-right:5px; }
+.reveal .highlight { font-size:1.3em;}
