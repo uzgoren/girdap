@@ -126,7 +126,7 @@ public:
     for (auto v: listVar) {
       if (v->loc == 0) {
 	v->data.push_back(0); 
-	v->data.uncompress();
+	//	v->data.uncompress();
       }
     }
     c->masterx.resize(levelHighBound[0]+1, false); 
@@ -242,7 +242,7 @@ public:
 
 
   VecX<double> getCoord(int dir) {
-    VecX<double> val(listCell.size()); val.uncompress(); 
+    VecX<double> val(listCell.size()); //val.uncompress(); 
     for (auto i = 0; i < listCell.size(); ++i) {
       double sum=0; double icnt = 0; 
       for (auto j = 0; j < listCell[i]->node.size(); ++j) {
@@ -257,7 +257,7 @@ public:
   }
 
   VecX<Vec3> getVel() { 
-    VecX<Vec3> val(listCell.size()); val.uncompress(); 
+    VecX<Vec3> val(listCell.size()); //val.uncompress(); 
     auto u = *(listVar.begin()); auto v = *(listVar.begin()+1); auto w = *(listVar.begin()+2);
     for (auto i = 0; i< listCell.size(); ++i) {
       val[i].set({u->get(i), v->get(i), w->get(i)});

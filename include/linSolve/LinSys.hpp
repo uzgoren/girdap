@@ -116,16 +116,16 @@ public:
     while (iter<itmax){
       int_8 r = 0; 
       err = 0;
-      for (MatX<double>::rowiter rit=A.data.begin(); rit!=A.data.end(); ++rit, ++r) {
-	sigma = 0; 
-	for (VecX<double>::it_cmap cit=rit->px.begin(); cit!=rit->px.end(); ++cit) {
-	  if (cit->first == r) continue;
-	  sigma += cit->second * (*x)[cit->first]; 
-	}
-	sigma = (b[r] - sigma)/rit->px[r];
-	err += ((sigma-(*x)[r])); //err *= err; 
-	(*x)[r] = sigma; 
-      }
+      // for (auto rit=A.data.begin(); rit!=A.data.end(); ++rit, ++r) {
+      // 	sigma = 0; 
+      // 	for (auto cit=rit->data.begin(); cit!=rit->data.end(); ++cit) {
+      // 	  if (cit->first == r) continue;
+      // 	  sigma += cit->second * (*x)[cit->first]; 
+      // 	}
+      // 	sigma = (b[r] - sigma)/rit->data[r];
+      // 	err += ((sigma-(*x)[r])); //err *= err; 
+      // 	(*x)[r] = sigma; 
+      // }
       err = sqrt(err/A.rows); 
       if (err < tol) break;
       //	cout << "GS: " << iter << "->" << log10(err) <<endl;
@@ -183,7 +183,7 @@ public:
     return c;
   }
 
-  LinSys operator-(const LinSys& a) {
+  LinSys operator-(LinSys const &a) {
     LinSys c; 
     c.A = A - a.A;
     c.b = b - a.b; 

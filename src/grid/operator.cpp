@@ -618,7 +618,7 @@ LinSys Grid::divRK4E(VecX<Vec3> vel, double c) {
 // }
 
 VecX<double> Grid::valDiv(VecX<Vec3> vel) { 
-  VecX<double> a(vel.rank); 
+  VecX<double> a(vel.size()); 
 
   auto U = getVar("u"); 
   auto V = getVar("v"); 

@@ -1,3 +1,26 @@
+#ifndef GIRDAP
+#define GIRDAP
+
 #include <cmath>
+#include <iostream>
+#include <vector>
+#include <map>
+#include <initializer_list>
+#include <algorithm>
+
+using namespace std; 
+
+typedef unsigned long long uint_16;  
+typedef unsigned long uint_8; 
+typedef unsigned int uint_4; 
+typedef unsigned short uint_2;
+typedef long long int_16; 
+typedef long int_8; 
+typedef int int_4; 
+typedef short int_2; 
+
+
 #include "grid/Grid.hpp"
 #include "grid/Block1.hpp"
+
+#endif

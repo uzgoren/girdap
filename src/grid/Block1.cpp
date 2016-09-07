@@ -1,6 +1,6 @@
 
 
-#include <grid/Block1.hpp>
+#include <girdap>
 
 Block1::Block1(Vec3 n1, Vec3 n2, int_4 nx):Block1::Block1() {
   add(make_shared<Geo1>( Geo1Line(n1, n2) ), nx);

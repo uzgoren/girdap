@@ -62,7 +62,7 @@ public:
     data.resize(a);
     int_8 row = 0; 
     for (rowiter it=data.begin(); it!=data.end(); ++it, ++row) {
-      it->rank = cols; it->push_pair({row}, {0}); 
+      it->resize(cols); it->push_pair({row}, {0}); 
     }
   }
   void empty() {data.empty();}
@@ -196,8 +196,7 @@ public:
   }
 
   MatX<T> operator -(const MatX<T>& a) {
-    if (rows < a.rows) resize(a.rows);
-    MatX<T> c(rows); 
+    MatX<T> c(a.data.size()); 
     for (int_8 r = 0; r<rows; ++r) 
       // if (r < a.data.size()) 
   	c.data[r] = data[r] - a.data[r]; 
@@ -211,7 +210,7 @@ public:
   }
   
   friend MatX<T> operator*( MatX<T> &a, T &b) {
-    MatX<T> result(a.rows); result.compress(); 
+    MatX<T> result(a.rows); 
     if (b == 0) return result; 
      for (int_8 r = 0; r < a.rows; ++r)
       result.data[r] = b*(a.data[r]); 
