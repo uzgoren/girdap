@@ -19,13 +19,12 @@
 #ifndef VECX
 #define VECX
 
-template <typename Key, typename T>
-ostream &operator<<(ostream &out, const map<Key, T> &a){
-  typename map<Key,T>::const_iterator it;
-  for ( it=a.begin() ; it != a.end(); it++ )
-    cout << (*it).first << ":" << (*it).second << " ";
-  return out;
-}
+// template <typename T>
+// ostream &operator<<(ostream &out, const vector<T> &a){
+//   for (auto it=a.begin() ; it != a.end(); it++ )
+//     cout << (*it) << " ";
+//   return out;
+// }
 
 
 template <typename T> class VecX {
@@ -45,33 +44,51 @@ template <typename T> class VecX {
   // C2: (long int) - Sets rank and contains - uncompressed empty
   VecX(int_8 const &a) {if ( a > 0 ) data.assign(a, T(0));}  
   // C3: (int, T*) - Sets rank and contains - uncompressed
-  VecX(int_8 const &a, T const *b) {data.assign(b, b+a);}; 
+  //  VecX(int_8 const &a, T const *b) {data.assign(b, b+a);}; 
   VecX(int_8 const &a, T b) {data.assign(a, b);}
 
   // C4: ({list}) - Assigns list values - uncompressed
   VecX(ilist_T a) {data.assign(a.begin(), a.end());};
 
+  typename vector<T>::iterator begin() { return data.begin(); }
+  typename vector<T>::iterator end()   { return data.end(); }
+  
   //----------------------
   // Methods
   //----------------------
   int_8 size() {return data.size();}
   void reserve(int_8 const &a) {data.reserve(a);}
+  int_8 capacity() {return data.capacity();}
   void resize(int_8 const &a) {data.resize(a);}
-  void assign(int_8 const &a, T b) {data.assign(a, b);}
-  void assign(VecX<T> a) {data.assign(a.data.begin(), a.data.end());}
+  void assign(int_8 const &a, T b=T(0)) {vector<T>(a,T(b)).swap(data);}
+  void assign(VecX<T> &a) {data.assign(a.data.begin(), a.data.end());}
   void assign(ilist_T const &a, int_8 const &b=0) {
-    if (data.size() < b + a.size()) resize(b + a.size()); 
-    auto dit=data.begin()+b; 
-    for (auto it=a.begin(); it!=a.end(); ++it, ++dit)
-      *dit = *it;    
+    if (data.size() < b + a.size()) resize(b + a.size());
+    auto it = a.begin();
+    for (auto i=0; i < a.size(); ++i, ++it) 
+      data[b+i] = *it;   
   }
+  void swap(VecX<T> &a) {a.data.swap(data);}
   
   T min() {return *min_element(data.begin(), data.end());}
   T max() {return *max_element(data.begin(), data.end());}
 
-  void empty() {std::vector<T>().swap(data);}
-  void clear() {data.clear();}
+  void empty() {std::vector<T>().swap(data);} // capacity is zero (no delete)
+  void clear() {data.clear();} // capacity is unchanged
 
+  void zeros(int_8 n) {vector<T>(n, T(0)).swap(data);}
+  void ones(int_8 n) {vector<T>(n, T(1)).swap(data);}
+  void linear(double const &x0, double const &x1, int_8 const &n) {
+    auto dx = (x1-x0)/(double)(n-1); data.resize(n); 
+    for (auto i = 0; i < n; ++i)
+      data[i] = x0 + i*dx;
+  }
+  void linear(double const &x0, double const &dx, double const &x1) {
+    data.clear(); 
+    for (auto x = x0; x < x1 || almost_equal(x, x1, 10); x+=dx)
+      data.emplace_back(x);
+  }
+  
   // Push_pair(int, T) : add index->value to the list 
   // priority is on compressed if empty
   void push_pair(int_8 const &a, T const &b) {
@@ -79,16 +96,14 @@ template <typename T> class VecX {
     data[a] = b;  
   }
   // Push_pair
-  void push_pair(vector<int_8> const a, vector<T> const b) {
+  void push_pair(vector<int_8> const &a, vector<T> const &b) {
     for(auto i=0; i < a.size(); ++i)  
       push_pair(a[i], b[i]); 
   }
   void push_pair(ilist_i8 const a, ilist_T const b) {
-    auto ix=b.begin(); 
-    for(auto it=a.begin(); it!=a.end(); ++it,++ix)  
-      push_pair(*it, *ix); 
+    push_pair(vector<int_8>(a), vector<T>(b)); 
   }  
-  void push_back(T b) {data.push_back(b);}
+  void push_back(T const &b) {data.push_back(b);}
 
   double abs() {
     double sum = 0; 
@@ -96,7 +111,7 @@ template <typename T> class VecX {
       sum += data[i]*data[i]; 
     return sqrt(sum);       
   }
-
+  
   VecX<double> comp(int k);
 
   //----------------------
@@ -128,7 +143,7 @@ template <typename T> class VecX {
   // O4: Multiplication | DOT PRODUCT
   friend T operator*(VecX<T> const &a, VecX<T> const &b) {
     if (a.data.size() != b.data.size()) {
-      cout<<"Error: Cannot multiply two vectors having different ranks: "<<a.data.size()<< " " <<b.data.size()<<endl;
+      cout<<"Error: sizes are not equal!!! A: "<<a.data.size() << " B: " <<b.data.size()<<endl;
       exit(1); 
     }
     T sum = 0; 
@@ -210,11 +225,21 @@ template <typename T> class VecX {
   // Output options
   //----------------------
   friend ostream &operator<<(ostream &out, const VecX<T> &a){
+    out << " [";
     for (auto i = 0; i<a.data.size(); i++)
-      out<< a.data[i] << " " ; 
+      out<< a.data[i] << " " ;
+    out << "] " ; 
     return out;
   }  
 };
+
+template <typename T>
+VecX<T> abs(VecX<T> const &a) {
+  VecX<T> result;
+  for (auto el : a.data) 
+    result.data.push_back(abs(el));
+  return result; 
+}
 
 
 
@@ -281,6 +306,7 @@ inline Vec3 operator^(Vec3 const& lhs, Vec3 const& rhs ) {
   return a;
 };
 inline double abs(Vec3 const& a) {return sqrt(a*a);};
+
 
 template <class Vec3>
 VecX<double> VecX<Vec3>::comp(int k) {

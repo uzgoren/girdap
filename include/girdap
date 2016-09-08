@@ -19,6 +19,15 @@ typedef long int_8;
 typedef int int_4; 
 typedef short int_2; 
 
+// ALMOST EQUAL 
+template<class T>
+typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
+    almost_equal(T x, T y, int ulp)
+{
+    return std::abs(x-y) < std::numeric_limits<T>::epsilon() * std::abs(x+y) * ulp  
+    || std::abs(x-y) < std::numeric_limits<T>::min();
+}
+
 
 #include "grid/Grid.hpp"
 #include "grid/Block1.hpp"
