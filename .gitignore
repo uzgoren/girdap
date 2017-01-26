@@ -16,3 +16,6 @@ bin/*
 debug/
 install_manifest.txt
 _site
+run
+Makefile
+*/Makefile
