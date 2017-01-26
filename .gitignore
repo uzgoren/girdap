@@ -23,3 +23,4 @@ src/
 .#*
 /bin
 /lib/*.a
+/run

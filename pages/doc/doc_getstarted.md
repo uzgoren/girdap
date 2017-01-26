@@ -9,6 +9,10 @@ series: "ACME series"
 weight: 1.0
 ---
 
+## Prepare your system
+
+In order to compile and run girdap, it is recommended to prepare your system first and install necessary compilers and build tools. Details can be found [here](doc_gettools). 
+
 ## Download or clone _girdap_
 
 First download or clone _girdap_ from the [Github repo](https://github.com/uzgoren/girdap).
