@@ -11,7 +11,7 @@ weight: 1.0
 
 ## Prepare your system
 
-In order to compile and run girdap, it is recommended to prepare your system first and install necessary compilers and build tools. Details can be found [here](doc_gettools). 
+In order to compile and run girdap, it is recommended to prepare your system first and install necessary compilers and build tools for Windows, Ubuntu and Mac OS. Details can be found [here](doc_gettools.html). 
 
 ## Download or clone _girdap_
 
