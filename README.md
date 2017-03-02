@@ -2,17 +2,26 @@
 
 Please refer to https://uzgoren.github.io/girdap for more information.
 
-<!-- This project's aim is to develop object-oriented c++ libraries for solving conservation equations on a self-managed grid. 
+This project's aim is to develop object-oriented c++ libraries for solving conservation equations on a self-managed grid. 
 
-###DISCLAIMER
-This project is still in a early phase, expect to see bugs.
+This project is still in progress. Please give us feedback for the bugs you encountered or new bright ideas you may think of. 
 
 ###REQUIREMENTs
+
 C++ compiler that accepts C++11 standards 
 
 ###COMPILE
-use "mk" script (tested on Linux and Mac) 
--->
+
+An executable installer is still being prepared, however compiling from the source is very easy and straightforward. Installation guidelines for Linux and MacOS are provided and tested. Even though Girdap is capable of running on Windows, the installation requires different tools and guide for the installation will be announced later.
+
+####_Linux Operating Systems and MacOS_
+<li>The First thing you need to do is make sure that you installed cmake and gcc compiler.
+<li>Download the source codes (it should be in *.zip format).
+<li>Extract into a folder you want. i.e. "unzip girdap-master.zip -d /home/username/Documents/girdap"
+<li>Get into the folder you created and run 'cmake' code.
+<li>After cmake code type 'make' to compile the codes.
+<li>Girdap is ready to use. One important thing is while you are using Girdap, you do not need to run 'cmake' code again and again. 'make' is all you need to type.
+
 ###FAQ 
 ####_What is girdap?_
 _girdap_ provides building blocks for numerical simulations of complex transport equations. Tools are built around a grid management platform connected to finite volume method based differential operators. girdap’s primary goals are (1) _flexibility_ and (2) _accuracy_. 
