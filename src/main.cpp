@@ -47,32 +47,32 @@ int main() {
   rotsqr.resolve(0.15/sqrt(2)*0.1);
   rotsqr.writeVTK("rotsqr"); 
   
-  Block1 rotpenta(new Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400), 5); //OK
-  rotpenta.resolve(0.01);
-  rotpenta.writeVTK("rotpenta");
+ // Block1 rotpenta(new Geo1Circle(Vec3(0.5,0.75), 0.15, 30, 400), 5); //OK
+ // rotpenta.resolve(0.01);
+ // rotpenta.writeVTK("rotpenta");
 
   lin.add(0.0, 1.0, 10
 	       , [](double t) -> Vec3 {return Vec3(0.0) + t*Vec3(0.2, -0.1)/10;} );
   lin.writeVTK("lin");
 
-  Block1 sine;
-  sine.add(0.0, 1.0, 50
-		, [](double t) -> Vec3 {return Vec3(t, 0.1*sin(5*t*3.14), 0);} );
-  sine.writeVTK("sine"); 
+//  Block1 sine;
+//  sine.add(0.0, 1.0, 50
+//		, [](double t) -> Vec3 {return Vec3(t, 0.1*sin(5*t*3.14), 0);} );
+//  sine.writeVTK("sine"); 
 
-  Block1 arc2;
-  arc2.add(0, 360, 20
-	      , [](double t) -> Vec3 {return Vec3(0.5,0.75) + 0.15*Vec3(cos(t*3.14/180), sin(t*3.14/180)); } ); 
-  arc2.writeVTK("ccc");
+//  Block1 arc2;
+//  arc2.add(0, 360, 20
+//	      , [](double t) -> Vec3 {return Vec3(0.5,0.75) + 0.15*Vec3(cos(t*3.14/180), sin(t*3.14/180)); } ); 
+//  arc2.writeVTK("ccc");
 
-  Block1 line2(new Geo1Sine(Vec3(0.2, 0.4), Vec3(0.5, 0.5), 0.1, 5), 50);
-  line2.add(new Geo1Line(Vec3(0.5, 0.5), Vec3(0.8, 0.6)), 20); 
-  line2.writeVTK("sdsd"); 
+//  Block1 line2(new Geo1Sine(Vec3(0.2, 0.4), Vec3(0.5, 0.5), 0.1, 5), 50);
+//  line2.add(new Geo1Line(Vec3(0.5, 0.5), Vec3(0.8, 0.6)), 20); 
+//  line2.writeVTK("sdsd"); 
 
-  Geo1Circle* g0 = new Geo1Circle(Vec3(0.5, 0.5), 0.2);  
-  Block1 arc3(g0, 30);
-  delete g0; 
-  arc3.writeVTK("newCircle"); 
+//  Geo1Circle* g0 = new Geo1Circle(Vec3(0.5, 0.5), 0.2);  
+//  Block1 arc3(g0, 30);
+//  delete g0; 
+//  arc3.writeVTK("newCircle"); 
   
   // grid->addVertex({ {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0} }); 
 
