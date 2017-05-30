@@ -11,27 +11,38 @@
 <script src="lib/js/head.min.js"></script>
   <script src="js/reveal.js"></script>
   <script>
-    $(document).ready(function() {
+  $(document).ready(function() {
     Reveal.initialize({
     dependencies: [
-    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
-        { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-        { src: 'plugin/notes/notes.js', async: true },
-        { src: 'plugin/math/math.js', async: true }
-    ],
+    { src: 'js/classList.js', condition: function() { return !document.body.classList; } },
+        { src: 'js/notes.js', async: true },
+        { src: 'js/math.js', async: true }, 
+		{ src: 'js/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }		
+     ],
+	history: true,
     width: 960,
     height: 700,
-	history: true,
-    slideNumber: true,
     showNotes: true,
     transition: "cube",
+	 slideNumber: 'c/t',
     controls: true,
-    progress: true,
     center: true,
     rollingLinks: true,
     mouseWheel: true
     });
+	Reveal.addEventListener( 'slidechanged', function( event ) {
+		el = $(event.currentSlide).parent().find('.attribution');
+		if (el.length) {
+			if (event.indexv!=0) {el.css("color", "rgba(255,255,255,0.1)");}
+			else { el.css("color","rgba(255,255,255,0)");}		
+		   }
+		}
+	);
+	if (Reveal.getIndices().v != 0) {
+		p = $(Reveal.getCurrentSlide()).parent();
+		if (p.length) { el = p.find(".attribution").css("color", "rgba(255,255,255,0.1)") };
+		}
+    });   
 
     
     </script>
