@@ -17,19 +17,17 @@
     { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
         { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
         { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-
+		{ src: 'js/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
         { src: 'plugin/notes/notes.js', async: true },
 
         { src: 'plugin/math/math.js', async: true }
     ],
     width: 960,
     height: 700,
-    margin: 0.1,
-    minScale: 0.2,
-    maxScale: 1.5,
+	history: true,
     slideNumber: true,
     showNotes: true,
-    transition: "slide",
+    transition: "cube",
     controls: true,
     progress: true,
     center: true,
