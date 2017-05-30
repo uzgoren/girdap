@@ -16,8 +16,10 @@
     dependencies: [
     { src: 'js/classList.js', condition: function() { return !document.body.classList; } },
         { src: 'js/notes.js', async: true },
-        { src: 'js/math.js', async: true }	
-     ],
+        { src: 'js/math.js', async: true }, 		        
+        { src: 'js/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'js/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } }
+    ],
 	history: true,
     width: 960,
     height: 700,
