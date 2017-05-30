@@ -32,14 +32,6 @@
     rollingLinks: true,
     mouseWheel: true
     });
-	Reveal.addEventListener( 'slidechanged', function( event ) {
-		el = $(event.currentSlide).parent().find('.attribution');
-		if (el.length) {
-			if (event.indexv!=0) {el.css("color", "rgba(255,255,255,0.1)");}
-			else { el.css("color","rgba(255,255,255,0)");}		
-		   }
-		}
-	);
 
     
     </script>
