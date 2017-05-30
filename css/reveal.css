@@ -597,7 +597,6 @@ body {
   height: 100%;
   left: 0;
   top: 0;
-  background: rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   -webkit-transform: translateZ(-20px);
           transform: translateZ(-20px); }
@@ -1040,8 +1039,19 @@ body {
 .reveal.rtl .slides h4,
 .reveal.rtl .slides h5,
 .reveal.rtl .slides h6 {
-  direction: rtl;
-  font-family: sans-serif; }
+ /* direction: rtl;
+  font-family: sans-serif; */
+
+    margin: 0 0 20px 0;
+    color: #eeeeee;
+    font-family: "League Gothic", Impact, sans-serif;
+    line-height: 0.9em;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);    
+  }
+  
+ .reveal h1 { font-size:3.77em;}
 
 .reveal.rtl pre,
 .reveal.rtl code {
